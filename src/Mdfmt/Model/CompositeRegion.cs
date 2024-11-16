@@ -9,12 +9,12 @@ namespace Mdfmt.Model;
 /// Abstract class for a region of content that is composed of a sequence of subregions.  Currently
 /// there is only one concrete implementation: <see cref="HeadingRegion"/>.
 /// </summary>
-public abstract class CompositeRegion2(IReadOnlyList<AtomicRegion2> atomicRegions) : Region, IEnumerable<AtomicRegion2>
+public abstract class CompositeRegion(IReadOnlyList<AtomicRegion> atomicRegions) : Region, IEnumerable<AtomicRegion>
 {
     /// <summary>
     /// List of atomic regions that make up this composite region.  Backing storage for <c>Content</c> property.
     /// </summary>
-    private readonly IReadOnlyList<AtomicRegion2> _atomicRegions = atomicRegions;
+    private readonly IReadOnlyList<AtomicRegion> _atomicRegions = atomicRegions;
 
     /// <inheritdoc/>
     public override string Content
@@ -27,7 +27,7 @@ public abstract class CompositeRegion2(IReadOnlyList<AtomicRegion2> atomicRegion
         {
             throw new InvalidOperationException
                 ($"Set {nameof(Content)} of class {GetType().Name} is not supported. " +
-                $"You may set the {nameof(Content)} in the underlying {nameof(AtomicRegion2)}s.");
+                $"You may set the {nameof(Content)} in the underlying {nameof(AtomicRegion)}s.");
         }
     }
 
@@ -47,7 +47,7 @@ public abstract class CompositeRegion2(IReadOnlyList<AtomicRegion2> atomicRegion
         }
     }
 
-    public IEnumerator<AtomicRegion2> GetEnumerator()
+    public IEnumerator<AtomicRegion> GetEnumerator()
     {
         return _atomicRegions.GetEnumerator();
     }

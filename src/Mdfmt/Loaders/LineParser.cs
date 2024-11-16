@@ -99,7 +99,7 @@ public class LineParser
     {
         Reset();
 
-        List<AtomicRegion2> atomicRegions = [];
+        List<AtomicRegion> atomicRegions = [];
 
         foreach (char ch in line)
         {

@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Mdfmt.Model;
 
-public class HeadingRegion(IReadOnlyList<AtomicRegion2> atomicRegions) : CompositeRegion2(atomicRegions)
+public class HeadingRegion(IReadOnlyList<AtomicRegion> atomicRegions) : CompositeRegion(atomicRegions)
 {
     /// <summary>
     /// The level of the heading, which is an integer one less than the number of '#' characters in

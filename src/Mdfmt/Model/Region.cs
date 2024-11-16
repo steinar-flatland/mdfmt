@@ -2,8 +2,8 @@
 
 /// <summary>
 /// Abstract class that holds a region of content from a Markdown file.  See also: 
-/// <see cref="AtomicRegion2"/>,
-/// <see cref="CompositeRegion2"/>.
+/// <see cref="AtomicRegion"/>,
+/// <see cref="CompositeRegion"/>.
 /// </summary>
 public abstract class Region
 {
