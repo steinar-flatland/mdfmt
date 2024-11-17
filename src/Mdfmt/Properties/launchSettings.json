@@ -1,8 +1,7 @@
 {
   "profiles": {
     "Mdfmt": {
-      "commandName": "Project",
-      "commandLineArgs": "D:\\mdfmt-private\\TODO.md -p vscode"
+      "commandName": "Project"
     }
   }
 }

@@ -33,31 +33,36 @@ public class Updater(TocGenerator tocGenerator, int minimumEntryCount, ILinkDest
         // Generate a TOC based on headings.
         Toc newToc = _tocGenerator.GenerateToc(_md.FileName, _md.HeadingRegions, _md.Newline);
 
-        // If the TOC is too small, get out.
-        if (newToc.EntryCount < _minimumEntryCount)
-        {
-            return;
-        }
+        // Is the desired end state to have a TOC with the content of newToc in the document?
+        bool tocShouldExist =
+            _minimumEntryCount > 0 &&
+            newToc.EntryCount >= _minimumEntryCount;
 
-        if (_md.HasToc)
+        if (_md.HasToc) // The document has a TOC already.
         {
-            // There is a TOC.  Update it if necessary.
-            Region tocRegion = _md.TocRegion;
-            if (tocRegion.Content != newToc.Content)
+            if (tocShouldExist)
             {
-                tocRegion.Content = newToc.Content;
-                if (_verbose)
+                Region tocRegion = _md.TocRegion;
+                if (tocRegion.Content != newToc.Content)
                 {
-                    Console.WriteLine("  Updated TOC");
+                    tocRegion.Content = newToc.Content;
+                    if (_verbose)
+                    {
+                        Console.WriteLine("  Updated TOC");
+                    }
                 }
             }
-        }
-        else
-        {
-            // There is no TOC.  If there is a first heading, insert it after that.
-            if (_md.HasHeading)
+            else
             {
-                _md.InsertTocAfterFirstHeading(newToc.Content);
+                _md.DeleteToc();
+                Console.WriteLine("  Removed TOC");
+            }
+        }
+        else // The document does not have a TOC.
+        {
+            if (tocShouldExist)
+            {
+                _md.AddToc(newToc.Content);
                 if (_verbose)
                 {
                     Console.WriteLine("  Inserted new TOC");

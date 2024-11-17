@@ -16,7 +16,7 @@ public class CommandLineOptions
     [Value(0, Default = ".", HelpText = "The directory in which to process .md files, or a specific .md file.")]
     public string Path { get; set; }
 
-    [Option("minimum-entry-count", Default = 2, HelpText = "The minimum number of entries for which TOC is generated.")]
+    [Option("minimum-entry-count", Default = 2, HelpText = "The minimum number of entries for which TOC is generated.  0 means never generate TOC.")]
     public int MinimumEntryCount { get; set; }
 
     [Option("newline-strategy", Default = NewlineStrategy.PreferWindows, HelpText = "One of Unix, Windows, PreferUnix, PreferWindows.  Preferred options respect the file and take effect only if the file has a mixture.")]
