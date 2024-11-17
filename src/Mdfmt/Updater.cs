@@ -77,7 +77,8 @@ public class Updater(TocGenerator tocGenerator, int minimumEntryCount, ILinkDest
         {
             if (LinkWithinSameFile(linkRegion.Destination))
             {
-                if (_md.TryGetHeadingRegion(linkRegion.Label, out HeadingRegion headingRegion))
+                if (_md.TryGetHeadingRegion(linkRegion.Label, out HeadingRegion headingRegion) ||
+                    _md.TryGetHeadingRegion(linkRegion.Destination, out headingRegion))
                 {
                     string destination = _linkDestinationGenerator.GenerateLinkDestination(_md.FileName, headingRegion.HeadingText);
                     if (linkRegion.Destination != destination)
@@ -85,7 +86,7 @@ public class Updater(TocGenerator tocGenerator, int minimumEntryCount, ILinkDest
                         linkRegion.Destination = destination;
                         if (_verbose)
                         {
-                            Console.WriteLine("  Updated link");
+                            Console.WriteLine($"  Updated link with label [{linkRegion.Label}] to target destination ({linkRegion.Destination})");
                         }
                     }
                 }
@@ -93,7 +94,7 @@ public class Updater(TocGenerator tocGenerator, int minimumEntryCount, ILinkDest
                 {
                     if (_verbose)
                     {
-                        Console.WriteLine($"  Could not find heading to match label {linkRegion.Label}");
+                        Console.WriteLine($"  Could not match link to heading: {linkRegion.Content}");
                     }
                 }
             }

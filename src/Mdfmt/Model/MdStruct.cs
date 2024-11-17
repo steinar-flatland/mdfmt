@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mdfmt.Generators.Links;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -22,22 +23,40 @@ namespace Mdfmt.Model;
 /// <param name="newlineRegion">
 /// The newline region being used in this file.
 /// </param>
-public class MdStruct(
-    string filePath,
-    List<Region> regions,
-    bool isModified,
-    NewlineRegion newlineRegion
-    )
+public class MdStruct
 {
+    public MdStruct(
+        string filePath,
+        List<Region> regions,
+        bool isModified,
+        NewlineRegion newlineRegion
+    )
+    {
+        FilePath = filePath;
+        FileName = Path.GetFileName(filePath);
+        _regions = regions;
+        _isModified = isModified;
+        _newlineRegion = newlineRegion;
+        LinkRegions = new RegionEnumerable<LinkRegion>(regions);
+        TocRegions = new RegionEnumerable<TocRegion>(regions);
+        HeadingRegions = new RegionEnumerable<HeadingRegion>(regions);
+        _headingRegionDictionary = MakeHeadingRegionDictionary();
+    }
+
     /// <summary>
     /// Path of Markdown file from which this data structure was loaded.
     /// </summary>
-    public string FilePath { get; } = filePath;
+    public string FilePath { get; }
+
+    /// <summary>
+    /// Simple file name of the Markdown file, without any path information.
+    /// </summary>
+    public string FileName { get; }
 
     /// <summary>
     /// Regions of the Markdown file.
     /// </summary>
-    private readonly List<Region> _regions = regions;
+    private readonly List<Region> _regions;
 
     /// <summary>
     /// <para>
@@ -57,7 +76,7 @@ public class MdStruct(
     /// as inserting new regions.
     /// </para>
     /// </summary>
-    private bool _isModified = isModified;
+    private bool _isModified;
 
     /// <summary>
     /// Whether this data structure has been modified since it was loaded.
@@ -67,17 +86,12 @@ public class MdStruct(
     /// <summary>
     /// The newline region being used in this file.
     /// </summary>
-    private readonly NewlineRegion _newlineRegion = newlineRegion;
+    private readonly NewlineRegion _newlineRegion;
 
     /// <summary>
     /// String containing the newline character or sequence being used for line termination.
     /// </summary>
     public string Newline => _newlineRegion.Content;
-
-    /// <summary>
-    /// Simple file name of the Markdown file, without any path information.
-    /// </summary>
-    public string FileName { get; } = Path.GetFileName(filePath);
 
     /// <summary>
     /// Expose enumerator of <c>Region</c> objects that hold the content of the loaded Markdown document.
@@ -92,7 +106,7 @@ public class MdStruct(
     /// <summary>
     /// Enumerate the regions of type <c>LinkRegion</c>.
     /// </summary>
-    public IEnumerable<LinkRegion> LinkRegions { get; } = new RegionEnumerable<LinkRegion>(regions);
+    public IEnumerable<LinkRegion> LinkRegions { get; }
 
     /// <summary>
     /// The number of link regions.
@@ -107,7 +121,7 @@ public class MdStruct(
     /// <summary>
     /// Enumerate the regions of type <c>HeadingRegion</c>.
     /// </summary>
-    public IEnumerable<HeadingRegion> HeadingRegions { get; } = new RegionEnumerable<HeadingRegion>(regions);
+    public IEnumerable<HeadingRegion> HeadingRegions { get; }
 
     /// <summary>
     /// The number of heading regions.
@@ -122,7 +136,7 @@ public class MdStruct(
     /// <summary>
     /// Enumerate the regions of type <c>TocRegion</c>.
     /// </summary>
-    public IEnumerable<TocRegion> TocRegions { get; } = new RegionEnumerable<TocRegion>(regions);
+    public IEnumerable<TocRegion> TocRegions { get; }
 
     /// <summary>
     /// The table of contents of this document or null if none.  (If there is more than one
@@ -212,62 +226,94 @@ public class MdStruct(
     public string Content => string.Concat(_regions.Select(r => r.Content));
 
     /// <summary>
-    /// Dictionary for finding instances of <c>HeadingRegion</c>, keyed on heading text.  Heading
-    /// text is the heading as displayed in a rendered Markdown document.  When a document contains
-    /// multiple headings that all have the same text, these headings are not represented in this
-    /// dictionary at all, to avoid confusion.
+    /// <para>
+    /// Dictionary for finding instances of <c>HeadingRegion</c>, keyed on both heading text and on
+    /// link destinations that can target each heading.  Heading text is the text a human reads in
+    /// the rendered Markdown document.  Link destinations that are supported include all the in-
+    /// document link formats that Mdfmt supports.
+    /// supports.
+    /// </para>
     /// </summary>
-    private readonly Dictionary<string, HeadingRegion> _headingRegionsByText = MakeHeadingRegionsByTextDictionary(regions);
+    private readonly Dictionary<string, HeadingRegion> _headingRegionDictionary;
 
     /// <summary>
-    /// Based on an <c>IEnumerable&lt;Region&gt;</c>, build a dictionary for finding instances of
-    /// <c>HeadingRegion</c>, keyed on heading text.  Heading text is the text a human reads in the
-    /// rendered Markdown document.  When a document contains multiple headings that all have the
-    /// same text, none of these colliding headings are represented in the returned dictionary.
-    /// This prevents Mdfmt from making assumptions that would be seen by the user as incorrect
-    /// or strange.  Its a "first do no harm" sort of approach.
+    /// <para>
+    /// Dictionary for finding instances of <c>HeadingRegion</c>, keyed on both heading text and on
+    /// link destinations that can target each heading.  Heading text is the text a human reads in
+    /// the rendered Markdown document.  Link destinations that are supported include all the in-
+    /// document link formats that Mdfmt supports.
+    /// supports.
+    /// </para>
+    /// <para>
+    /// Note: When a document contains multiple headings that all have the same text, none of these
+    /// colliding headings are represented in the returned dictionary.  This prevents Mdfmt from
+    /// making assumptions that would be seen by the user as incorrect or strange.  Its a "first do
+    /// no harm" sort of approach.
+    /// </para>
     /// </summary>
-    /// <param name="regions">regions of a Markdown file, including the headings</param>
-    /// <returns>Dictionary for looking up heading regions by heading text.</returns>
-    private static Dictionary<string, HeadingRegion> MakeHeadingRegionsByTextDictionary(IEnumerable<Region> regions)
+    /// <param name="regions">Regions of a Markdown file, including the headings</param>
+    /// <returns>
+    /// Dictionary for looking up heading regions by headign text and by link destination.
+    /// </returns>
+    private Dictionary<string, HeadingRegion> MakeHeadingRegionDictionary()
     {
         // The goal is to build and return this.
-        Dictionary<string, HeadingRegion> headingRegionsByText = [];
+        Dictionary<string, HeadingRegion> headingRegions = [];
 
         // This heading text has to be excluded, because multiple sections share the same heading text.
         HashSet<string> excludedHeadingText = [];
 
-        foreach (HeadingRegion headingRegion in new RegionEnumerable<HeadingRegion>(regions))
+        // Make a list of link destination generators, one per supported link format.
+        List<ILinkDestinationGenerator> linkDestinationGenerators = LinkDestinationGeneratorFactory.ManufactureOneOfEach();
+
+        foreach (HeadingRegion headingRegion in new RegionEnumerable<HeadingRegion>(_regions))
         {
             string headingText = headingRegion.HeadingText;
-            if (!headingRegionsByText.ContainsKey(headingText))
+            if (!headingRegions.ContainsKey(headingText))
             {
                 // The proposed key is not already in the dictionary.
                 // Only use it if it has not been excluded already.
                 if (!excludedHeadingText.Contains(headingText))
                 {
-                    headingRegionsByText[headingText] = headingRegion;
+                    headingRegions[headingText] = headingRegion;
+                    foreach (ILinkDestinationGenerator generator in linkDestinationGenerators)
+                    {
+                        string linkDestination = generator.GenerateLinkDestination(FileName, headingText);
+                        headingRegions[linkDestination] = headingRegion;
+                    }
                 }
             }
             else
             {
                 // Key collision: Don't use this key.
-                headingRegionsByText.Remove(headingText);
+                headingRegions.Remove(headingText);
+                foreach (ILinkDestinationGenerator generator in linkDestinationGenerators)
+                {
+                    string linkDestination = generator.GenerateLinkDestination(FileName, headingText);
+                    headingRegions.Remove(linkDestination);
+                }
                 excludedHeadingText.Add(headingText);
             }
         }
 
-        return headingRegionsByText;
+        return headingRegions;
     }
 
     /// <summary>
-    /// Try to find a <c>HeadingRegion</c> based on lookup by heading text.
+    /// Try to find a <c>HeadingRegion</c> based on lookup by heading text or link destination
+    /// targeting the heading.
     /// </summary>
-    /// <param name="headingText">
-    /// The text of the heading, as it appears in the rendered Markdown document.
+    /// <param name="key">
+    /// A key that is either the text of the heading as it appears in a rendered Markdown document
+    /// or the destination of a link that is targeting the heading.
     /// </param>
-    /// <param name="headingRegion">Output parameter that returns the <c>&lt;HeadingRegion&gt;</c> when found.</param>
-    /// <returns><c>bool</c> indicating whether <c>HeadingRegion</c> was found</returns>
-    public bool TryGetHeadingRegion(string headingText, out HeadingRegion headingRegion) =>
-        _headingRegionsByText.TryGetValue(headingText, out headingRegion);
+    /// <param name="headingRegion">
+    /// Output parameter that returns the <c>&lt;HeadingRegion&gt;</c> when found.
+    /// </param>
+    /// <returns>
+    /// <c>bool</c> indicating whether <c>HeadingRegion</c> was found.  See also the parameter,
+    /// <c>out HeadingRegion headingRegion</c>.
+    /// </returns>
+    public bool TryGetHeadingRegion(string key, out HeadingRegion headingRegion) =>
+        _headingRegionDictionary.TryGetValue(key, out headingRegion);
 }
