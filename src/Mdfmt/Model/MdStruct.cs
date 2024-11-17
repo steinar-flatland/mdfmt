@@ -141,17 +141,24 @@ public class MdStruct(
     public bool HasToc => TocRegions.Any();
 
     /// <summary>
-    /// Insert a table of contents after the first heading.  Add a blank line between the heading and the new TOC.
-    /// An <c>InvalidOperationException</c> will occur if there is already a TOC, or if it is not the case that
-    /// there is a first heading to insert after.
+    /// <para>
+    /// If there is no TOC, insert one after the first heading.
+    /// </para>
+    /// <para>
+    /// When inserting a TOC, include a blank line between the heading and the new TOC. An
+    /// <c>InvalidOperationException</c> will occur if TOC insertion is required and it is not the
+    /// case that there is a first heading to insert after.
+    /// </para>
     /// </summary>
-    /// <param name="tocContent">string with content for the TOC</param>
+    /// <param name="tocContent">
+    /// String with content for the TOC.
+    /// </param>
     /// <exception cref="InvalidOperationException"/>
-    public void InsertTocAfterFirstHeading(string tocContent)
+    public void AddToc(string tocContent)
     {
         if (HasToc)
         {
-            throw new InvalidOperationException($"{FilePath} already has a TOC.");
+            return;
         }
         int firstHeadingIndex = _regions.FindIndex(r => r is HeadingRegion);
         if (firstHeadingIndex == -1)
@@ -163,6 +170,40 @@ public class MdStruct(
         _regions.Insert(firstHeadingIndex + 1, _newlineRegion);
         _regions.Insert(firstHeadingIndex + 1, _newlineRegion);
         _isModified = true;
+    }
+
+    /// <summary>
+    /// If there is a TOC, delete it.
+    /// </summary>
+    public void DeleteToc()
+    {
+        int tocIndex = _regions.FindIndex(r => r is TocRegion);
+        if (tocIndex < 0) return; // No TOC to delete.
+        int numNewlinesToRemove = Math.Min(2, ConsecutiveNewlinesBefore(tocIndex));
+        _regions.RemoveRange(tocIndex - numNewlinesToRemove, numNewlinesToRemove + 1);
+        _isModified = true;
+    }
+
+    /// <summary>
+    /// Get a count of the number of consecutive newlines that immediately precede an index of <c>_regions</c>.
+    /// </summary>
+    /// <param name="i">Index into <c>_regions</c>.</param>
+    /// <returns>A nonnegative integer.</returns>
+    private int ConsecutiveNewlinesBefore(int i)
+    {
+        int count = 0;
+        for (int j = i - 1; j >= 0; j--)
+        {
+            if (_regions[j] is NewlineRegion)
+            {
+                count++;
+            }
+            else
+            {
+                break;
+            }
+        }
+        return count;
     }
 
     /// <summary>
