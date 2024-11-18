@@ -8,7 +8,7 @@ namespace Mdfmt;
 
 public class Program
 {
-    private const string Version = "0.1.0";
+    private const string Version = "0.1.1";
 
     public static void Main(string[] args)
     {
