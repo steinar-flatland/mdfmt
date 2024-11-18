@@ -28,7 +28,7 @@ public class Processor
         _mdStructLoader = new(options.NewlineStrategy);
         _linkDestinationGenerator = LinkDestinationGeneratorFactory.Manufacture(_options.Platform);
         _tocGenerator = new(_linkDestinationGenerator);
-        _updater = new(_tocGenerator, _options.MinimumEntryCount, _linkDestinationGenerator, _options.Verbose);
+        _updater = new(_tocGenerator, _linkDestinationGenerator, _options);
     }
 
     private List<string> FindFilePathsToProcess()

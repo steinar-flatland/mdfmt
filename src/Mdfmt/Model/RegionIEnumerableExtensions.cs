@@ -34,6 +34,15 @@ public static class RegionIEnumerableExtensions
 
     public static bool IsHeading(this IEnumerable<Region> list)
     {
-        return string.Concat(list.Select(r => r.ActiveContent)).TrimStart().StartsWith('#');
+        // If the active content, when trimmed, starts with from 1 to 6 '#' characters, then it is a heading.
+        string headingText = string.Concat(list.Select(r => r.ActiveContent)).TrimStart();
+        int i = 0;
+        int numberSignCount = 0;
+        while (i < headingText.Length && headingText[i] == '#')
+        {
+            numberSignCount++;
+            i++;
+        }
+        return numberSignCount > 0  && numberSignCount <= Constants.MaximumHeadingNumberSignCount;
     }
 }

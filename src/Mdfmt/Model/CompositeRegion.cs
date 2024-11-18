@@ -14,7 +14,7 @@ public abstract class CompositeRegion(IReadOnlyList<AtomicRegion> atomicRegions)
     /// <summary>
     /// List of atomic regions that make up this composite region.  Backing storage for <c>Content</c> property.
     /// </summary>
-    private readonly IReadOnlyList<AtomicRegion> _atomicRegions = atomicRegions;
+    protected readonly IReadOnlyList<AtomicRegion> _atomicRegions = atomicRegions;
 
     /// <inheritdoc/>
     public override string Content
