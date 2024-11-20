@@ -23,27 +23,40 @@ namespace Mdfmt.Model;
 /// <param name="newlineRegion">
 /// The newline region being used in this file.
 /// </param>
-public class MdStruct(
-    string filePath,
-    List<Region> regions,
-    bool isModified,
-    NewlineRegion newlineRegion
-    )
+public class MdStruct
 {
+    public MdStruct(
+        string filePath,
+        List<Region> regions,
+        bool isModified,
+        NewlineRegion newlineRegion
+    )
+    {
+        FilePath = filePath;
+        FileName = Path.GetFileName(filePath);
+        _regions = regions;
+        _isModified = isModified;
+        _newlineRegion = newlineRegion;
+        LinkRegions = new RegionEnumerable<LinkRegion>(regions);
+        HeadingRegions = new RegionEnumerable<HeadingRegion>(regions);
+        TocRegions = new RegionEnumerable<TocRegion>(regions);
+        _headingRegionDictionary = MakeHeadingRegionDictionary();
+    }
+
     /// <summary>
     /// Path of Markdown file from which this data structure was loaded.
     /// </summary>
-    public string FilePath { get; } = filePath;
+    public string FilePath { get; }
 
     /// <summary>
     /// Simple file name of the Markdown file, without any path information.
     /// </summary>
-    public string FileName { get; } = Path.GetFileName(filePath);
+    public string FileName { get; }
 
     /// <summary>
     /// Regions of the Markdown file.
     /// </summary>
-    private readonly List<Region> _regions = regions;
+    private readonly List<Region> _regions;
 
     /// <summary>
     /// <para>
@@ -63,7 +76,7 @@ public class MdStruct(
     /// as inserting new regions.
     /// </para>
     /// </summary>
-    private bool _isModified = isModified;
+    private bool _isModified;
 
     /// <summary>
     /// Whether this data structure has been modified since it was loaded.
@@ -73,12 +86,18 @@ public class MdStruct(
     /// <summary>
     /// The newline region being used in this file.
     /// </summary>
-    private readonly NewlineRegion _newlineRegion = newlineRegion;
+    private readonly NewlineRegion _newlineRegion;
 
     /// <summary>
     /// String containing the newline character or sequence being used for line termination.
     /// </summary>
     public string Newline => _newlineRegion.Content;
+
+    /// <summary>
+    /// Dictionary keyed on both heading text and various styles of link destinations, leading to 
+    /// values that are heading regions.
+    /// </summary>
+    private readonly Dictionary<string, HeadingRegion> _headingRegionDictionary;
 
     /// <summary>
     /// Expose enumerator of <c>Region</c> objects that hold the content of the loaded Markdown document.
@@ -93,7 +112,7 @@ public class MdStruct(
     /// <summary>
     /// Enumerate the regions of type <c>LinkRegion</c>.
     /// </summary>
-    public IEnumerable<LinkRegion> LinkRegions { get; } = new RegionEnumerable<LinkRegion>(regions);
+    public IEnumerable<LinkRegion> LinkRegions { get; }
 
     /// <summary>
     /// The number of link regions.
@@ -108,7 +127,7 @@ public class MdStruct(
     /// <summary>
     /// Enumerate the regions of type <c>HeadingRegion</c>.
     /// </summary>
-    public IEnumerable<HeadingRegion> HeadingRegions { get; } = new RegionEnumerable<HeadingRegion>(regions);
+    public IEnumerable<HeadingRegion> HeadingRegions { get; }
 
     /// <summary>
     /// The number of heading regions.
@@ -123,7 +142,7 @@ public class MdStruct(
     /// <summary>
     /// Enumerate the regions of type <c>TocRegion</c>.
     /// </summary>
-    public IEnumerable<TocRegion> TocRegions { get; } = new RegionEnumerable<TocRegion>(regions);
+    public IEnumerable<TocRegion> TocRegions { get; }
 
     /// <summary>
     /// The table of contents of this document or null if none.  (If there is more than one
@@ -230,7 +249,7 @@ public class MdStruct(
     /// <returns>
     /// Dictionary for looking up heading regions by heading text and by link destination.
     /// </returns>
-    public Dictionary<string, HeadingRegion> MakeHeadingRegionDictionary()
+    private Dictionary<string, HeadingRegion> MakeHeadingRegionDictionary()
     {
         // The goal is to build and return this.
         Dictionary<string, HeadingRegion> headingRegions = [];
@@ -272,5 +291,27 @@ public class MdStruct(
         }
 
         return headingRegions;
+    }
+
+    /// <summary>
+    /// Try to get a heading region based on a key that is either the text of the heading or an
+    /// in-document link destination that targets the heading.  The keys are frozen in time as
+    /// they were when this MdStruct was loaded, and do not reflect any updates to the MdStruct
+    /// such as changing headings to update heading numbers.  The keys lead to HeadingRegion 
+    /// values that *are* up to date with the latest changes.  (Stale keys leading to current
+    /// values is useful for updating in-document links.)
+    /// </summary>
+    /// <param name="key">
+    /// A key that is either the text of a heading or a way of expressing an in-document link 
+    /// destination that targets the heading, as of the time when this document was first
+    /// brought into memory.
+    /// </param>
+    /// <param name="headingRegion">
+    /// On true return value, this is set to the <c>HeadingRegion</c> that was found.
+    /// </param>
+    /// <returns>Whether a heading region was found for the key.</returns>
+    public bool TryGetHeadingRegion(string key, out HeadingRegion headingRegion)
+    {
+        return _headingRegionDictionary.TryGetValue(key, out headingRegion);
     }
 }

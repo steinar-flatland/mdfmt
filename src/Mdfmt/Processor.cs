@@ -3,6 +3,7 @@ using Mdfmt.Generators.Tocs;
 using Mdfmt.Loaders;
 using Mdfmt.Model;
 using Mdfmt.Options;
+using Mdfmt.Updaters;
 using Mdfmt.Utilities;
 using System;
 using System.Collections.Generic;
@@ -77,10 +78,12 @@ public class Processor
                 $"with {md.HeadingCount} heading{(md.HeadingCount != 1 ? 's' : string.Empty)}.");
         }
 
-        // Update the regions, in reference to its headings.
-        _updater.Update(md);
+        _updater.Initialize(md).
+            UpdateHeadingNumbers().
+            UpdateToc().
+            UpdateLinks();
 
-        // If the regions were modified, save the Markdown file.
+        // If the MdStruct was modified, save the Markdown file.
         if (md.IsModified)
         {
             File.WriteAllText(filePath, md.Content);

@@ -8,7 +8,7 @@ namespace Mdfmt;
 
 public class Program
 {
-    private const string Version = "0.1.1";
+    private const string Version = "0.1.2";
 
     public static void Main(string[] args)
     {
@@ -70,7 +70,7 @@ public class Program
             }
             else if (errors.IsVersion())
             {
-                Console.WriteLine($"mdfmt {Version}");
+                Console.WriteLine(Version);
                 Environment.Exit(ExitCodes.Success);
             }
             else
