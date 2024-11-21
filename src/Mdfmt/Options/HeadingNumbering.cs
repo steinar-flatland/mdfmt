@@ -1,6 +1,8 @@
-﻿namespace Mdfmt.Options;
+﻿using System.Collections.Generic;
 
-public static class HeadingNumbers
+namespace Mdfmt.Options;
+
+public static class HeadingNumbering
 {
     /// <summary>
     /// String indicating that no heading numbers are desired.  Evaluate in a case-insensitive way.
@@ -16,4 +18,9 @@ public static class HeadingNumbers
     /// String indicating the desire for heading numbers that do not include a trailing period.
     /// </summary>
     public const string WithoutTrailingPeriod = "1";
+
+    /// <summary>
+    /// This set defines the valid heading numbering options.
+    /// </summary>
+    public static readonly IReadOnlySet<string> Options = new HashSet<string>() { None, WithTrailingPeriod, WithoutTrailingPeriod };
 }

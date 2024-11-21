@@ -1,5 +1,6 @@
 ﻿using CommandLine;
 using CommandLine.Text;
+using FluentValidation;
 using Mdfmt.Options;
 using System;
 using System.IO;
@@ -8,7 +9,7 @@ namespace Mdfmt;
 
 public class Program
 {
-    private const string Version = "0.1.2";
+    private const string Version = "0.1.3";
 
     public static void Main(string[] args)
     {
@@ -51,6 +52,11 @@ public class Program
                     }
                 }
             }
+
+            // Ensure options are valid.
+            CommandLineOptionsValidator validator = new();
+            validator.ValidateAndThrow(options);
+
             Processor processor = new(options);
             processor.Run();
             Environment.Exit(ExitCodes.Success);

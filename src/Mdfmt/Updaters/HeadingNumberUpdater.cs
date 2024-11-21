@@ -9,7 +9,7 @@ public class HeadingNumberUpdater(CommandLineOptions options) : UpdaterBase(opti
 {
     public override void Update(MdStruct md)
     {
-        if (_options.HeadingNumbering.Equals(HeadingNumbers.None, StringComparison.OrdinalIgnoreCase))
+        if (_options.HeadingNumbering.Equals(HeadingNumbering.None, StringComparison.OrdinalIgnoreCase))
         {
             foreach (HeadingRegion headingRegion in md.HeadingRegions)
             {
@@ -17,8 +17,8 @@ public class HeadingNumberUpdater(CommandLineOptions options) : UpdaterBase(opti
             }
         }
         else if (
-            _options.HeadingNumbering == HeadingNumbers.WithTrailingPeriod ||
-            _options.HeadingNumbering == HeadingNumbers.WithoutTrailingPeriod)
+            _options.HeadingNumbering == HeadingNumbering.WithTrailingPeriod ||
+            _options.HeadingNumbering == HeadingNumbering.WithoutTrailingPeriod)
         {
             // Buffer used to assign multi-level heading numbers like 1.2.3.
             int[] counters = new int[Constants.MaximumHeadingNumberSignCount];
@@ -81,7 +81,7 @@ public class HeadingNumberUpdater(CommandLineOptions options) : UpdaterBase(opti
                     }
                     sb.Append($"{counters[i]}");
                 }
-                if (_options.HeadingNumbering == HeadingNumbers.WithTrailingPeriod)
+                if (_options.HeadingNumbering == HeadingNumbering.WithTrailingPeriod)
                     sb.Append('.');
                 headingRegion.HeadingNumber = sb.ToString();
 
