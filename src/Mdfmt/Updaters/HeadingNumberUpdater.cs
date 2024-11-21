@@ -5,11 +5,11 @@ using System;
 
 namespace Mdfmt.Updaters;
 
-public class HeadingNumberUpdater(CommandLineOptions options) : UpdaterBase(options)
+public static class HeadingNumberUpdater
 {
-    public override void Update(MdStruct md)
+    public static void Update(MdStruct md, string headingNumbering)
     {
-        if (_options.HeadingNumbering.Equals(HeadingNumbering.None, StringComparison.OrdinalIgnoreCase))
+        if (headingNumbering.Equals(HeadingNumbering.None, StringComparison.OrdinalIgnoreCase))
         {
             foreach (HeadingRegion headingRegion in md.HeadingRegions)
             {
@@ -17,8 +17,8 @@ public class HeadingNumberUpdater(CommandLineOptions options) : UpdaterBase(opti
             }
         }
         else if (
-            _options.HeadingNumbering == HeadingNumbering.WithTrailingPeriod ||
-            _options.HeadingNumbering == HeadingNumbering.WithoutTrailingPeriod)
+            headingNumbering == HeadingNumbering.WithTrailingPeriod ||
+            headingNumbering == HeadingNumbering.WithoutTrailingPeriod)
         {
             // Buffer used to assign multi-level heading numbers like 1.2.3.
             int[] counters = new int[Constants.MaximumHeadingNumberSignCount];
@@ -81,7 +81,7 @@ public class HeadingNumberUpdater(CommandLineOptions options) : UpdaterBase(opti
                     }
                     sb.Append($"{counters[i]}");
                 }
-                if (_options.HeadingNumbering == HeadingNumbering.WithTrailingPeriod)
+                if (headingNumbering == HeadingNumbering.WithTrailingPeriod)
                     sb.Append('.');
                 headingRegion.HeadingNumber = sb.ToString();
 
@@ -91,7 +91,7 @@ public class HeadingNumberUpdater(CommandLineOptions options) : UpdaterBase(opti
         }
         else
         {
-            Console.WriteLine($"Invalid choice of heading numbering: {_options.HeadingNumbering}.  Try the --help option.");
+            Console.WriteLine($"Invalid choice of heading numbering: {headingNumbering}.  Try the --help option.");
             Environment.Exit(ExitCodes.MisuseOfCommand);
         }
     }
