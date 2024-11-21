@@ -1,23 +1,22 @@
 ﻿using Mdfmt.Generators.Tocs;
 using Mdfmt.Model;
-using Mdfmt.Options;
 using System;
 
 namespace Mdfmt.Updaters;
 
-public class TocUpdater(CommandLineOptions options, TocGenerator tocGenerator) : UpdaterBase(options)
+public class TocUpdater(TocGenerator tocGenerator)
 {
     private readonly TocGenerator _tocGenerator = tocGenerator;
 
-    public override void Update(MdStruct md)
+    public void Update(MdStruct md, int minimumEntryCount, bool verbose)
     {
         // Generate a TOC based on headings.
         Toc newToc = _tocGenerator.GenerateToc(md.FileName, md.HeadingRegions, md.Newline);
 
         // Is the desired end state to have a TOC with the content of newToc in the document?
         bool tocShouldExist =
-            _options.MinimumEntryCount > 0 &&
-            newToc.EntryCount >= _options.MinimumEntryCount;
+            minimumEntryCount > 0 &&
+            newToc.EntryCount >= minimumEntryCount;
 
         if (md.HasToc) // The document has a TOC already.
         {
@@ -27,7 +26,7 @@ public class TocUpdater(CommandLineOptions options, TocGenerator tocGenerator) :
                 if (tocRegion.Content != newToc.Content)
                 {
                     tocRegion.Content = newToc.Content;
-                    if (_options.Verbose)
+                    if (verbose)
                     {
                         Console.WriteLine("  Updated TOC");
                     }
@@ -44,7 +43,7 @@ public class TocUpdater(CommandLineOptions options, TocGenerator tocGenerator) :
             if (tocShouldExist)
             {
                 md.AddToc(newToc.Content);
-                if (_options.Verbose)
+                if (verbose)
                 {
                     Console.WriteLine("  Inserted new TOC");
                 }

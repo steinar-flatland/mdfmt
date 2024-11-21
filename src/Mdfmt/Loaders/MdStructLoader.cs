@@ -10,15 +10,10 @@ namespace Mdfmt.Loaders;
 
 /// <summary>
 /// Loads a single Markdown file into a MdStruct data structure.  This class is implemented in a reusable way,
-/// i.e., it is safe to call the <c>Load(string filePath)</c> method multiple times on one instance of this class.
+/// i.e., it is safe to call the <c>Load()</c> method multiple times on one instance of this class.
 /// </summary>
-public class MdStructLoader(NewlineStrategy newlineStrategy)
+public class MdStructLoader
 {
-    /// <summary>
-    /// Option for how to manage newlines when modified Markdown files are written.
-    /// </summary>
-    private readonly NewlineStrategy _newlineStrategy = newlineStrategy;
-
     #region MdStructLoader_States
 
     /// <summary>
@@ -99,18 +94,23 @@ public class MdStructLoader(NewlineStrategy newlineStrategy)
     /// expected to happen, and if it does, it indicates a code maintenance error.
     /// </para>
     /// </summary>
-    /// <param name="filePath">File path of the Markdown file to load.</param>
+    /// <param name="filePath">
+    /// File path of the Markdown file to load.
+    /// </param>
+    /// <param name="newlineStrategy">
+    /// Option for how to manage newlines when modified Markdown files are written.
+    /// </param>
     /// <returns>MdStruct</returns>
     /// <exception cref="NotImplementedException">
     /// </exception>
-    public MdStruct Load(string filePath)
+    public MdStruct Load(string filePath, NewlineStrategy newlineStrategy)
     {
         // Load the file content to parse.
         string fileContent = File.ReadAllText(filePath);
 
         // Based on file content and the user's preferred newline strategy, calculate the newline to use.
         // isModified is set to whether the file needs to be rewritten to reflect a change of newline sytle.
-        string newline = Newline.DetermineNewline(_newlineStrategy, fileContent, out bool isModified);
+        string newline = Newline.DetermineNewline(newlineStrategy, fileContent, out bool isModified);
 
         // Reset the parser, making it ready for a run.
         Reset(NewlineRegion.Containing(newline));

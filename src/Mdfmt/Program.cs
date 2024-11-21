@@ -9,7 +9,7 @@ namespace Mdfmt;
 
 public class Program
 {
-    private const string Version = "0.1.3";
+    private const string Version = "0.1.4";
 
     public static void Main(string[] args)
     {

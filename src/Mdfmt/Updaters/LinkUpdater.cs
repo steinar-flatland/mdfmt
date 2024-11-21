@@ -1,15 +1,14 @@
 ﻿using Mdfmt.Generators.Links;
 using Mdfmt.Model;
-using Mdfmt.Options;
 using System;
 
 namespace Mdfmt.Updaters;
 
-public class LinkUpdater(CommandLineOptions options, ILinkDestinationGenerator linkDestinationGenerator) : UpdaterBase(options)
+public class LinkUpdater(ILinkDestinationGenerator linkDestinationGenerator)
 {
     private readonly ILinkDestinationGenerator _linkDestinationGenerator = linkDestinationGenerator;
 
-    public override void Update(MdStruct md)
+    public void Update(MdStruct md, bool verbose)
     {
         foreach (LinkRegion linkRegion in md.LinkRegions)
         {
@@ -26,7 +25,7 @@ public class LinkUpdater(CommandLineOptions options, ILinkDestinationGenerator l
                     if (linkRegion.Destination != destination)
                     {
                         linkRegion.Destination = destination;
-                        if (_options.Verbose)
+                        if (verbose)
                         {
                             Console.WriteLine($"  Updated link with label [{linkRegion.Label}] to target destination ({linkRegion.Destination})");
                         }
@@ -34,7 +33,7 @@ public class LinkUpdater(CommandLineOptions options, ILinkDestinationGenerator l
                 }
                 else
                 {
-                    if (_options.Verbose)
+                    if (verbose)
                     {
                         Console.WriteLine($"  Could not match link to heading: {linkRegion.Content}");
                     }
