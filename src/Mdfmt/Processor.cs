@@ -13,7 +13,7 @@ namespace Mdfmt;
 
 public class Processor
 {
-    private readonly CommandLineOptions _options;
+    private readonly MdfmtOptions _options;
     private readonly List<string> _filePaths;
     private readonly MdStructLoader _mdStructLoader;
     private readonly Dictionary<Platform, LinkUpdater> _linkUpdaters = [];
@@ -21,7 +21,7 @@ public class Processor
     private readonly string MdWildcard = "*.md";
     private readonly string Indent = "    ";
 
-    public Processor(CommandLineOptions options)
+    public Processor(MdfmtOptions options)
     {
         _options = options;
         _filePaths = FindFilePathsToProcess();
@@ -76,21 +76,31 @@ public class Processor
     {
         if (_options.Verbose)
         {
-            Console.Write($"Processing {filePath}.");
+            Console.WriteLine();
+            Console.WriteLine($"Processing {filePath}.");
+        }
+
+        // Retrieve FileProcessingOptions for the current filePath.
+        string cpath = PathUtils.MakeRelative(_options.Path, filePath);
+        FileProcessingOptions fpo = _options.GetFileProcessingOptions(cpath);
+        if (_options.Verbose)
+        {
+            Console.WriteLine("FileProcessingOptions:");
+            Console.WriteLine(fpo);
         }
 
         // Load Markdown file into MdStruct data structure.
-        MdStruct md = _mdStructLoader.Load(filePath, _options.NewlineStrategy);
+        MdStruct md = _mdStructLoader.Load(filePath, (NewlineStrategy)fpo.NewlineStrategy);
 
         if (_options.Verbose)
         {
-            Console.WriteLine($" Loaded {md.RegionCount} region{(md.RegionCount != 1 ? 's' : string.Empty)} " +
+            Console.WriteLine($"Loaded {md.RegionCount} region{(md.RegionCount != 1 ? 's' : string.Empty)} " +
                 $"with {md.HeadingCount} heading{(md.HeadingCount != 1 ? 's' : string.Empty)}.");
         }
 
-        HeadingNumberUpdater.Update(md, _options.HeadingNumbering);
-        _tocUpdaters[_options.Platform].Update(md, _options.MinimumEntryCount, _options.Verbose);
-        _linkUpdaters[_options.Platform].Update(md, _options.Verbose);
+        HeadingNumberUpdater.Update(md, fpo.HeadingNumbering);
+        _tocUpdaters[(Platform)fpo.Platform].Update(md, (int)fpo.MinimumEntryCount, _options.Verbose);
+        _linkUpdaters[(Platform)fpo.Platform].Update(md, _options.Verbose);
 
         // If the MdStruct was modified, save the Markdown file.
         if (md.IsModified)
@@ -98,7 +108,7 @@ public class Processor
             File.WriteAllText(filePath, md.Content);
             if (_options.Verbose)
             {
-                Console.WriteLine("  Wrote file");
+                Console.WriteLine("Wrote file");
             }
             else
             {

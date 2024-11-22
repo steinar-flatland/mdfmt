@@ -4,6 +4,7 @@ using FluentValidation;
 using Mdfmt.Options;
 using System;
 using System.IO;
+using System.Text.Json;
 
 namespace Mdfmt;
 
@@ -28,15 +29,25 @@ public class Program
     {
         Parser parser = new(with => with.CaseInsensitiveEnumValues = true);
         ParserResult<CommandLineOptions> parsedResult = parser.ParseArguments<CommandLineOptions>(args);
-        HandleParsed(parsedResult);
+        HandleParsed(args, parsedResult);
         HandleNotParsed(parsedResult);
     }
 
-    private static void HandleParsed(ParserResult<CommandLineOptions> parsedResult)
+    private static void HandleParsed(string[] args, ParserResult<CommandLineOptions> parsedResult)
     {
+        MdfmtProfile mdfmtProfile = null;
+
         parsedResult.WithParsed(options =>
         {
-            if (!Directory.Exists(options.Path))
+            if (Directory.Exists(options.Path))
+            {
+                string mdfmtFileName = Path.Combine(options.Path, ".mdfmt");
+                if (File.Exists(mdfmtFileName))
+                {
+                    mdfmtProfile = MdfmtProfileLoader.Load(mdfmtFileName);
+                }
+            }
+            else
             {
                 if (!File.Exists(options.Path))
                 {
@@ -57,7 +68,14 @@ public class Program
             CommandLineOptionsValidator validator = new();
             validator.ValidateAndThrow(options);
 
-            Processor processor = new(options);
+            //TODO: It would be good to have some validation for the Mdfmt profile, to avoid silliness
+            // like having an options key in CpathToOptions that doesn't go anywhere, etc.
+            // It would be nice to know that the configuration makes sense before we start processing
+            // a bunch of files, so we don't crash halfway through..
+
+            MdfmtOptions mdfmtOptions = new(args, options, mdfmtProfile);
+
+            Processor processor = new(mdfmtOptions);
             processor.Run();
             Environment.Exit(ExitCodes.Success);
         });
@@ -93,14 +111,16 @@ public class Program
 
     private static void LogException(Exception ex)
     {
-        Console.WriteLine("An error occurred:");
-        Console.WriteLine($"Message: {ex.Message}");
-        Console.WriteLine($"Stack Trace:{Environment.NewLine}{ex.StackTrace}");
-        if (ex.InnerException != null)
+        Console.WriteLine($"Error: {ex.GetType().Name}. {ex.Message}");
+        if (ex is not JsonException)
         {
-            Console.WriteLine("Inner Exception:");
-            Console.WriteLine($"Message: {ex.InnerException.Message}");
-            Console.WriteLine($"Stack Trace:{Environment.NewLine}{ex.InnerException.StackTrace}");
+            Console.WriteLine($"Stack Trace:{Environment.NewLine}{ex.StackTrace}");
+            if (ex.InnerException != null)
+            {
+                Console.WriteLine("Inner Exception:");
+                Console.WriteLine($"Message: {ex.InnerException.Message}");
+                Console.WriteLine($"Stack Trace:{Environment.NewLine}{ex.InnerException.StackTrace}");
+            }
         }
     }
 }

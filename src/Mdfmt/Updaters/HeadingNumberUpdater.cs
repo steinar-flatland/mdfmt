@@ -7,6 +7,8 @@ namespace Mdfmt.Updaters;
 
 public static class HeadingNumberUpdater
 {
+    //TODO: I would like to be able to report whether heading numbers were changed.
+
     public static void Update(MdStruct md, string headingNumbering)
     {
         if (headingNumbering.Equals(HeadingNumbering.None, StringComparison.OrdinalIgnoreCase))
@@ -88,11 +90,6 @@ public static class HeadingNumberUpdater
                 // Set up for next iteration.  This helps us know when to zero out counters.
                 prevN = n;
             }
-        }
-        else
-        {
-            Console.WriteLine($"Invalid choice of heading numbering: {headingNumbering}.  Try the --help option.");
-            Environment.Exit(ExitCodes.MisuseOfCommand);
         }
     }
 }

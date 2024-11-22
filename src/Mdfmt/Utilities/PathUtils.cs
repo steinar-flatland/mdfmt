@@ -1,27 +1,27 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 
 namespace Mdfmt.Utilities;
 
-public class PathUtils(string path)
+public static class PathUtils
 {
     /// <summary>
-    /// The Path option passed to the program.  This is either the path of a directory to process,
-    /// or it is the path of of a specific Markdown file to process.
+    /// Make a path that is relative to another.
     /// </summary>
-    private readonly string _path = path;
-
-    /// <summary>
-    /// Make a relative path based on the filePath passed in.  The resulting relative path starts
-    /// with "./" and contains all forward slashes, where '.' refers to either the directory that
-    /// was passed to the program's Path option, or it refers to the directory that contains the
-    /// specific file that was passed to the program's Path option.
-    /// </summary>
-    /// <param name="filePath">File path that needs to be made relative</param>
-    /// <returns>relative version of filePath passed in</returns>
-    public string MakeRelative(string filePath)
+    /// <param name="relativeTo">
+    ///   The Path option passed to Mdfmt program.  This is either the path of a directory to 
+    ///   process, or it is the path of a specific Markdown file to process.
+    /// </param>
+    /// <param name="filePath">
+    ///   File path that needs to be made relative.
+    /// </param>
+    /// <returns>
+    ///   Relative version of filePath passed in.
+    /// </returns>
+    public static string MakeRelative(string relativeTo, string filePath)
     {
         string filename = Path.GetFileName(filePath);
-        string temporaryPath = Path.GetRelativePath(_path, filePath).Replace("\\", "/");
+        string temporaryPath = Path.GetRelativePath(relativeTo, filePath).Replace("\\", "/");
         temporaryPath = temporaryPath == "." ? filename : temporaryPath;
         string relativePath = "./" + temporaryPath;
         return relativePath;
@@ -69,4 +69,33 @@ public class PathUtils(string path)
 
         return canonicalPath;
     }
+
+    /// <summary>
+    /// <para>
+    /// Returns all the <em>left paths</em> of the path passed in, in descending length order.  A
+    /// <em>left path</em> is a path that is rooted on the left but may have 0 or more path
+    /// segments chopped off on the right.
+    /// </para>
+    /// <para>
+    /// <b>Example:</b> <c>path == "./foo/bar/baz.md"</c>
+    /// <list type="number">
+    /// <item><c>./foo/bar/baz.md</c></item>
+    /// <item><c>./foo/bar</c></item>
+    /// <item><c>./foo</c></item>
+    /// <item><c>.</c></item>
+    /// </list>
+    /// </para>
+    /// </summary>
+    /// <param name="path">A path</param>
+    /// <returns>IEnumerable for getting all of the left paths of the path.</returns>
+    public static IEnumerable<string> LeftPaths(string path)
+    {
+        string currentPath = path;
+        while (!string.IsNullOrEmpty(currentPath))
+        {
+            yield return currentPath.Replace('\\', '/');
+            currentPath = Path.GetDirectoryName(currentPath) ?? ".";
+        }
+    }
+
 }

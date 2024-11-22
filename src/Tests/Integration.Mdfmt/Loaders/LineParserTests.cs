@@ -158,7 +158,7 @@ public class LineParserTests
     /// Expectation for the concatenation of all the content from active (uncommented) regions of
     /// the parse result.
     /// </param>
-    [Test, TestCaseSource(nameof(_lineParserTestCases))]
+    [TestCaseSource(nameof(_lineParserTestCases))]
     public void TestLineParser_Parse(bool inHtmlComment, bool expectedFinalInHtmlComment, string line, IEnumerable<Type> expectedRegionTypes, bool expectedIsActive, string expectedActiveContent)
     {
         List<Region> regions = _parser.Parse(line, inHtmlComment);
