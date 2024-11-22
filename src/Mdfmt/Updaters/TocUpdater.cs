@@ -28,14 +28,17 @@ public class TocUpdater(TocGenerator tocGenerator)
                     tocRegion.Content = newToc.Content;
                     if (verbose)
                     {
-                        Console.WriteLine("  Updated TOC");
+                        Console.WriteLine("Updated TOC");
                     }
                 }
             }
             else
             {
                 md.DeleteToc();
-                Console.WriteLine("  Removed TOC");
+                if (verbose)
+                {
+                    Console.WriteLine("Removed TOC");
+                }
             }
         }
         else // The document does not have a TOC.
@@ -45,7 +48,7 @@ public class TocUpdater(TocGenerator tocGenerator)
                 md.AddToc(newToc.Content);
                 if (verbose)
                 {
-                    Console.WriteLine("  Inserted new TOC");
+                    Console.WriteLine("Inserted new TOC");
                 }
             }
         }

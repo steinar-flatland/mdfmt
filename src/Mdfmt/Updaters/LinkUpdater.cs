@@ -27,7 +27,7 @@ public class LinkUpdater(ILinkDestinationGenerator linkDestinationGenerator)
                         linkRegion.Destination = destination;
                         if (verbose)
                         {
-                            Console.WriteLine($"  Updated link with label [{linkRegion.Label}] to target destination ({linkRegion.Destination})");
+                            Console.WriteLine($"Updated link with label [{linkRegion.Label}] to target destination ({linkRegion.Destination})");
                         }
                     }
                 }
@@ -35,7 +35,7 @@ public class LinkUpdater(ILinkDestinationGenerator linkDestinationGenerator)
                 {
                     if (verbose)
                     {
-                        Console.WriteLine($"  Could not match link to heading: {linkRegion.Content}");
+                        Console.WriteLine($"Could not match link to heading: {linkRegion.Content}");
                     }
                 }
             }

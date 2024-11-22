@@ -2,6 +2,9 @@
 
 namespace Mdfmt.Options;
 
+//NOTE: If you modify this class, also maintain MdfmtOptions.OverwriteExplicitlySetCommandLineOptionsOnto().
+// Is there a way to make this eaiser to maintain?  Seems like a violation of the 'O' of SOLID.
+
 public class CommandLineOptions
 {
     [Option('p', "platform", Default = Platform.Azure, HelpText = "Target platform for Markdown formatting.  One of: [Azure, VsCode].")]

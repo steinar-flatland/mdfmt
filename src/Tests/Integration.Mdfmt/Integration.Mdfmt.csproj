@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../../Mdfmt/Mdfmt.csproj" />
+    <ProjectReference Include="../../Mdfmt/Mdfmt.csproj" />
   </ItemGroup>
 
 </Project>
