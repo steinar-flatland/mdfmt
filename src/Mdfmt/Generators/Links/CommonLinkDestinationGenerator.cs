@@ -2,7 +2,7 @@
 
 namespace Mdfmt.Generators.Links;
 
-internal partial class VsCodeLinkDestinationGenerator : ILinkDestinationGenerator
+public class CommonLinkDestinationGenerator : ILinkDestinationGenerator
 {
     private static readonly Regex RemoveCharactersRegex = new(@"[.\'(),:+?]", RegexOptions.Compiled);
 

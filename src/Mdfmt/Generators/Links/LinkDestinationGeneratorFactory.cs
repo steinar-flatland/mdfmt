@@ -8,13 +8,13 @@ namespace Mdfmt.Generators.Links;
 
 public static class LinkDestinationGeneratorFactory
 {
-    public static ILinkDestinationGenerator Manufacture(Platform platform)
+    public static ILinkDestinationGenerator Manufacture(Flavor flavor)
     {
-        return platform switch
+        return flavor switch
         {
-            Platform.VsCode => new VsCodeLinkDestinationGenerator(),
-            Platform.Azure => new AzureLinkDestinationGenerator(),
-            _ => throw new InvalidOperationException($"Unsupported {nameof(Platform)} value: {platform}"),
+            Flavor.Common => new CommonLinkDestinationGenerator(),
+            Flavor.Azure => new AzureLinkDestinationGenerator(),
+            _ => throw new InvalidOperationException($"Unsupported {nameof(Flavor)} value: {flavor}"),
         };
     }
 
