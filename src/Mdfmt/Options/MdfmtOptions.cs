@@ -106,7 +106,7 @@ public class MdfmtOptions
         {
             fileProcessingOptions.Flavor = _commandLineFileProcessingOptions.Flavor;
         }
-        if (_argNames.Contains("-n") || _argNames.Contains("--heading-numbers"))
+        if (_argNames.Contains("-h") || _argNames.Contains("--heading-numbers"))
         {
             fileProcessingOptions.HeadingNumbering = _commandLineFileProcessingOptions.HeadingNumbering;
         }
