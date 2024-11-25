@@ -49,7 +49,7 @@ public class MdfmtOptions
     {
         FileProcessingOptions fileProcessingOptions = new()
         {
-            Flavor = commandLineOptions.Flavor,
+            Platform = commandLineOptions.Platform,
             HeadingNumbering = commandLineOptions.HeadingNumbering,
             MinimumEntryCount = commandLineOptions.MinimumEntryCount,
             NewlineStrategy = commandLineOptions.NewlineStrategy
@@ -102,9 +102,9 @@ public class MdfmtOptions
 
     private void OverwriteExplicitlySetCommandLineOptionsOnto(FileProcessingOptions fileProcessingOptions)
     {
-        if (_argNames.Contains("-f") || _argNames.Contains("--flavor"))
+        if (_argNames.Contains("-p") || _argNames.Contains("--platform"))
         {
-            fileProcessingOptions.Flavor = _commandLineFileProcessingOptions.Flavor;
+            fileProcessingOptions.Platform = _commandLineFileProcessingOptions.Platform;
         }
         if (_argNames.Contains("-n") || _argNames.Contains("--heading-numbers"))
         {
