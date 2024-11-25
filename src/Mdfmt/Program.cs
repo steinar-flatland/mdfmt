@@ -10,7 +10,7 @@ namespace Mdfmt;
 
 public class Program
 {
-    private const string Version = "0.2.4";
+    private const string Version = "1.0.0";
 
     public static void Main(string[] args)
     {
