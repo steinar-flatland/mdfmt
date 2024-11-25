@@ -7,8 +7,8 @@ namespace Mdfmt.Options;
 
 public class CommandLineOptions
 {
-    [Option('f', "flavor", Default = Flavor.Common, HelpText = "Flavor of Markdown formatting.  One of: [Common, Azure].")]
-    public Flavor Flavor { get; set; }
+    [Option('p', "platform", Default = Platform.Azure, HelpText = "Target platform for Markdown formatting.  One of: [Azure, VsCode].")]
+    public Platform Platform { get; set; }
 
     [Option('n', "heading-numbers", Default = "1.", HelpText = "Whether to include heading numbers.  One of: [none, 1., 1].  Use 1. or 1 to include heading numbers. The name of the \"1\" options indicates whether generated numbers will end in a period.")]
     public string HeadingNumbering { get; set; }
