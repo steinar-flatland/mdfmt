@@ -13,8 +13,8 @@ public class CommandLineOptions
     [Option('n', "heading-numbers", Default = "1.", HelpText = "Whether to include heading numbers.  One of: [none, 1., 1].  Use 1. or 1 to include heading numbers. The name of the \"1\" options indicates whether generated numbers will end in a period.")]
     public string HeadingNumbering { get; set; }
 
-    [Option("minimum-entry-count", Default = 3, HelpText = "The minimum number of entries for which to include TOC.  0 turns off/removes TOC.")]
-    public int MinimumEntryCount { get; set; }
+    [Option('t', "toc-threshold", Default = 3, HelpText = "The minimum number of entries for which to include TOC.  0 turns off/removes TOC.")]
+    public int TocThreshold { get; set; }
 
     [Option("newline-strategy", Default = NewlineStrategy.PreferWindows, HelpText = "One of: [Unix, Windows, PreferUnix, PreferWindows].  Preferred options respect the file and take effect only if the file has a mixture.")]
     public NewlineStrategy NewlineStrategy { get; set; }

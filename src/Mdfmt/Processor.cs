@@ -99,7 +99,7 @@ public class Processor
         }
 
         HeadingNumberUpdater.Update(md, fpo.HeadingNumbering);
-        _tocUpdaters[(Flavor)fpo.Flavor].Update(md, (int)fpo.MinimumEntryCount, _options.Verbose);
+        _tocUpdaters[(Flavor)fpo.Flavor].Update(md, (int)fpo.TocThreshold, _options.Verbose);
         _linkUpdaters[(Flavor)fpo.Flavor].Update(md, _options.Verbose);
 
         // If the MdStruct was modified, save the Markdown file.

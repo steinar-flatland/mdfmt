@@ -51,7 +51,7 @@ public class MdfmtOptions
         {
             Flavor = commandLineOptions.Flavor,
             HeadingNumbering = commandLineOptions.HeadingNumbering,
-            MinimumEntryCount = commandLineOptions.MinimumEntryCount,
+            TocThreshold = commandLineOptions.TocThreshold,
             NewlineStrategy = commandLineOptions.NewlineStrategy
         };
         return fileProcessingOptions;
@@ -110,9 +110,9 @@ public class MdfmtOptions
         {
             fileProcessingOptions.HeadingNumbering = _commandLineFileProcessingOptions.HeadingNumbering;
         }
-        if (_argNames.Contains("--minimum-entry-count"))
+        if (_argNames.Contains("-t") || _argNames.Contains("--toc-threshold"))
         {
-            fileProcessingOptions.MinimumEntryCount = _commandLineFileProcessingOptions.MinimumEntryCount;
+            fileProcessingOptions.TocThreshold = _commandLineFileProcessingOptions.TocThreshold;
         }
         if (_argNames.Contains("--newline-strategy"))
         {

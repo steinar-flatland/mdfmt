@@ -8,15 +8,15 @@ public class TocUpdater(TocGenerator tocGenerator)
 {
     private readonly TocGenerator _tocGenerator = tocGenerator;
 
-    public void Update(MdStruct md, int minimumEntryCount, bool verbose)
+    public void Update(MdStruct md, int tocThreshold, bool verbose)
     {
         // Generate a TOC based on headings.
         Toc newToc = _tocGenerator.GenerateToc(md.FileName, md.HeadingRegions, md.Newline);
 
         // Is the desired end state to have a TOC with the content of newToc in the document?
         bool tocShouldExist =
-            minimumEntryCount > 0 &&
-            newToc.EntryCount >= minimumEntryCount;
+            tocThreshold > 0 &&
+            newToc.EntryCount >= tocThreshold;
 
         if (md.HasToc) // The document has a TOC already.
         {
