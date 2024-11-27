@@ -25,12 +25,44 @@ public class Program
         }
     }
 
-    private static void RunProgram(string[] args)
+    /// <summary>
+    /// <para>
+    /// Run the program with the specified command line arguments and exit behavior.  This method
+    /// is designed for testability.
+    /// </para>
+    /// <para>
+    /// In a production run, the default value of <c>doExit = true</c> is used.  Then, any
+    /// <c>ExitException</c> that is thrown causes a call to <c>Environment.Exit()</c>,
+    /// terminating the CLI, passing the exit code to the operating system.
+    /// </para>
+    /// <para>
+    /// In a test run, use <c>doExit = false</c>, which causes the exit code to be returned to the
+    /// calling test rather than terminating the current process, which would be disruptive to
+    /// testing.
+    /// </para>
+    /// </summary>
+    /// <param name="args">The command line arguments to the program.</param>
+    /// <param name="doExit">Whether to call <c>Environment.Exit()</c> if an <c>ExitException</c>
+    /// is trapped.  Defaults to <c>true</c>.</param>
+    /// <returns></returns>
+    public static int RunProgram(string[] args, bool doExit = true)
     {
-        Parser parser = new(with => with.CaseInsensitiveEnumValues = true);
-        ParserResult<CommandLineOptions> parsedResult = parser.ParseArguments<CommandLineOptions>(args);
-        HandleParsed(args, parsedResult);
-        HandleNotParsed(parsedResult);
+        try
+        {
+            Parser parser = new(with => with.CaseInsensitiveEnumValues = true);
+            ParserResult<CommandLineOptions> parsedResult = parser.ParseArguments<CommandLineOptions>(args);
+            HandleParsed(args, parsedResult);
+            HandleNotParsed(parsedResult);
+        }
+        catch (ExitException ex)
+        {
+            if (doExit)
+                Environment.Exit(ex.ExitCode);
+            return ex.ExitCode;
+        }
+        if (doExit)
+            Environment.Exit(ExitCodes.Success);
+        return ExitCodes.Success;
     }
 
     private static void HandleParsed(string[] args, ParserResult<CommandLineOptions> parsedResult)
@@ -52,14 +84,14 @@ public class Program
                 if (!File.Exists(options.Path))
                 {
                     Console.WriteLine($"{options.Path} does not exist.");
-                    Environment.Exit(ExitCodes.GeneralError);
+                    throw new ExitException(ExitCodes.GeneralError);
                 }
                 else
                 {
                     if (!options.Path.EndsWith(".md"))
                     {
                         Console.WriteLine("File cannot be processed because it is not a .md file");
-                        Environment.Exit(ExitCodes.GeneralError);
+                        throw new ExitException(ExitCodes.GeneralError);
                     }
                 }
             }
@@ -77,7 +109,7 @@ public class Program
 
             Processor processor = new(mdfmtOptions);
             processor.Run();
-            Environment.Exit(ExitCodes.Success);
+            throw new ExitException(ExitCodes.Success);
         });
     }
 
@@ -90,12 +122,12 @@ public class Program
                 Console.WriteLine("Displaying help:");
                 HelpText helpText = HelpText.AutoBuild(parsedResult);
                 Console.WriteLine(helpText);
-                Environment.Exit(ExitCodes.Success);
+                throw new ExitException(ExitCodes.Success);
             }
             else if (errors.IsVersion())
             {
                 Console.WriteLine(Version);
-                Environment.Exit(ExitCodes.Success);
+                throw new ExitException(ExitCodes.Success);
             }
             else
             {
@@ -104,7 +136,7 @@ public class Program
                 {
                     Console.WriteLine(error);
                 }
-                Environment.Exit(ExitCodes.MisuseOfCommand);
+                throw new ExitException(ExitCodes.MisuseOfCommand);
             }
         });
     }
