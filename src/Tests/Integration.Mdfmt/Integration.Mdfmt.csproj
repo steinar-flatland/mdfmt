@@ -26,6 +26,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Markdown\Empty-Destination_after_azure.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Markdown\Empty-Destination_after_common.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Markdown\Empty-Destination_before.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Markdown\Empty.md">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

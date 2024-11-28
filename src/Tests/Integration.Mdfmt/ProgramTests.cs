@@ -103,6 +103,10 @@ public class ProgramTests
         new TestCaseData("Flavor_common.md", new string[] {"-f", "Common"}, "Flavor_common.md").SetName("Flavor.3: Given a file expressed using Common flavor, When mdfmt -f Common, Then no change."),
 
         new TestCaseData("Flavor_azure.md", new string[] {"-f", "Azure"}, "Flavor_azure.md").SetName("Flavor.4: Given a file expressed using Azure flavor, When mdfmt -f Azure, Then no change."),
+
+        new TestCaseData("Empty-Destination_before.md", new string[] {"-f", "Common"}, "Empty-Destination_after_common.md").SetName("Empty-Destination.1: Given a file with empty destinations, When mdfmt -f Common, Then destinations that can be matched to headings are filled in and the document is formatted according to the Common flavor."),
+
+        new TestCaseData("Empty-Destination_before.md", new string[] {"-f", "Azure"}, "Empty-Destination_after_azure.md").SetName("Empty-Destination.2: Given a file with empty destinations, When mdfmt -f Azure, Then destinations that can be matched to headings are filled in and the document is formatted according to the Azure flavor."),
     ];
 
     [TestCaseSource(nameof(_testCases))]
