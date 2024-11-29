@@ -44,6 +44,15 @@
     <None Update="Markdown\Flavor_common.md">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Markdown\Heading-Numbering_1.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Markdown\Heading-Numbering_1dot.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Markdown\Heading-Numbering_none.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Markdown\Line-Endings_mixed.md">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
