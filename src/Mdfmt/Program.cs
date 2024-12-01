@@ -48,7 +48,7 @@ internal class Program
     /// <param name="args">The command line arguments to the program.</param>
     /// <param name="doExit">Whether to call <c>Environment.Exit()</c> if an <c>ExitException</c>
     /// is trapped.  Defaults to <c>true</c>.</param>
-    /// <returns></returns>
+    /// <returns>Exit code when <c>doExit == false</c>.</returns>
     public static int RunProgram(string[] args, bool doExit = true)
     {
         try
@@ -102,7 +102,15 @@ internal class Program
 
             // Ensure options are valid.
             CommandLineOptionsValidator validator = new();
-            validator.ValidateAndThrow(options);
+            try
+            {
+                validator.ValidateAndThrow(options);
+            }
+            catch (ValidationException ex)
+            {
+                Console.WriteLine(ex.Message);
+                throw new ExitException(ExitCodes.MisuseOfCommand);
+            }
 
             //TODO: It would be good to have some validation for the Mdfmt profile, to avoid silliness
             // like having an options key in CpathToOptions that doesn't go anywhere, etc.
