@@ -2,7 +2,7 @@
 
 namespace Mdfmt.Model;
 
-public class LinkRegion(string label, string destination) : MutableStringRegion(AssembleLink(label, destination))
+internal class LinkRegion(string label, string destination) : MutableStringRegion(AssembleLink(label, destination))
 {
     private static string AssembleLink(string label, string destination)
     {

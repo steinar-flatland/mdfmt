@@ -5,7 +5,7 @@
 /// <see cref="AtomicRegion"/>,
 /// <see cref="CompositeRegion"/>.
 /// </summary>
-public abstract class Region
+internal abstract class Region
 {
     /// <summary>
     /// A string of content that is part of a Markdown file.  This can be empty but not null.

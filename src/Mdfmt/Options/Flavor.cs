@@ -3,7 +3,7 @@
 /// <summary>
 /// Enumerated type defining flavors of Markdown formatting.
 /// </summary>
-public enum Flavor
+internal enum Flavor
 {
     /// <summary>
     /// Common flavor of formatting, that works with GitHub and VsCode Markdown preview.

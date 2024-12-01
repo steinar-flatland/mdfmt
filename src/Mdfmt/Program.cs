@@ -4,11 +4,15 @@ using FluentValidation;
 using Mdfmt.Options;
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
+
+[assembly: InternalsVisibleTo("Unit.Mdfmt")]
+[assembly: InternalsVisibleTo("Integration.Mdfmt")]
 
 namespace Mdfmt;
 
-public class Program
+internal class Program
 {
     private const string Version = "1.0.0";
 

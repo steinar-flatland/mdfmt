@@ -5,7 +5,7 @@ using System;
 
 namespace Mdfmt.Options;
 
-public class MdfmtProfileLoader
+internal class MdfmtProfileLoader
 {
     public static MdfmtProfile Load(string filePath)
     {

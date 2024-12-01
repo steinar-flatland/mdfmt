@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace Mdfmt.Model;
 
-public class HeadingRegion(IReadOnlyList<AtomicRegion> atomicRegions) : CompositeRegion(atomicRegions)
+internal class HeadingRegion(IReadOnlyList<AtomicRegion> atomicRegions) : CompositeRegion(atomicRegions)
 {
     private static readonly Regex HeadingNumberRegex = new(@"^(?<headingStart>\s*#+ )(?:(?<headingNumber>\d+(?:\.\d+)*\.?) )?(?<rest>.*)", RegexOptions.Compiled);
     private const string HeadingStartGroup = "headingStart";

@@ -20,7 +20,7 @@ namespace Mdfmt.Options;
 /// directory, and that directory immediately contains (i.e., not through a subdirectory)
 /// a file named <c>.mdfmt</c>.  If no <c>.mdfmt</c> file is available, this is <c>null</c>.
 /// </param>
-public class MdfmtOptions
+internal class MdfmtOptions
     (
         string[] args,
         CommandLineOptions commandLineOptions,

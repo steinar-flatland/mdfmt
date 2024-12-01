@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace Mdfmt.Generators.Links;
 
-public static class LinkDestinationGeneratorFactory
+internal static class LinkDestinationGeneratorFactory
 {
     public static ILinkDestinationGenerator Manufacture(Flavor flavor)
     {

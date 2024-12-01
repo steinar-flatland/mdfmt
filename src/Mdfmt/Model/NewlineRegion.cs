@@ -9,7 +9,7 @@ namespace Mdfmt.Model;
 /// This base class doesn't contain anything except some static utilities for conveniently getting
 /// a NewlineRegion.
 /// </summary>
-public abstract class NewlineRegion : ImmutableRegion
+internal abstract class NewlineRegion : ImmutableRegion
 {
     /// <summary>
     /// Suppress constructor, except for this class and subclasses.

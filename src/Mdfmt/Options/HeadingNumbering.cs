@@ -2,7 +2,7 @@
 
 namespace Mdfmt.Options;
 
-public static class HeadingNumbering
+internal static class HeadingNumbering
 {
     /// <summary>
     /// String indicating that no heading numbers are desired.  Evaluate in a case-insensitive way.

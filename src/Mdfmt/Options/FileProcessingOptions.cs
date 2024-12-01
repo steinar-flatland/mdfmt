@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Mdfmt.Options;
 
-public class FileProcessingOptions
+internal class FileProcessingOptions
 {
     public Flavor? Flavor { get; set; }
 

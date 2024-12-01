@@ -11,7 +11,7 @@ using System.IO;
 
 namespace Mdfmt;
 
-public class Processor
+internal class Processor
 {
     private readonly MdfmtOptions _options;
     private readonly List<string> _filePaths;

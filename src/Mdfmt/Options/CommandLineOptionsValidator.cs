@@ -2,7 +2,7 @@
 
 namespace Mdfmt.Options;
 
-public class CommandLineOptionsValidator : AbstractValidator<CommandLineOptions>
+internal class CommandLineOptionsValidator : AbstractValidator<CommandLineOptions>
 {
     public CommandLineOptionsValidator()
     {

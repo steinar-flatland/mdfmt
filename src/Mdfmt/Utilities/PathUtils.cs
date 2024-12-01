@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Mdfmt.Utilities;
 
-public static class PathUtils
+internal static class PathUtils
 {
     /// <summary>
     /// Make a path that is relative to another.

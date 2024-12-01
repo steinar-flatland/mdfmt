@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Mdfmt.Model;
 
-public static class RegionIEnumerableExtensions
+internal static class RegionIEnumerableExtensions
 {
     public static string Content(this IEnumerable<Region> list)
     {

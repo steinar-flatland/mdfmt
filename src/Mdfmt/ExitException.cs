@@ -8,7 +8,7 @@ namespace Mdfmt;
 /// <c>Program.cs</c> that does the right thing with this Exception.  It is important to throw
 /// this exception rather than calling <c>Environment.Exit()</c> directly, to maintain testability.
 /// </summary>
-public class ExitException : Exception
+internal class ExitException : Exception
 {
     public int ExitCode { get; }
 

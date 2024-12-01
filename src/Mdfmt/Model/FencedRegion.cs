@@ -1,3 +1,3 @@
 ﻿namespace Mdfmt.Model;
 
-public class FencedRegion(string content) : MutableStringRegion(content) { }
+internal class FencedRegion(string content) : MutableStringRegion(content) { }

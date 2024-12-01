@@ -1,6 +1,6 @@
 ﻿namespace Mdfmt.Generators.Tocs;
 
-public class Toc(string value, int entryCount)
+internal class Toc(string value, int entryCount)
 {
     /// <summary>
     /// The Markdown content of the table of contents.

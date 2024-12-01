@@ -8,7 +8,7 @@ namespace Mdfmt.Model;
 /// sequence of <c>Region</c>, that are of a specified type <c>T</c>.
 /// </summary>
 /// <typeparam name="T">The type of <c>Region</c> to enumerate.</typeparam>
-public class RegionEnumerable<T>(IEnumerable<Region> regions) : IEnumerable<T>
+internal class RegionEnumerable<T>(IEnumerable<Region> regions) : IEnumerable<T>
 {
     private readonly IEnumerable<Region> _regions = regions;
 

@@ -4,7 +4,7 @@ using System;
 
 namespace Mdfmt.Updaters;
 
-public class TocUpdater(TocGenerator tocGenerator)
+internal class TocUpdater(TocGenerator tocGenerator)
 {
     private readonly TocGenerator _tocGenerator = tocGenerator;
 

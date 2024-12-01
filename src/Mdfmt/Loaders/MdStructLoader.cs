@@ -12,7 +12,7 @@ namespace Mdfmt.Loaders;
 /// Loads a single Markdown file into a MdStruct data structure.  This class is implemented in a reusable way,
 /// i.e., it is safe to call the <c>Load()</c> method multiple times on one instance of this class.
 /// </summary>
-public class MdStructLoader
+internal class MdStructLoader
 {
     #region MdStructLoader_States
 

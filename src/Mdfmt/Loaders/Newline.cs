@@ -3,7 +3,7 @@ using System;
 
 namespace Mdfmt.Loaders;
 
-public static class Newline
+internal static class Newline
 {
     /// <summary>
     /// <para>

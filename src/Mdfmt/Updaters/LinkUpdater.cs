@@ -4,7 +4,7 @@ using System;
 
 namespace Mdfmt.Updaters;
 
-public class LinkUpdater(ILinkDestinationGenerator linkDestinationGenerator)
+internal class LinkUpdater(ILinkDestinationGenerator linkDestinationGenerator)
 {
     private readonly ILinkDestinationGenerator _linkDestinationGenerator = linkDestinationGenerator;
 

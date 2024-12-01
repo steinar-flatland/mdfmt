@@ -3,7 +3,7 @@
 /// <summary>
 /// Various landmarks useful when parsing or generating Markdown files.
 /// </summary>
-public class Markers
+internal class Markers
 {
     public static readonly string BeginTocMarker = "<!--BEGIN_TOC-->";
     public static readonly string EndTocMarker = "<!--END_TOC-->";

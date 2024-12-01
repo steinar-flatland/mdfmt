@@ -5,7 +5,7 @@ namespace Mdfmt.Options;
 //NOTE: If you modify this class, also maintain MdfmtOptions.OverwriteExplicitlySetCommandLineOptionsOnto().
 // Is there a way to make this eaiser to maintain?  Seems like a violation of the 'O' of SOLID.
 
-public class CommandLineOptions
+internal class CommandLineOptions
 {
     [Option('f', "flavor", Default = Flavor.Common, HelpText = "Flavor of Markdown formatting.  One of: [Common, Azure].")]
     public Flavor Flavor { get; set; }

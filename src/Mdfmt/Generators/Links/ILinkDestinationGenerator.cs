@@ -4,7 +4,7 @@
 /// Interface for generating Markdown link destinations.  A Markdown link has two parts:
 /// [label](destination).  This generator generates the destination part for inside the parentheses.
 /// </summary>
-public interface ILinkDestinationGenerator
+internal interface ILinkDestinationGenerator
 {
     /// <summary>
     /// Generate a destination for a Markdown link.

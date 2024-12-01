@@ -6,7 +6,7 @@
 /// <see cref="MutableRegion"/> and
 /// <see cref="ImmutableRegion"/>.
 /// </summary>
-public abstract class AtomicRegion : Region
+internal abstract class AtomicRegion : Region
 {
     /// <inheritdoc/>
     public override string ActiveContent => IsActive ? Content : string.Empty;
