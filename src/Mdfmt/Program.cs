@@ -112,11 +112,6 @@ internal class Program
                 throw new ExitException(ExitCodes.MisuseOfCommand);
             }
 
-            //TODO: It would be good to have some validation for the Mdfmt profile, to avoid silliness
-            // like having an options key in CpathToOptions that doesn't go anywhere, etc.
-            // It would be nice to know that the configuration makes sense before we start processing
-            // a bunch of files, so we don't crash halfway through..
-
             MdfmtOptions mdfmtOptions = new(args, options, mdfmtProfile);
 
             Processor processor = new(mdfmtOptions);

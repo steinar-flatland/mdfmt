@@ -213,7 +213,7 @@ public class ProgramTests
     ];
 
     [TestCaseSource(nameof(_testCases))]
-    public void RunProgramTest(string testInputFile, string[] args, string expectedOutputFile, int expectedExitCode)
+    public void RunProgramTest(string testInputFile, IEnumerable<string> args, string expectedOutputFile, int expectedExitCode)
     {
         bool filesProvided = testInputFile != null;
 

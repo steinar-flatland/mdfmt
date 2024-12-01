@@ -2,6 +2,7 @@
 using System.Text.Json;
 using System.IO;
 using System;
+using FluentValidation;
 
 namespace Mdfmt.Options;
 
@@ -19,6 +20,8 @@ internal class MdfmtProfileLoader
         try
         {
             MdfmtProfile data = JsonSerializer.Deserialize<MdfmtProfile>(json, options);
+            MdfmtProfileValidator validator = new(filePath, data);
+            validator.ValidateAndThrow(data);
             return data;
         }
         catch (JsonException)
