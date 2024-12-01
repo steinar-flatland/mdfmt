@@ -26,61 +26,61 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Markdown\Empty-Destination_after_azure.md">
+    <None Update="Data\ProgramTests\Empty-Destination_after_azure.md">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Markdown\Empty-Destination_after_common.md">
+    <None Update="Data\ProgramTests\Empty-Destination_after_common.md">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Markdown\Empty-Destination_before.md">
+    <None Update="Data\ProgramTests\Empty-Destination_before.md">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Markdown\Empty.md">
+    <None Update="Data\ProgramTests\Empty.md">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Markdown\Flavor_azure.md">
+    <None Update="Data\ProgramTests\Flavor_azure.md">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Markdown\Flavor_common.md">
+    <None Update="Data\ProgramTests\Flavor_common.md">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Markdown\Heading-Numbering_1.md">
+    <None Update="Data\ProgramTests\Heading-Numbering_1.md">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Markdown\Heading-Numbering_1dot.md">
+    <None Update="Data\ProgramTests\Heading-Numbering_1dot.md">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Markdown\Heading-Numbering_none.md">
+    <None Update="Data\ProgramTests\Heading-Numbering_none.md">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Markdown\Line-Endings_mixed.md">
+    <None Update="Data\ProgramTests\Line-Endings_mixed.md">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Markdown\Line-Endings_mixed_fixed_for_unix.md">
+    <None Update="Data\ProgramTests\Line-Endings_mixed_fixed_for_unix.md">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Markdown\Line-Endings_mixed_fixed_for_windows.md">
+    <None Update="Data\ProgramTests\Line-Endings_mixed_fixed_for_windows.md">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Markdown\Line-Endings_unix.md">
+    <None Update="Data\ProgramTests\Line-Endings_unix.md">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Markdown\Line-Endings_windows.md">
+    <None Update="Data\ProgramTests\Line-Endings_windows.md">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Markdown\README.md">
+    <None Update="Data\ProgramTests\README.md">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Markdown\Title.md">
+    <None Update="Data\ProgramTests\Title.md">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Markdown\Title_toc.md">
+    <None Update="Data\ProgramTests\Title_toc.md">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Markdown\Title_toc_outdated.md">
+    <None Update="Data\ProgramTests\Title_toc_outdated.md">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Markdown\Title_toc_updated.md">
+    <None Update="Data\ProgramTests\Title_toc_updated.md">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

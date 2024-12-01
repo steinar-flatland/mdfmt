@@ -11,7 +11,7 @@ public class ProgramTests
     private Program _program;
 
     private static readonly string _workDir = "./Work";
-    private static readonly string _markdownDir = "./Markdown";
+    private static readonly string _markdownDir = "./Data/ProgramTests";
     private static readonly string _empty_md = "Empty.md";
     private static readonly string _title_md = "Title.md";
     private static readonly string _title_toc_md = "Title_toc.md";
@@ -57,6 +57,8 @@ public class ProgramTests
         new TestCaseData(_empty_md, new string[] {"-f", "azure", "-h", "1", "-t", "2", "--newline-strategy", "PreferWindows", "-v"}, _empty_md).
         SetName("Empty.2: Given an empty file, When several arguments, Then empty file."),
 
+
+
         new TestCaseData(_title_md, new string[] {"-t", "1"}, _title_toc_md).
         SetName("TOC.1: Given a file with a title only, When mdfmt -t 1, Then a TOC is added."),
 
@@ -77,6 +79,8 @@ public class ProgramTests
 
         new TestCaseData(_title_toc_outdated_md, new string[] {"-t", "1"}, _title_toc_updated_md).
         SetName("TOC.7: Given a file with an outdated TOC, When mdfmt -t 1, Then the TOC is updated."),
+
+
 
         new TestCaseData(_lineEndings_unix_md, new string[] {"--newline-strategy", "Unix"}, _lineEndings_unix_md).
         SetName("Line-Endings.01: Given a file with unix line endings, When mdfmt --newline-strategy Unix, Then no change."),
@@ -114,6 +118,8 @@ public class ProgramTests
         new TestCaseData(_lineEndings_mixed_md, new string[] {"--newline-strategy", "PreferWindows"}, _lineEndings_mixed_fixed_for_windows_md).
         SetName("Line-Endings.12: Given a file with mixed line endings, When mdfmt --newline-strategy PreferWindows, Then Windows line endings."),
 
+
+
         new TestCaseData(_flavor_common_md, new string[] {"-f", "Azure"}, _flavor_azure_md).
         SetName("Flavor.1: Given a file expressed using Common flavor, When mdfmt -f Azure, Then the file is converted to Azure flavor."),
 
@@ -126,11 +132,15 @@ public class ProgramTests
         new TestCaseData(_flavor_azure_md, new string[] {"-f", "Azure"}, _flavor_azure_md).
         SetName("Flavor.4: Given a file expressed using Azure flavor, When mdfmt -f Azure, Then no change."),
 
+
+
         new TestCaseData(_emptyDestination_before_md, new string[] {"-f", "Common"}, _emptyDestination_after_common_md).
         SetName("Empty-Destination.1: Given a file with empty destinations, When mdfmt -f Common, Then destinations that can be matched to headings are filled in and the document is formatted according to the Common flavor."),
 
         new TestCaseData(_emptyDestination_before_md, new string[] {"-f", "Azure"}, _emptyDestination_after_azure_md).
         SetName("Empty-Destination.2: Given a file with empty destinations, When mdfmt -f Azure, Then destinations that can be matched to headings are filled in and the document is formatted according to the Azure flavor."),
+
+
 
         new TestCaseData(_headingNumbering_none_md, new string[] {"-h", "none"}, _headingNumbering_none_md).SetName("Heading-Numbering.1: Given a file without heading numbering, When heading numbering is removed, Then no change."),
 
