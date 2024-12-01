@@ -12,7 +12,8 @@ internal class MdfmtProfileLoader
         var options = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true, // Optional: ignore case when matching property names
-            Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) } // Optional: Camel case support
+            Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }, // Optional: Camel case support
+            UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
         };
         string json = File.ReadAllText(filePath);
         try
