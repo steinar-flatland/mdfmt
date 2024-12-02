@@ -2,12 +2,12 @@
 
 namespace Mdfmt.Options;
 
-public static class HeadingNumbering
+internal static class HeadingNumbering
 {
     /// <summary>
     /// String indicating that no heading numbers are desired.  Evaluate in a case-insensitive way.
     /// </summary>
-    public const string None = "None";
+    public const string None = "none";
 
     /// <summary>
     /// String indicating the desire for heading numbers that include a trailing period.

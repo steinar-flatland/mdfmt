@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace Mdfmt.Utilities;
 
-public static class ObjectPrinter
+internal static class ObjectPrinter
 {
     public static void PrintProperties(object obj, string prepend = "")
     {

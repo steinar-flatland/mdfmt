@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace Mdfmt.Generators.Tocs;
 
-public class TocGenerator(ILinkDestinationGenerator linkDestinationGenerator)
+internal class TocGenerator(ILinkDestinationGenerator linkDestinationGenerator)
 {
     private readonly ILinkDestinationGenerator _linkDestinationGenerator = linkDestinationGenerator;
 

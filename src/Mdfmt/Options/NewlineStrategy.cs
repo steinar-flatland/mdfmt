@@ -3,7 +3,7 @@
     /// <summary>
     /// Option for how to manage newlines when modified Markdown files are written.
     /// </summary>
-    public enum NewlineStrategy
+    internal enum NewlineStrategy
     {
         /// <summary>
         /// Ensure <c>"\n"</c> is used as the newline.

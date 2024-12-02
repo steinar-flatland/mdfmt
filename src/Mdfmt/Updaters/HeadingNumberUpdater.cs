@@ -5,7 +5,7 @@ using System;
 
 namespace Mdfmt.Updaters;
 
-public static class HeadingNumberUpdater
+internal static class HeadingNumberUpdater
 {
     //TODO: I would like to be able to report whether heading numbers were changed.
 

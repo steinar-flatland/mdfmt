@@ -4,13 +4,13 @@ using System.Text;
 
 namespace Mdfmt.Options;
 
-public class FileProcessingOptions
+internal class FileProcessingOptions
 {
-    public Platform? Platform { get; set; }
+    public Flavor? Flavor { get; set; }
 
     public string HeadingNumbering {  get; set; }
 
-    public int? MinimumEntryCount { get; set; }
+    public int? TocThreshold { get; set; }
 
     public NewlineStrategy? NewlineStrategy { get; set; }
 
@@ -68,9 +68,9 @@ public class FileProcessingOptions
     public override string ToString()
     {
         StringBuilder sb = new();
-        sb.Append($"  {nameof(Platform)}: {Platform}\n");
+        sb.Append($"  {nameof(Flavor)}: {Flavor}\n");
         sb.Append($"  {nameof(HeadingNumbering)}: {HeadingNumbering}\n");
-        sb.Append($"  {nameof(MinimumEntryCount)}: {MinimumEntryCount}\n");
+        sb.Append($"  {nameof(TocThreshold)}: {TocThreshold}\n");
         sb.Append($"  {nameof(NewlineStrategy)}: {NewlineStrategy}");
         return sb.ToString();
     }

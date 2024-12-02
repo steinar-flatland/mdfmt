@@ -10,7 +10,7 @@
 /// <see cref="ContentRegion"/>
 /// <see cref="LinkRegion"/>,
 /// </summary>
-public abstract class MutableStringRegion(string content) : MutableRegion
+internal abstract class MutableStringRegion(string content) : MutableRegion
 {
     /// <summary>
     /// String of content of this region.  It might be reset to a different string at some point.

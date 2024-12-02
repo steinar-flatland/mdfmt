@@ -11,13 +11,13 @@ using System.IO;
 
 namespace Mdfmt;
 
-public class Processor
+internal class Processor
 {
     private readonly MdfmtOptions _options;
     private readonly List<string> _filePaths;
     private readonly MdStructLoader _mdStructLoader;
-    private readonly Dictionary<Platform, LinkUpdater> _linkUpdaters = [];
-    private readonly Dictionary<Platform, TocUpdater> _tocUpdaters = [];
+    private readonly Dictionary<Flavor, LinkUpdater> _linkUpdaters = [];
+    private readonly Dictionary<Flavor, TocUpdater> _tocUpdaters = [];
     private readonly string MdWildcard = "*.md";
     private readonly string Indent = "    ";
 
@@ -27,19 +27,19 @@ public class Processor
         _filePaths = FindFilePathsToProcess();
         _mdStructLoader = new();
 
-        foreach (Platform platform in Enum.GetValues(typeof(Platform)))
+        foreach (Flavor flavor in Enum.GetValues(typeof(Flavor)))
         {
-            CreateUpdaters(platform);
+            CreateUpdaters(flavor);
         }
     }
 
-    private void CreateUpdaters(Platform platform)
+    private void CreateUpdaters(Flavor flavor)
     {
         ILinkDestinationGenerator linkDestinationGenerator =
-            LinkDestinationGeneratorFactory.Manufacture(platform);
-        _linkUpdaters.Add(platform, new LinkUpdater(linkDestinationGenerator));
+            LinkDestinationGeneratorFactory.Manufacture(flavor);
+        _linkUpdaters.Add(flavor, new LinkUpdater(linkDestinationGenerator));
         TocGenerator tocGenerator = new(linkDestinationGenerator);
-        _tocUpdaters.Add(platform, new TocUpdater(tocGenerator));
+        _tocUpdaters.Add(flavor, new TocUpdater(tocGenerator));
     }
 
     private List<string> FindFilePathsToProcess()
@@ -99,8 +99,8 @@ public class Processor
         }
 
         HeadingNumberUpdater.Update(md, fpo.HeadingNumbering);
-        _tocUpdaters[(Platform)fpo.Platform].Update(md, (int)fpo.MinimumEntryCount, _options.Verbose);
-        _linkUpdaters[(Platform)fpo.Platform].Update(md, _options.Verbose);
+        _tocUpdaters[(Flavor)fpo.Flavor].Update(md, (int)fpo.TocThreshold, _options.Verbose);
+        _linkUpdaters[(Flavor)fpo.Flavor].Update(md, _options.Verbose);
 
         // If the MdStruct was modified, save the Markdown file.
         if (md.IsModified)

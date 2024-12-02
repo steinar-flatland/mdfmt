@@ -23,7 +23,7 @@ namespace Mdfmt.Model;
 /// <param name="newlineRegion">
 /// The newline region being used in this file.
 /// </param>
-public class MdStruct
+internal class MdStruct
 {
     public MdStruct(
         string filePath,

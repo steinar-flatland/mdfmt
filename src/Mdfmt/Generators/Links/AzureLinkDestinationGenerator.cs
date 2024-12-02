@@ -2,7 +2,7 @@
 
 namespace Mdfmt.Generators.Links;
 
-public class AzureLinkDestinationGenerator : ILinkDestinationGenerator
+internal class AzureLinkDestinationGenerator : ILinkDestinationGenerator
 {
     private static readonly Regex SimpleDestinationRegex = new(@"^[a-z][a-z0-9-]*$", RegexOptions.Compiled);
 

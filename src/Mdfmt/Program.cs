@@ -4,13 +4,17 @@ using FluentValidation;
 using Mdfmt.Options;
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
+
+[assembly: InternalsVisibleTo("Unit.Mdfmt")]
+[assembly: InternalsVisibleTo("Integration.Mdfmt")]
 
 namespace Mdfmt;
 
-public class Program
+internal class Program
 {
-    private const string Version = "0.2.4";
+    private const string Version = "0.3.0";
 
     public static void Main(string[] args)
     {
@@ -25,12 +29,44 @@ public class Program
         }
     }
 
-    private static void RunProgram(string[] args)
+    /// <summary>
+    /// <para>
+    /// Run the program with the specified command line arguments and exit behavior.  This method
+    /// is designed for testability.
+    /// </para>
+    /// <para>
+    /// In a production run, the default value of <c>doExit = true</c> is used.  Then, any
+    /// <c>ExitException</c> that is thrown causes a call to <c>Environment.Exit()</c>,
+    /// terminating the CLI, passing the exit code to the operating system.
+    /// </para>
+    /// <para>
+    /// In a test run, use <c>doExit = false</c>, which causes the exit code to be returned to the
+    /// calling test rather than terminating the current process, which would be disruptive to
+    /// testing.
+    /// </para>
+    /// </summary>
+    /// <param name="args">The command line arguments to the program.</param>
+    /// <param name="doExit">Whether to call <c>Environment.Exit()</c> if an <c>ExitException</c>
+    /// is trapped.  Defaults to <c>true</c>.</param>
+    /// <returns>Exit code when <c>doExit == false</c>.</returns>
+    public static int RunProgram(string[] args, bool doExit = true)
     {
-        Parser parser = new(with => with.CaseInsensitiveEnumValues = true);
-        ParserResult<CommandLineOptions> parsedResult = parser.ParseArguments<CommandLineOptions>(args);
-        HandleParsed(args, parsedResult);
-        HandleNotParsed(parsedResult);
+        try
+        {
+            Parser parser = new(with => with.CaseInsensitiveEnumValues = true);
+            ParserResult<CommandLineOptions> parsedResult = parser.ParseArguments<CommandLineOptions>(args);
+            HandleParsed(args, parsedResult);
+            HandleNotParsed(parsedResult);
+        }
+        catch (ExitException ex)
+        {
+            if (doExit)
+                Environment.Exit(ex.ExitCode);
+            return ex.ExitCode;
+        }
+        if (doExit)
+            Environment.Exit(ExitCodes.Success);
+        return ExitCodes.Success;
     }
 
     private static void HandleParsed(string[] args, ParserResult<CommandLineOptions> parsedResult)
@@ -52,32 +88,35 @@ public class Program
                 if (!File.Exists(options.Path))
                 {
                     Console.WriteLine($"{options.Path} does not exist.");
-                    Environment.Exit(ExitCodes.GeneralError);
+                    throw new ExitException(ExitCodes.GeneralError);
                 }
                 else
                 {
                     if (!options.Path.EndsWith(".md"))
                     {
                         Console.WriteLine("File cannot be processed because it is not a .md file");
-                        Environment.Exit(ExitCodes.GeneralError);
+                        throw new ExitException(ExitCodes.GeneralError);
                     }
                 }
             }
 
             // Ensure options are valid.
             CommandLineOptionsValidator validator = new();
-            validator.ValidateAndThrow(options);
-
-            //TODO: It would be good to have some validation for the Mdfmt profile, to avoid silliness
-            // like having an options key in CpathToOptions that doesn't go anywhere, etc.
-            // It would be nice to know that the configuration makes sense before we start processing
-            // a bunch of files, so we don't crash halfway through..
+            try
+            {
+                validator.ValidateAndThrow(options);
+            }
+            catch (ValidationException ex)
+            {
+                Console.WriteLine(ex.Message);
+                throw new ExitException(ExitCodes.MisuseOfCommand);
+            }
 
             MdfmtOptions mdfmtOptions = new(args, options, mdfmtProfile);
 
             Processor processor = new(mdfmtOptions);
             processor.Run();
-            Environment.Exit(ExitCodes.Success);
+            throw new ExitException(ExitCodes.Success);
         });
     }
 
@@ -90,12 +129,12 @@ public class Program
                 Console.WriteLine("Displaying help:");
                 HelpText helpText = HelpText.AutoBuild(parsedResult);
                 Console.WriteLine(helpText);
-                Environment.Exit(ExitCodes.Success);
+                throw new ExitException(ExitCodes.Success);
             }
             else if (errors.IsVersion())
             {
                 Console.WriteLine(Version);
-                Environment.Exit(ExitCodes.Success);
+                throw new ExitException(ExitCodes.Success);
             }
             else
             {
@@ -104,7 +143,7 @@ public class Program
                 {
                     Console.WriteLine(error);
                 }
-                Environment.Exit(ExitCodes.MisuseOfCommand);
+                throw new ExitException(ExitCodes.MisuseOfCommand);
             }
         });
     }

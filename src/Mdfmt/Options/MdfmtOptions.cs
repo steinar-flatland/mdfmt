@@ -20,7 +20,7 @@ namespace Mdfmt.Options;
 /// directory, and that directory immediately contains (i.e., not through a subdirectory)
 /// a file named <c>.mdfmt</c>.  If no <c>.mdfmt</c> file is available, this is <c>null</c>.
 /// </param>
-public class MdfmtOptions
+internal class MdfmtOptions
     (
         string[] args,
         CommandLineOptions commandLineOptions,
@@ -49,9 +49,9 @@ public class MdfmtOptions
     {
         FileProcessingOptions fileProcessingOptions = new()
         {
-            Platform = commandLineOptions.Platform,
+            Flavor = commandLineOptions.Flavor,
             HeadingNumbering = commandLineOptions.HeadingNumbering,
-            MinimumEntryCount = commandLineOptions.MinimumEntryCount,
+            TocThreshold = commandLineOptions.TocThreshold,
             NewlineStrategy = commandLineOptions.NewlineStrategy
         };
         return fileProcessingOptions;
@@ -102,17 +102,17 @@ public class MdfmtOptions
 
     private void OverwriteExplicitlySetCommandLineOptionsOnto(FileProcessingOptions fileProcessingOptions)
     {
-        if (_argNames.Contains("-p") || _argNames.Contains("--platform"))
+        if (_argNames.Contains("-f") || _argNames.Contains("--flavor"))
         {
-            fileProcessingOptions.Platform = _commandLineFileProcessingOptions.Platform;
+            fileProcessingOptions.Flavor = _commandLineFileProcessingOptions.Flavor;
         }
-        if (_argNames.Contains("-n") || _argNames.Contains("--heading-numbers"))
+        if (_argNames.Contains("-h") || _argNames.Contains("--heading-numbers"))
         {
             fileProcessingOptions.HeadingNumbering = _commandLineFileProcessingOptions.HeadingNumbering;
         }
-        if (_argNames.Contains("--minimum-entry-count"))
+        if (_argNames.Contains("-t") || _argNames.Contains("--toc-threshold"))
         {
-            fileProcessingOptions.MinimumEntryCount = _commandLineFileProcessingOptions.MinimumEntryCount;
+            fileProcessingOptions.TocThreshold = _commandLineFileProcessingOptions.TocThreshold;
         }
         if (_argNames.Contains("--newline-strategy"))
         {

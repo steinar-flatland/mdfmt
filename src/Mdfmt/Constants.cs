@@ -1,6 +1,6 @@
 ﻿namespace Mdfmt;
 
-public static class Constants
+internal static class Constants
 {
     /// <summary>
     /// String containing Unix newline character.

@@ -1,6 +1,6 @@
 ﻿namespace Mdfmt.Model;
 
-public class WindowsNewlineRegion : NewlineRegion
+internal class WindowsNewlineRegion : NewlineRegion
 {
     private WindowsNewlineRegion() { }
 

@@ -9,7 +9,7 @@ namespace Mdfmt.Model;
 /// Abstract class for a region of content that is composed of a sequence of subregions.  Currently
 /// there is only one concrete implementation: <see cref="HeadingRegion"/>.
 /// </summary>
-public abstract class CompositeRegion(IReadOnlyList<AtomicRegion> atomicRegions) : Region, IEnumerable<AtomicRegion>
+internal abstract class CompositeRegion(IReadOnlyList<AtomicRegion> atomicRegions) : Region, IEnumerable<AtomicRegion>
 {
     /// <summary>
     /// List of atomic regions that make up this composite region.  Backing storage for <c>Content</c> property.

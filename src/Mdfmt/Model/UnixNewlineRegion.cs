@@ -1,6 +1,6 @@
 ﻿namespace Mdfmt.Model;
 
-public class UnixNewlineRegion : NewlineRegion
+internal class UnixNewlineRegion : NewlineRegion
 {
     private UnixNewlineRegion() { }
 

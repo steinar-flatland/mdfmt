@@ -6,7 +6,7 @@ namespace Mdfmt.Options;
 /// <summary>
 /// Data loaded from .mdfmt file.
 /// </summary>
-public class MdfmtProfile
+internal class MdfmtProfile
     (
         Dictionary<string, FileProcessingOptions> options,
         Dictionary<string, string> cpathToOptions

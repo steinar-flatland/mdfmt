@@ -4,7 +4,7 @@ using System;
 
 namespace Mdfmt.Updaters;
 
-public class LinkUpdater(ILinkDestinationGenerator linkDestinationGenerator)
+internal class LinkUpdater(ILinkDestinationGenerator linkDestinationGenerator)
 {
     private readonly ILinkDestinationGenerator _linkDestinationGenerator = linkDestinationGenerator;
 
@@ -13,7 +13,7 @@ public class LinkUpdater(ILinkDestinationGenerator linkDestinationGenerator)
         foreach (LinkRegion linkRegion in md.LinkRegions)
         {
             bool linkIsWithinSameFile =
-                string.IsNullOrEmpty(linkRegion.Destination) ||
+                string.IsNullOrWhiteSpace(linkRegion.Destination) ||
                 linkRegion.Destination.StartsWith('#') ||
                 linkRegion.Destination.StartsWith($"./{md.FileName}");
             if (linkIsWithinSameFile)

@@ -5,7 +5,7 @@ namespace Mdfmt.Model;
 /// <summary>
 /// An atomic region that is immutable.  See: <see cref="NewlineRegion"/>.
 /// </summary>
-public abstract class ImmutableRegion : AtomicRegion
+internal abstract class ImmutableRegion : AtomicRegion
 {
     /// <inheritdoc/>
     public override bool IsModified

@@ -23,7 +23,7 @@ namespace Mdfmt.Loaders;
 /// Limitation: This parser does not deal with double backticks yet.
 /// </para>
 /// </summary>
-public class LineParser
+internal class LineParser
 {
     /// <summary>
     /// Buffer for saving parsed content that is not from links.
