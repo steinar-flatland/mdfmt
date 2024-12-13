@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using Mdfmt;
 
 namespace Integration.Mdfmt;
@@ -11,7 +12,9 @@ public class ProgramTests
     private Program _program;
 
     private static readonly string _workDir = "./Work";
-    private static readonly string _markdownDir = "./Data/ProgramTests";
+    private static readonly string _dataDir = "./Data";
+    private static readonly string _programTestsZip = "ProgramTests.zip";
+    private static readonly string _programTestsDir = "./Data/ProgramTests";
     private static readonly string _empty_md = "Empty.md";
     private static readonly string _title_md = "Title.md";
     private static readonly string _title_toc_md = "Title_toc.md";
@@ -35,11 +38,17 @@ public class ProgramTests
     public void OneTimeSetup()
     {
         Directory.CreateDirectory(_workDir);
+
+        if (!Directory.Exists(_programTestsDir))
+        {
+            ZipFile.ExtractToDirectory(Path.Combine(_dataDir, _programTestsZip), _dataDir);
+        }
     }
 
     [OneTimeTearDown]
     public void OneTimeTearDown()
     {
+        Directory.Delete(_programTestsDir, true);
         Directory.Delete(_workDir, true);
     }
 
@@ -223,7 +232,7 @@ public class ProgramTests
         string filePath = null;
         if (filesProvided)
         {
-            string testInputFilePath = Path.Combine(_markdownDir, testInputFile);
+            string testInputFilePath = Path.Combine(_programTestsDir, testInputFile);
             filePath = Path.Combine(_workDir, $"file.md");
             File.Copy(testInputFilePath, filePath, overwrite: true);
             argsToUse.Add(filePath);
@@ -238,7 +247,7 @@ public class ProgramTests
         if (filesProvided)
         {
             string actualFileContent = File.ReadAllText(filePath);
-            string expectedFilePath = Path.Combine(_markdownDir, expectedOutputFile);
+            string expectedFilePath = Path.Combine(_programTestsDir, expectedOutputFile);
             string expectedFileContent = File.ReadAllText(expectedFilePath);
             Assert.That(actualFileContent, Is.EqualTo(expectedFileContent));
         }
