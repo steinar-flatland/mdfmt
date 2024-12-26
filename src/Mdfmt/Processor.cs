@@ -19,7 +19,6 @@ internal class Processor
     private readonly Dictionary<Flavor, LinkUpdater> _linkUpdaters = [];
     private readonly Dictionary<Flavor, TocUpdater> _tocUpdaters = [];
     private readonly string MdWildcard = "*.md";
-    private readonly string Indent = "    ";
 
     public Processor(MdfmtOptions options)
     {
@@ -62,8 +61,7 @@ internal class Processor
     {
         if (_options.Verbose)
         {
-            Console.WriteLine("Command Line Options:");
-            ObjectPrinter.PrintProperties(_options, Indent);
+            Output.Info(_options);
         }
 
         foreach (string filePath in _filePaths)
@@ -74,19 +72,12 @@ internal class Processor
 
     private void Process(string filePath)
     {
-        if (_options.Verbose)
-        {
-            Console.WriteLine();
-            Console.WriteLine($"Processing {filePath}.");
-        }
-
-        // Retrieve FileProcessingOptions for the current filePath.
         string cpath = PathUtils.MakeRelative(_options.Path, filePath);
         FileProcessingOptions fpo = _options.GetFileProcessingOptions(cpath);
         if (_options.Verbose)
         {
-            Console.WriteLine("FileProcessingOptions:");
-            Console.WriteLine(fpo);
+            Output.Info($"{Environment.NewLine}Processing {filePath}", true, ConsoleColor.White);
+            Output.Info($"{fpo.GetType().Name}:{Environment.NewLine}{fpo}");
         }
 
         // Load Markdown file into MdStruct data structure.
@@ -94,11 +85,11 @@ internal class Processor
 
         if (_options.Verbose)
         {
-            Console.WriteLine($"Loaded {md.RegionCount} region{(md.RegionCount != 1 ? 's' : string.Empty)} " +
+            Output.Info($"Loaded {md.RegionCount} region{(md.RegionCount != 1 ? 's' : string.Empty)} " +
                 $"with {md.HeadingCount} heading{(md.HeadingCount != 1 ? 's' : string.Empty)}.");
         }
 
-        HeadingNumberUpdater.Update(md, fpo.HeadingNumbering);
+        HeadingNumberUpdater.Update(md, fpo.HeadingNumbering, _options.Verbose);
         _tocUpdaters[(Flavor)fpo.Flavor].Update(md, (int)fpo.TocThreshold, _options.Verbose);
         _linkUpdaters[(Flavor)fpo.Flavor].Update(md, _options.Verbose);
 
@@ -108,11 +99,11 @@ internal class Processor
             File.WriteAllText(filePath, md.Content);
             if (_options.Verbose)
             {
-                Console.WriteLine("Wrote file");
+                Output.Emphasis($"Wrote file {filePath}");
             }
             else
             {
-                Console.WriteLine(filePath);
+                Output.Emphasis(filePath);
             }
         }
     }

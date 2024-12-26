@@ -1,4 +1,7 @@
-﻿namespace Mdfmt;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
+
+namespace Mdfmt;
 
 internal static class Constants
 {
@@ -24,4 +27,16 @@ internal static class Constants
     /// and not as a heading.
     /// </summary>
     public const int MaximumHeadingNumberSignCount = 6;
+
+    /// <summary>
+    /// Options commonly used for JSON serialization.
+    /// </summary>
+    public static readonly JsonSerializerOptions JsonSerializerOptions = new()
+    {
+        WriteIndented = true,
+        Converters =
+        {
+            new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)
+        }
+    };
 }

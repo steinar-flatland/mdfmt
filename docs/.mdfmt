@@ -1,0 +1,17 @@
+{
+  "Options": {
+    "default": {
+      "Flavor": "Common",
+      "TocThreshold": 3,
+      "HeadingNumbering": "1.",
+      "NewlineStrategy": "PreferWindows"
+    },
+    "noHeadings": {
+      "HeadingNumbering": "none"
+    }
+  },
+  "CpathToOptions": {
+    ".": "default",
+    "./Glossary.md": "noHeadings"
+  }
+}

@@ -1,9 +1,12 @@
 ﻿using CommandLine;
+using System;
+using System.Reflection;
+using System.Text;
+using System.Text.Json;
 
 namespace Mdfmt.Options;
 
-//NOTE: If you modify this class, also maintain MdfmtOptions.OverwriteExplicitlySetCommandLineOptionsOnto().
-// Is there a way to make this eaiser to maintain?  Seems like a violation of the 'O' of SOLID.
+//NOTE: This class must be in sync with the implementation of MdfmtOptions, which builds on this class.
 
 internal class CommandLineOptions
 {
@@ -27,4 +30,9 @@ internal class CommandLineOptions
 
     [Value(0, Default = ".", HelpText = "The directory in which to process .md files, or a specific .md file.")]
     public string Path { get; set; }
+
+    public override string ToString()
+    {
+        return JsonSerializer.Serialize(this, Constants.JsonSerializerOptions);
+    }
 }

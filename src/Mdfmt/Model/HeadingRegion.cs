@@ -30,39 +30,42 @@ internal class HeadingRegion(IReadOnlyList<AtomicRegion> atomicRegions) : Compos
     /// <returns>The first content region of the heading.</returns>
     public ContentRegion FirstContentRegion()
     {
-        return (ContentRegion) _atomicRegions.First(r => r is ContentRegion);
+        return (ContentRegion)_atomicRegions.First(r => r is ContentRegion);
     }
 
     /// <summary>
-    /// Idempotently set the heading number to the value specified.  If you want to remove a
-    /// heading number, then set the value null or empty.
+    /// Update heading number to the new heading number passed in.
     /// </summary>
-    public string HeadingNumber
-    {
-        set
-        {
-            UpdateHeadingNumber(value);
-        }
-    }
-
-    private void UpdateHeadingNumber(string headingNumber)
+    /// <param name="newHeadingNumber">New heading number or null or empty for no heading number</param>
+    /// <returns>Whether the heading number changed</returns>
+    public bool SetHeadingNumber(string newHeadingNumber)
     {
         ContentRegion contentRegion = FirstContentRegion();
         string content = contentRegion.Content;
         Match match = HeadingNumberRegex.Match(content);
+
         if (match.Success)
         {
             string headingStart = match.Groups[HeadingStartGroup].Value;
+            string headingNumber = match.Groups[HeadingNumberGroup].Value;
             string rest = match.Groups[RestGroup].Value;
-            if (string.IsNullOrEmpty(headingNumber))
+
+            if (string.IsNullOrEmpty(newHeadingNumber))
             {
                 contentRegion.Content = $"{headingStart}{rest}";
+                return headingNumber.Length > 0;
             }
             else
             {
-                contentRegion.Content = $"{headingStart}{headingNumber.Trim()} {rest}";
+                newHeadingNumber = newHeadingNumber.Trim();
+                contentRegion.Content = $"{headingStart}{newHeadingNumber} {rest}";
+                headingNumber = headingNumber.Trim();
+                return (headingNumber != newHeadingNumber);
             }
         }
+
+        // Heading number was not modified.
+        return false;
     }
 
 }
