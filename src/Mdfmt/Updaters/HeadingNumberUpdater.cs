@@ -7,15 +7,15 @@ namespace Mdfmt.Updaters;
 
 internal static class HeadingNumberUpdater
 {
-    //TODO: I would like to be able to report whether heading numbers were changed.
-
-    public static void Update(MdStruct md, string headingNumbering)
+    public static void Update(MdStruct md, string headingNumbering, bool verbose)
     {
+        bool headingsModified = false;
+
         if (headingNumbering.Equals(HeadingNumbering.None, StringComparison.OrdinalIgnoreCase))
         {
             foreach (HeadingRegion headingRegion in md.HeadingRegions)
             {
-                headingRegion.HeadingNumber = "";
+                headingsModified = headingRegion.SetHeadingNumber("") || headingsModified;
             }
         }
         else if (
@@ -43,12 +43,12 @@ internal static class HeadingNumberUpdater
                 // Beware of documents with too many heading levels.
                 if (n == counters.Length)
                 {
-                    Console.WriteLine($"Only {counters.Length} levels of heading numbering are supported.");
+                    Output.Warn($"Only {counters.Length} levels of heading numbering are supported.");
                     // Short circuit the execution of this method, so other updaters can still run.  
                     // To the extent that this method DID change any headings before it ran into heading
                     // overflow, its still good to run other updaters so that they can patch up 
                     // links to headings that changed, update the TOC, etc.
-                    return;
+                    break;
                 }
 
                 // Handle edge case.  We will not assign a section number to a heading with only
@@ -85,11 +85,17 @@ internal static class HeadingNumberUpdater
                 }
                 if (headingNumbering == HeadingNumbering.WithTrailingPeriod)
                     sb.Append('.');
-                headingRegion.HeadingNumber = sb.ToString();
+                headingsModified = headingRegion.SetHeadingNumber(sb.ToString()) || headingsModified;
 
                 // Set up for next iteration.  This helps us know when to zero out counters.
                 prevN = n;
-            }
+            } // end foreach headingRegion
+        } // end if
+
+        if (headingsModified && verbose)
+        {
+            Output.Emphasis("Updated heading numbers");
         }
-    }
+
+    } // end Update()
 }

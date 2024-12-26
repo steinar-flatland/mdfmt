@@ -1,6 +1,5 @@
 ﻿using Mdfmt.Generators.Links;
 using Mdfmt.Model;
-using System;
 
 namespace Mdfmt.Updaters;
 
@@ -27,7 +26,7 @@ internal class LinkUpdater(ILinkDestinationGenerator linkDestinationGenerator)
                         linkRegion.Destination = destination;
                         if (verbose)
                         {
-                            Console.WriteLine($"Updated link with label [{linkRegion.Label}] to target destination ({linkRegion.Destination})");
+                            Output.Emphasis($"Updated link with label [{linkRegion.Label}] to target destination ({linkRegion.Destination})");
                         }
                     }
                 }
@@ -35,7 +34,7 @@ internal class LinkUpdater(ILinkDestinationGenerator linkDestinationGenerator)
                 {
                     if (verbose)
                     {
-                        Console.WriteLine($"Could not match link to heading: {linkRegion.Content}");
+                        Output.Warn($"Could not match link to heading: {linkRegion.Content}");
                     }
                 }
             }

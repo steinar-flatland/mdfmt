@@ -4,6 +4,26 @@ using System.Linq;
 
 namespace Mdfmt.Options;
 
+/// <summary>
+/// Validator of an instance of <see cref="MdfmtProfile"/>.  Validates the following:
+/// <list type="number">
+/// <item>
+/// Each of the <see cref="FileProcessingOptions"/> contained in the <c>Options</c> dictionary has
+/// a collection of properties where, for each property, it is either <c>null</c> or a non-<c>null</c>
+/// value that is in range based on expected command line option values.
+/// </item>
+/// <item>
+/// Each of the mappings in the <c>CpathToOptions</c> dictionary targets a key of the <c>Options</c>
+/// dictionary.
+/// </item>
+/// </list>
+/// Note that it is valid for either or both of the dictionaries to be empty or null/missing, so
+/// long as this does not conflict with the validations mentioned above.  For example, it is
+/// valid for both dictionaries to be missing.  It is valid (though not particularly useful) to have
+/// an <c>Options</c> dictionary without a <c>CpathToOptions</c> dictionary.  But it is invalid
+/// to have a populated <c>CpathToOptions</c> dictionary without an <c>Options</c> dictionary,
+/// because values in <c>CpathToOptions</c> must target keys that exist in <c>Options</c>.
+/// </summary>
 internal class MdfmtProfileValidator : AbstractValidator<MdfmtProfile>
 {
     public MdfmtProfileValidator(string filePath, MdfmtProfile profile)

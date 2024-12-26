@@ -1,6 +1,5 @@
 ﻿using Mdfmt.Generators.Tocs;
 using Mdfmt.Model;
-using System;
 
 namespace Mdfmt.Updaters;
 
@@ -28,7 +27,7 @@ internal class TocUpdater(TocGenerator tocGenerator)
                     tocRegion.Content = newToc.Content;
                     if (verbose)
                     {
-                        Console.WriteLine("Updated TOC");
+                        Output.Emphasis("Updated TOC");
                     }
                 }
             }
@@ -37,7 +36,7 @@ internal class TocUpdater(TocGenerator tocGenerator)
                 md.DeleteToc();
                 if (verbose)
                 {
-                    Console.WriteLine("Removed TOC");
+                    Output.Emphasis("Removed TOC");
                 }
             }
         }
@@ -48,7 +47,7 @@ internal class TocUpdater(TocGenerator tocGenerator)
                 md.AddToc(newToc.Content);
                 if (verbose)
                 {
-                    Console.WriteLine("Inserted new TOC");
+                    Output.Emphasis("Inserted new TOC");
                 }
             }
         }

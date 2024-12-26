@@ -14,7 +14,7 @@ namespace Mdfmt;
 
 internal class Program
 {
-    private const string Version = "0.3.1";
+    private const string Version = "0.3.2";
 
     public static void Main(string[] args)
     {
@@ -53,7 +53,10 @@ internal class Program
     {
         try
         {
-            Parser parser = new(with => with.CaseInsensitiveEnumValues = true);
+            Parser parser = new(with =>
+            {
+                with.CaseInsensitiveEnumValues = true;
+            });
             ParserResult<CommandLineOptions> parsedResult = parser.ParseArguments<CommandLineOptions>(args);
             HandleParsed(args, parsedResult);
             HandleNotParsed(parsedResult);
@@ -87,14 +90,14 @@ internal class Program
             {
                 if (!File.Exists(options.Path))
                 {
-                    Console.WriteLine($"{options.Path} does not exist.");
+                    Output.Error($"{options.Path} does not exist.");
                     throw new ExitException(ExitCodes.GeneralError);
                 }
                 else
                 {
                     if (!options.Path.EndsWith(".md"))
                     {
-                        Console.WriteLine("File cannot be processed because it is not a .md file");
+                        Output.Error("File cannot be processed because it is not a .md file");
                         throw new ExitException(ExitCodes.GeneralError);
                     }
                 }
@@ -108,7 +111,7 @@ internal class Program
             }
             catch (ValidationException ex)
             {
-                Console.WriteLine(ex.Message);
+                Output.Error(ex.Message);
                 throw new ExitException(ExitCodes.MisuseOfCommand);
             }
 
@@ -126,22 +129,26 @@ internal class Program
         {
             if (errors.IsHelp())
             {
-                Console.WriteLine("Displaying help:");
-                HelpText helpText = HelpText.AutoBuild(parsedResult);
-                Console.WriteLine(helpText);
+                HelpText helpText = HelpText.AutoBuild(parsedResult, h => {
+                    h.AdditionalNewLineAfterOption = false;
+                    h.Heading = $"Mdfmt version {Version}";
+                    h.Copyright = "Copyright (c) 2024 Steinar Flatland.\nThis software is licensed under the Apache License 2.0.\nSee https://github.com/steinar-flatland/mdfmt/blob/main/LICENSE for details.";
+                    return h;
+                });
+                Output.Info(helpText);
                 throw new ExitException(ExitCodes.Success);
             }
             else if (errors.IsVersion())
             {
-                Console.WriteLine(Version);
+                Output.Info(Version);
                 throw new ExitException(ExitCodes.Success);
             }
             else
             {
-                Console.WriteLine("Error parsing arguments.");
+                Output.Error("Error parsing arguments:");
                 foreach (Error error in errors)
                 {
-                    Console.WriteLine(error);
+                    Output.Error(error);
                 }
                 throw new ExitException(ExitCodes.MisuseOfCommand);
             }
@@ -150,15 +157,15 @@ internal class Program
 
     private static void LogException(Exception ex)
     {
-        Console.WriteLine($"Error: {ex.GetType().Name}. {ex.Message}");
+        Output.Error($"Error: {ex.GetType().Name}. {ex.Message}");
         if (ex is not JsonException)
         {
-            Console.WriteLine($"Stack Trace:{Environment.NewLine}{ex.StackTrace}");
+            Output.Error($"Stack Trace:{Environment.NewLine}{ex.StackTrace}");
             if (ex.InnerException != null)
             {
-                Console.WriteLine("Inner Exception:");
-                Console.WriteLine($"Message: {ex.InnerException.Message}");
-                Console.WriteLine($"Stack Trace:{Environment.NewLine}{ex.InnerException.StackTrace}");
+                Output.Error("Inner Exception:");
+                Output.Error($"Message: {ex.InnerException.Message}");
+                Output.Error($"Stack Trace:{Environment.NewLine}{ex.InnerException.StackTrace}");
             }
         }
     }
