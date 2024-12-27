@@ -37,6 +37,7 @@ internal static class Constants
         Converters =
         {
             new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)
-        }
+        },
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 }
