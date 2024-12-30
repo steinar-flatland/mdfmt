@@ -13,6 +13,7 @@
   - [9. Windows Subsystem for Linux](#9-windows-subsystem-for-linux)
     - [9.1. If You Need To Uninstall WSL](#91-if-you-need-to-uninstall-wsl)
   - [10. Ubuntu Linux](#10-ubuntu-linux)
+  - [11. Clone and Build the Code](#11-clone-and-build-the-code)
 <!--END_TOC-->
 
 This document has setup instructions for a suggested way of preparing a laptop for doing Mdfmt development under Windows 11.
@@ -71,7 +72,7 @@ git config --global core.autocrlf input
 
 ## 6. 7Zip
 
-This will install the `7z` CLI, needed for compressing files when releases are created.
+This will install the `7z` CLI, used to package releases.
 
 ```console
 winget install -e --id 7zip.7zip
@@ -97,13 +98,13 @@ Install the following extensions:
 
 Finally configure settings in Visual Studio Code:
 
-- Using the menu that looks like a gear at the lower left, select `Settings`.
+- Use the menu that looks like a gear at the lower left, and select `Settings`.
 - In the `Search settings` field type `files.exclude`
   - If it is not there already, add the glob pattern, `**/.github`, to hide the folder with `git` state.  This reduces the chances of accidentally corrupting this data.
 
 ## 8. Visual Studio
 
-Visual Studio Community is all that is needed for Mdfmt development.  If you have a paid version, that is fine too.  This section discusses how to install Community.
+Visual Studio Community is sufficient for Mdfmt development.  If you have a paid version of Visual Studio, that is fine too.  This section discusses how to install Community.
 
 Go to the [Visual Studio downloads page](https://visualstudio.microsoft.com/downloads/).  Download Visual Studio Community, which downloads `VisualStudioSetup.exe` to your Downloads folder.  Run this executable.
 
@@ -208,3 +209,28 @@ wsl -d Ubuntu-24.04
 ```
 
 To switch from Linux back to Windows, just type `exit`.
+
+## 11. Clone and Build the Code
+
+Go to your dev drive (or wherever you want to put the code) and run:
+
+```console
+git clone https://github.com/steinar-flatland/mdfmt
+```
+
+Then build the code:
+
+```console
+cd mdfmt/src
+dotnet build
+```
+
+The executable is `mdfmt/src/Mdfmt/bin/Debug/net8.0/mdfmt.exe`.
+
+You might want to put this directory on your `PATH`.
+
+Try running
+
+```console
+mdfmt --version
+```
