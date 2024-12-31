@@ -86,8 +86,8 @@ public class ProgramTests
         new TestCaseData(_title_toc_md, new string[] {"-t", "1"}, _title_toc_md, ExitCodes.Success).
         SetName("TOC.6: Given a file with a title and TOC, When mdfmt -t 1, Then no change."),
 
-        new TestCaseData(_title_toc_outdated_md, new string[] {"-t", "1"}, _title_toc_updated_md, ExitCodes.Success).
-        SetName("TOC.7: Given a file with an outdated TOC, When mdfmt -t 1, Then the TOC is updated."),
+        new TestCaseData(_title_toc_outdated_md, new string[] {"-t", "1", "-h", "1."}, _title_toc_updated_md, ExitCodes.Success).
+        SetName("TOC.7: Given a file with an outdated TOC, When mdfmt -t 1 -h 1., Then the TOC is updated."),
 
 
 
