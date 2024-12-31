@@ -125,11 +125,10 @@ internal class MdfmtOptions
             // then write the values from the command into fileProcessingOptions.
             OverwriteExplicitlySetCommandLineOptionsOnto(fileProcessingOptions);
 
-            // If the file processing options are incomplete, backfill from the command line.
-            // This guarantees that the returned FileProcessingOptions are complete (i.e., no null options)
+            // If the file processing options are incomplete, backfill from the command line,
+            // to make the file processing options as complete as possible.
             if (!fileProcessingOptions.IsComplete())
             {
-                Output.Warn("Warning: Backfilling mdfmt options from command line");
                 fileProcessingOptions.PopulateFrom(_commandLineFileProcessingOptions);
             }
 

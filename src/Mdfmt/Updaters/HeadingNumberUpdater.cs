@@ -5,10 +5,18 @@ using System;
 
 namespace Mdfmt.Updaters;
 
+/// <summary>
+/// Updates heading numbers in section headings.
+/// </summary>
 internal static class HeadingNumberUpdater
 {
     public static void Update(MdStruct md, string headingNumbering, bool verbose)
     {
+        if (headingNumbering == null)
+        {
+            return;
+        }
+
         bool headingsModified = false;
 
         if (headingNumbering.Equals(HeadingNumbering.None, StringComparison.OrdinalIgnoreCase))
@@ -90,7 +98,11 @@ internal static class HeadingNumberUpdater
                 // Set up for next iteration.  This helps us know when to zero out counters.
                 prevN = n;
             } // end foreach headingRegion
-        } // end if
+        }
+        else
+        {
+            throw new InvalidOperationException($"Unhandled kind of heading numbering: {headingNumbering}");
+        }
 
         if (headingsModified && verbose)
         {
