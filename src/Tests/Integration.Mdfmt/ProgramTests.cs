@@ -20,6 +20,7 @@ public class ProgramTests
     private static readonly string _title_toc_md = "Title_toc.md";
     private static readonly string _title_toc_outdated_md = "Title_toc_outdated.md";
     private static readonly string _title_toc_updated_md = "Title_toc_updated.md";
+    private static readonly string _title_toc_updated2_md = "Title_toc_updated2.md";
     private static readonly string _lineEndings_unix_md = "Line-Endings_unix.md";
     private static readonly string _lineEndings_windows_md = "Line-Endings_windows.md";
     private static readonly string _lineEndings_mixed_md = "Line-Endings_mixed.md";
@@ -33,6 +34,16 @@ public class ProgramTests
     private static readonly string _headingNumbering_none_md = "Heading-Numbering_none.md";
     private static readonly string _headingNumbering_1_md = "Heading-Numbering_1.md";
     private static readonly string _headingNumbering_1dot_md = "Heading-Numbering_1dot.md";
+    private static readonly string _NewlinesThenContent_unix_md = "Newlines-Then-Content_unix.md";
+    private static readonly string _NewlinesThenContent_windows_md = "Newlines-Then-Content_windows.md";
+    private static readonly string _FiveNewlines_unix_md = "Five-Newlines_unix.md";
+    private static readonly string _FiveNewlines_windows_md = "Five-Newlines_windows.md";
+    private static readonly string _UnclosedFencedRegion_unix_md = "Unclosed-Fenced-Region_unix.md";
+    private static readonly string _UnclosedFencedRegion_windows_md = "Unclosed-Fenced-Region_windows.md";
+    private static readonly string _UnclosedTocRegion_windows_after_md = "Unclosed-Toc-Region_windows_after.md";
+    private static readonly string _UnclosedTocRegion_windows_before_md = "Unclosed-Toc-Region_windows_before.md";
+    private static readonly string _UnclosedTocRegion_unix_after_md = "Unclosed-Toc-Region_unix_after.md";
+    private static readonly string _UnclosedTocRegion_unix_before_md = "Unclosed-Toc-Region_unix_before.md";
 
     [OneTimeSetUp]
     public void OneTimeSetup()
@@ -86,8 +97,11 @@ public class ProgramTests
         new TestCaseData(_title_toc_md, new string[] {"-t", "1"}, _title_toc_md, ExitCodes.Success).
         SetName("TOC.6: Given a file with a title and TOC, When mdfmt -t 1, Then no change."),
 
-        new TestCaseData(_title_toc_outdated_md, new string[] {"-t", "1", "-h", "1."}, _title_toc_updated_md, ExitCodes.Success).
-        SetName("TOC.7: Given a file with an outdated TOC, When mdfmt -t 1 -h 1., Then the TOC is updated."),
+        new TestCaseData(_title_toc_outdated_md, new string[] {"-t", "1"}, _title_toc_updated_md, ExitCodes.Success).
+        SetName("TOC.7: Update outdated TOC"),
+
+        new TestCaseData(_title_toc_outdated_md, new string[] {"-h", "1.", "-t", "1"}, _title_toc_updated2_md, ExitCodes.Success).
+        SetName("TOC.8: Update outdated headings and TOC"),
 
 
 
@@ -126,6 +140,32 @@ public class ProgramTests
 
         new TestCaseData(_lineEndings_mixed_md, new string[] {"--newline-strategy", "PreferWindows"}, _lineEndings_mixed_fixed_for_windows_md, ExitCodes.Success).
         SetName("Line-Endings.12: Given a file with mixed line endings, When mdfmt --newline-strategy PreferWindows, Then Windows line endings."),
+
+        new TestCaseData(_NewlinesThenContent_unix_md, new string[] {"--newline-strategy", "Windows"}, _NewlinesThenContent_windows_md, ExitCodes.Success).
+        SetName("Line-Endings.13: Preserve leading newlines when converting from Unix to Windows newlines"),
+
+        new TestCaseData(_NewlinesThenContent_windows_md, new string[] {"--newline-strategy", "Unix"}, _NewlinesThenContent_unix_md, ExitCodes.Success).
+        SetName("Line-Endings.14: Preserve leading newlines when converting from Windows to Unix newlines"),
+
+        new TestCaseData(_FiveNewlines_unix_md, new string[] {"--newline-strategy", "Windows"}, _FiveNewlines_windows_md, ExitCodes.Success).
+        SetName("Line-Endings.15: Convert a file of only newlines from Unix to Windows"),
+
+        new TestCaseData(_FiveNewlines_windows_md, new string[] {"--newline-strategy", "Unix"}, _FiveNewlines_unix_md, ExitCodes.Success).
+        SetName("Line-Endings.16: Convert a file of only newlines from Windows to Unix"),
+
+
+
+        new TestCaseData(_UnclosedFencedRegion_unix_md, new string[] {"--newline-strategy", "Windows"}, _UnclosedFencedRegion_windows_md, ExitCodes.Success).
+        SetName("Line-Endings-Unclosed.1: Given a file that ends with an unclosed fenced code block, converting from unix to windows does not lose information."),
+
+        new TestCaseData(_UnclosedFencedRegion_windows_md, new string[] {"--newline-strategy", "Unix"}, _UnclosedFencedRegion_unix_md, ExitCodes.Success).
+        SetName("Line-Endings-Unclosed.2: Given a file that ends with an unclosed fenced code block, converting from windows to unix does not lose information."),
+
+        new TestCaseData(_UnclosedTocRegion_unix_before_md, new string[] {"--newline-strategy", "Windows", "-t", "1"}, _UnclosedTocRegion_windows_after_md, ExitCodes.Success).
+        SetName("Line-Endings-Unclosed.3: Given a file that ends with an unclosed TOC, converting from unix to windows closes TOC and changes newlines."),
+
+        new TestCaseData(_UnclosedTocRegion_windows_before_md, new string[] {"--newline-strategy", "Unix", "-t", "1"}, _UnclosedTocRegion_unix_after_md, ExitCodes.Success).
+        SetName("Line-Endings-Unclosed.4: Given a file that ends with an unclosed TOC, converting from windows to unix closes TOC and changes newlines."),
 
 
 
@@ -186,6 +226,12 @@ public class ProgramTests
 
         new TestCaseData(_headingNumbering_1dot_md, new string[] { "-h", "1."}, _headingNumbering_1dot_md, ExitCodes.Success).
         SetName("Heading-Numbering.9: Given a file with heading numbering that includes a trailing period, When apply heading numbering with a trailing period, Then no change."),
+
+        new TestCaseData(_headingNumbering_1_md, Array.Empty<string>(), _headingNumbering_1_md, ExitCodes.Success).
+        SetName("Heading-Numbering.10: By default, do not change heading numbers."),
+
+        new TestCaseData(_headingNumbering_1dot_md, Array.Empty<string>(), _headingNumbering_1dot_md, ExitCodes.Success).
+        SetName("Heading-Numbering.11: By default, do not change heading numbers."),
 
 
 

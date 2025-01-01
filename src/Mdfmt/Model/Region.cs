@@ -30,4 +30,9 @@ internal abstract class Region
     public abstract bool IsModified { get; protected set; }
 
     public override string ToString() => Content;
+
+    /// <summary>
+    /// Name of type of region.  Just helps with visibility in debugger.
+    /// </summary>
+    public string TypeName => GetType().Name;
 }

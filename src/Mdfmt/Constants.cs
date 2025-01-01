@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Collections.Generic;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Mdfmt;
@@ -16,10 +17,9 @@ internal static class Constants
     public const string WindowsNewline = "\r\n";
 
     /// <summary>
-    /// Array of string containing all the supported newlines.
+    /// Set of string containing all the supported newlines.
     /// </summary>
-    // For correct splitting behavior, keep longer strings before shorter ones.
-    public static readonly string[] AllNewlines = [WindowsNewline, UnixNewline];
+    public static readonly IReadOnlySet<string> AllNewlines = new HashSet<string>() { UnixNewline, WindowsNewline };
 
     /// <summary>
     /// The maximum number of '#' symbols that can occur at the front of a Markdown heading.  If
