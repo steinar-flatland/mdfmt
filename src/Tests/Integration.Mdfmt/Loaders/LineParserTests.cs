@@ -26,8 +26,12 @@ public class LineParserTests
             SetName("SubsequentLineStillCommented"),
         new TestCaseData(true, false, "-->after comment", Types(typeof(CommentRegion),typeof(ContentRegion)), true, "after comment").
             SetName("SubsequentLineImmediatelyEndsComment"),
+        new TestCaseData(true, false, "--->after comment", Types(typeof(CommentRegion),typeof(ContentRegion)), true, "after comment").
+            SetName("SubsequentLineImmediatelyEndsComment2"),
         new TestCaseData(true, false, "still commented -->after comment", Types(typeof(CommentRegion),typeof(ContentRegion)), true, "after comment").
             SetName("SubsequentLineEndsComment"),
+        new TestCaseData(true, false, "still commented -- --->after comment", Types(typeof(CommentRegion),typeof(ContentRegion)), true, "after comment").
+            SetName("SubsequentLineEndsComment2"),
         new TestCaseData(false, true, "Hello<!-- unterminated comment", Types(typeof(ContentRegion), typeof(CommentRegion)), true, "Hello").
             SetName("UnterminatedComment1"),
         new TestCaseData(false, true, "<!-- unterminated comment", Types(typeof(CommentRegion)), false, string.Empty).

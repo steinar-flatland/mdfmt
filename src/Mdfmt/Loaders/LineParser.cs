@@ -175,7 +175,7 @@ internal class LineParser
                         _buffer.Clear();
                         _state = NotInCommentState;
                     }
-                    else
+                    else if (ch != '-')
                     {
                         _state = InCommentState;
                     }

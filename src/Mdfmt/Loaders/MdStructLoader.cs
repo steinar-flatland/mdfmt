@@ -9,12 +9,13 @@ using System.Text;
 namespace Mdfmt.Loaders;
 
 /// <summary>
-/// Loads a single Markdown file into a MdStruct data structure.  This class is implemented in a reusable way,
-/// i.e., it is safe to call the <c>Load()</c> method multiple times on one instance of this class.
+/// Loads a single Markdown file into a MdStruct data structure.  This class is implemented in a
+/// reusable way, i.e., it is safe to call the <c>Load()</c> method, to load a Markdown file,
+/// multiple times on one instance of this class.
 /// </summary>
 internal class MdStructLoader
 {
-    #region MdStructLoader_States
+    #region Parser_States
 
     /// <summary>
     /// Initial state of parser. In this state it processes lines with headings, paragraphs, etc.
@@ -37,9 +38,17 @@ internal class MdStructLoader
     /// </summary>
     private const int InHtmlCommentState = 4;
 
-    #endregion MdStructLoader_States
+    #endregion Parser_States
 
     #region Resettable_State
+
+    // This state is reset on each call to the Load() method.
+
+    /// <summary>
+    /// Breaks down file content into tokens comprising (1) each non-empty line without a trailing 
+    /// newline, and (2) each newline character or character sequence.
+    /// </summary>
+    private FileContentParser _fileContentParser;
 
     /// <summary>
     /// Newline region to use for line breaks.
@@ -67,14 +76,18 @@ internal class MdStructLoader
     private readonly StringBuilder _regionContent = new();
 
     /// <summary>
-    /// Reset the loader at start of load.  This makes it safe to call the Load() method repeatedly
-    /// on the same instance of this class.
+    /// Reset the loader at start of load of a Markdown file.  This makes it safe to call the
+    /// Load() method repeatedly on the same instance of this class.
     /// </summary>
+    /// <param name="fileContent"">
+    /// Content of the file being parsed.
+    /// </param>
     /// <param name="newlineRegion">
     /// Newline region to use for line breaks.
     /// </param>
-    private void Reset(NewlineRegion newlineRegion)
+    private void Reset(string fileContent, NewlineRegion newlineRegion)
     {
+        _fileContentParser = new FileContentParser(fileContent);
         _newlineRegion = newlineRegion;
         _lineParser = new();
         _regions = [];
@@ -113,37 +126,54 @@ internal class MdStructLoader
         string newline = Newline.DetermineNewline(newlineStrategy, fileContent, out bool isModified);
 
         // Reset the parser, making it ready for a run.
-        Reset(NewlineRegion.Containing(newline));
+        Reset(fileContent, NewlineRegion.Containing(newline));
 
-        // Break the content into lines, for line-by-line processing.
-        string[] lines = fileContent.Split(Constants.AllNewlines, StringSplitOptions.None);
+        // The token most recently parsed by the _fileContentParser.  This is either the text of a
+        // non-empty line (without trailing newline), or it is a newline character or sequence.
+        string token;
 
-        // Parse each line.  Note that each line DOES NOT have newline at end; these have been removed.
-        foreach (string line in lines)
+        // Whether the token is a newline.
+        bool isNewline;
+
+        // If the token is a non-empty line (not a newline) the text of the line, else null.
+        string line;
+
+        // If line is not null, the trimmed version of the line.
+        string trimmedLine;
+
+        while ((token = _fileContentParser.Parse()) != null)
         {
-            string trimmedLine = line.Trim();
+            isNewline = Constants.AllNewlines.Contains(token);
+            line = isNewline ? null : token;
+            trimmedLine = isNewline ? null : token.Trim();
 
             switch (_state)
             {
                 case NormalState:
+                    if (isNewline)
+                    {
+                        _regions.Add(_newlineRegion);
+                        continue;
+                    }
+
                     // This is a line of indented code.  It is important to check this first, or else
                     // an indented code block containing Markdown code would not be handled right.
                     if (line.StartsWith(Markers.FourSpaces) || line.StartsWith('\t'))
                     {
-                        Save(new IndentedLineRegion(line));
+                        _regions.Add(new IndentedLineRegion(line));
                         continue;
                     }
 
                     if (trimmedLine.StartsWith(Markers.FenceMarker))
                     {
-                        SaveToBuffer(line);
+                        _regionContent.Append(line);
                         _state = InFencedCodeBlockState;
                         continue;
                     }
 
                     if (trimmedLine.StartsWith(Markers.BeginTocMarker))
                     {
-                        SaveToBuffer(line);
+                        _regionContent.Append(line);
                         _state = InTableOfContentsState;
                         continue;
                     }
@@ -151,7 +181,7 @@ internal class MdStructLoader
                     // The line is "normal". Basically, its "normal" Markdown content that is
                     // not one of the other special things above (not indented code, not fenced,
                     // code, not TOC).  The LineParser is designed to handle this.
-                    Save(_lineParser.Parse(line));
+                    RegionsAdd(_lineParser.Parse(line));
                     if (_lineParser.InHtmlComment)
                     {
                         _state = InHtmlCommentState;
@@ -160,31 +190,42 @@ internal class MdStructLoader
                     break;
 
                 case InTableOfContentsState:
-                    SaveToBuffer(line);
+                    if (isNewline)
+                    {
+                        _regionContent.Append(_newlineRegion.Content);
+                        continue;
+                    }
+                    _regionContent.Append(line);
                     if (trimmedLine.StartsWith(Markers.EndTocMarker))
                     {
-                        TocRegion tocRegion = new(_regionContent.ToString());
-                        Save(tocRegion);
-                        _regionContent.Clear();
+                        SaveTocRegion();
                         _state = NormalState;
                         continue;
                     }
                     break;
 
                 case InFencedCodeBlockState:
-                    SaveToBuffer(line);
+                    if (isNewline)
+                    {
+                        _regionContent.Append(_newlineRegion.Content);
+                        continue;
+                    }
+                    _regionContent.Append(line);
                     if (trimmedLine.StartsWith(Markers.FenceMarker))
                     {
-                        FencedRegion fencedRegion = new(_regionContent.ToString());
-                        Save(fencedRegion);
-                        _regionContent.Clear();
+                        SaveFencedRegion();
                         _state = NormalState;
                         continue;
                     }
                     break;
 
                 case InHtmlCommentState:
-                    Save(_lineParser.Parse(line));
+                    if (isNewline)
+                    {
+                        _regions.Add(_newlineRegion);
+                        continue;
+                    }
+                    RegionsAdd(_lineParser.Parse(line));
                     if (!_lineParser.InHtmlComment)
                     {
                         _state = NormalState;
@@ -197,38 +238,52 @@ internal class MdStructLoader
             }
         }
 
+        MopUp();
+
         // Assemble and return the MdStruct
         MdStruct mdStruct = new(filePath, _regions, isModified, _newlineRegion);
         return mdStruct;
     }
 
-    private void SaveToBuffer(string line)
+    private void RegionsAdd(List<Region> regions)
     {
-        if (_regionContent.Length > 0)
-            _regionContent.Append(_newlineRegion.Content);
-        _regionContent.Append(line);
-    }
-
-    private void Save(List<Region> lineRegions)
-    {
-        Separate();
-        foreach (Region region in lineRegions)
+        foreach (Region region in regions)
         {
             _regions.Add(region);
         }
     }
 
-    private void Save(Region region)
+    private void SaveFencedRegion()
     {
-        Separate();
-        _regions.Add(region);
+        FencedRegion fencedRegion = new(_regionContent.ToString());
+        _regions.Add(fencedRegion);
+        _regionContent.Clear();
     }
 
-    private void Separate()
+    private void SaveTocRegion()
     {
-        if (_regions.Count > 0)
+        string regionContent = _regionContent.ToString();
+        TocRegion tocRegion = new(regionContent);
+        _regions.Add(tocRegion);
+        _regionContent.Clear();
+    }
+
+    private void MopUp()
+    {
+        // Avoid losing left over state in _regionContent.  This is an issue if the Markdwon file
+        // has either an unclosed fenced code block or a table of contents region that has an
+        // opening comment but no closing comment.
+        if (_regionContent.Length > 0)
         {
-            _regions.Add(_newlineRegion);
+            if (_state == InFencedCodeBlockState)
+            {
+                SaveFencedRegion();
+            }
+            else if (_state == InTableOfContentsState)
+            {
+                SaveTocRegion();
+            }
         }
     }
+
 }
