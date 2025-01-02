@@ -1,7 +1,7 @@
 ﻿using Mdfmt.Loaders;
 using System.Collections.Generic;
 
-namespace Integration.Mdfmt.Loaders;
+namespace Unit.Mdfmt.Loaders;
 
 [TestFixture]
 public class FileContentParserTests
