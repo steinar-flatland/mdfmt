@@ -126,7 +126,10 @@ internal class MdfmtOptions
             OverwriteExplicitlySetCommandLineOptionsOnto(fileProcessingOptions);
 
             // If the file processing options are incomplete, backfill from the command line,
-            // to make the file processing options as complete as possible.
+            // to make the file processing options as complete as possible.  fileProcessingOptions,
+            // in the end, may still be incomplete after this, since the options on the command
+            // line are nullable.  Mdfmt has default behavior for null/missing options, as documented
+            // on the info displayed by mdfmt --help.
             if (!fileProcessingOptions.IsComplete())
             {
                 fileProcessingOptions.PopulateFrom(_commandLineFileProcessingOptions);

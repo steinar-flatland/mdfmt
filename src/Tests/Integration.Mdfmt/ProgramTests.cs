@@ -9,8 +9,6 @@ namespace Integration.Mdfmt;
 [TestFixture]
 public class ProgramTests
 {
-    private Program _program;
-
     private static readonly string _workDir = "./Work";
     private static readonly string _dataDir = "./Data";
     private static readonly string _programTestsZip = "ProgramTests.zip";
@@ -18,16 +16,18 @@ public class ProgramTests
     private static readonly string _empty_md = "Empty.md";
     private static readonly string _title_md = "Title.md";
     private static readonly string _title_toc_md = "Title_toc.md";
-    private static readonly string _title_toc_outdated_md = "Title_toc_outdated.md";
-    private static readonly string _title_toc_updated_md = "Title_toc_updated.md";
-    private static readonly string _title_toc_updated2_md = "Title_toc_updated2.md";
+    private static readonly string _title_tocAzure_updated_md = "Title_toc-azure_updated.md";
+    private static readonly string _title_tocAzure_updated2_md = "Title_toc-azure_updated2.md";
+    private static readonly string _title_tocCommon_outdated_md = "Title_toc-common_outdated.md";
+    private static readonly string _title_tocCommon_updated_md = "Title_toc-common_updated.md";
+    private static readonly string _title_tocCommon_updated2_md = "Title_toc-common_updated2.md";
     private static readonly string _lineEndings_unix_md = "Line-Endings_unix.md";
     private static readonly string _lineEndings_windows_md = "Line-Endings_windows.md";
     private static readonly string _lineEndings_mixed_md = "Line-Endings_mixed.md";
     private static readonly string _lineEndings_mixed_fixed_for_unix_md = "Line-Endings_mixed_fixed_for_unix.md";
     private static readonly string _lineEndings_mixed_fixed_for_windows_md = "Line-Endings_mixed_fixed_for_windows.md";
-    private static readonly string _flavor_common_md = "Flavor_common.md";
     private static readonly string _flavor_azure_md = "Flavor_azure.md";
+    private static readonly string _flavor_common_md = "Flavor_common.md";
     private static readonly string _emptyDestination_before_md = "Empty-Destination_before.md";
     private static readonly string _emptyDestination_after_common_md = "Empty-Destination_after_common.md";
     private static readonly string _emptyDestination_after_azure_md = "Empty-Destination_after_azure.md";
@@ -72,7 +72,6 @@ public class ProgramTests
     [SetUp]
     public void Setup()
     {
-        _program = new Program();
     }
 
     private static readonly IEnumerable<TestCaseData> _testCases =
@@ -85,10 +84,13 @@ public class ProgramTests
 
 
 
-        new TestCaseData(_title_md, new string[] {"-t", "1"}, _title_toc_md, ExitCodes.Success).
-        SetName("TOC.1: Given a file with a title only, When mdfmt -t 1, Then a TOC is added."),
+        new TestCaseData(_title_md, new string[] {"-t", "1", "-f", "common"}, _title_toc_md, ExitCodes.Success).
+        SetName("TOC.1a: Given a file with a title only, add a common flavored TOC."),
 
-        new TestCaseData(_title_md, new string[] {"--toc-threshold", "1"}, _title_toc_md, ExitCodes.Success).
+        new TestCaseData(_title_md, new string[] {"-t", "1", "-f", "azure"}, _title_toc_md, ExitCodes.Success).
+        SetName("TOC.1b: Given a file with a title only, add an Azure flavored TOC."),
+
+        new TestCaseData(_title_md, new string[] {"--toc-threshold", "1", "--flavor", "Common"}, _title_toc_md, ExitCodes.Success).
         SetName("TOC.2: Given a file with a title only, When mdfmt --toc-threshold 1, Then a TOC is added."),
 
         new TestCaseData(_title_md, new string[] {"-t", "0"}, _title_md, ExitCodes.Success).
@@ -100,25 +102,46 @@ public class ProgramTests
         new TestCaseData(_title_toc_md, new string[] {"--toc-threshold", "0"}, _title_md, ExitCodes.Success).
         SetName("TOC.5: Given a file with a title and TOC, When mdfmt --toc-threshold 0, Then the TOC is removed."),
 
-        new TestCaseData(_title_toc_md, new string[] {"-t", "1"}, _title_toc_md, ExitCodes.Success).
-        SetName("TOC.6: Given a file with a title and TOC, When mdfmt -t 1, Then no change."),
+        new TestCaseData(_title_toc_md, new string[] {"-t", "1", "-f", "common"}, _title_toc_md, ExitCodes.Success).
+        SetName("TOC.6a: Given a file with a title and TOC, when re-adding the TOC, Then no change."),
 
-        new TestCaseData(_title_toc_outdated_md, new string[] {"-t", "1"}, _title_toc_updated_md, ExitCodes.Success).
-        SetName("TOC.7: Update outdated TOC"),
+        new TestCaseData(_title_toc_md, new string[] {"-t", "1", "-f", "azure"}, _title_toc_md, ExitCodes.Success).
+        SetName("TOC.6b: Given a file with a title and TOC, when re-adding the TOC, Then no change."),
 
-        new TestCaseData(_title_toc_outdated_md, new string[] {"-h", "1.", "-t", "1"}, _title_toc_updated2_md, ExitCodes.Success).
-        SetName("TOC.8: Update outdated headings and TOC"),
+        new TestCaseData(_title_tocCommon_outdated_md, new string[] {"-f", "common"}, _title_tocCommon_updated_md, ExitCodes.Success).
+        SetName("TOC.7a: Given a file with outdated common TOC and headings, update the TOC using Common flavor."),
 
-        new TestCaseData(_addingToc_mainly_windows_before_md, new string[] {"-t", "1"}, _addingToc_mainly_windows_after_md, ExitCodes.Success).
+        new TestCaseData(_title_tocCommon_outdated_md, new string[] {"-t", "1", "-f", "common"}, _title_tocCommon_updated_md, ExitCodes.Success).
+        SetName("TOC.7b: Given a file with outdated common TOC and headings, update the TOC using Common flavor."),
+
+        new TestCaseData(_title_tocCommon_outdated_md, new string[] {"-f", "azure"}, _title_tocAzure_updated_md, ExitCodes.Success).
+        SetName("TOC.7c: Given a file with outdated common TOC and headings, update the TOC using Azure flavor."),
+
+        new TestCaseData(_title_tocCommon_outdated_md, new string[] {"-t", "1", "-f", "azure"}, _title_tocAzure_updated_md, ExitCodes.Success).
+        SetName("TOC.7d: Given a file with outdated common TOC and headings, update the TOC using Azure flavor."),
+
+        new TestCaseData(_title_tocCommon_outdated_md, new string[] {"-h", "1.", "-f", "common"}, _title_tocCommon_updated2_md, ExitCodes.Success).
+        SetName("TOC.8a: Given a file with outdated common TOC and headings, update both the TOC using Common flavor and headings."),
+
+        new TestCaseData(_title_tocCommon_outdated_md, new string[] {"-h", "1.", "-t", "1", "-f", "common"}, _title_tocCommon_updated2_md, ExitCodes.Success).
+        SetName("TOC.8b: Given a file with outdated common TOC and headings, update both the TOC using Common flavor and headings."),
+
+        new TestCaseData(_title_tocCommon_outdated_md, new string[] {"-h", "1.", "-f", "azure"}, _title_tocAzure_updated2_md, ExitCodes.Success).
+        SetName("TOC.8c: Given a file with outdated common TOC and headings, update the TOC using Azure flavor and headings."),
+
+        new TestCaseData(_title_tocCommon_outdated_md, new string[] {"-h", "1.", "-t", "1", "-f", "azure"}, _title_tocAzure_updated2_md, ExitCodes.Success).
+        SetName("TOC.8d: Given a file with outdated common TOC and headings, update the TOC using Azure flavor and headings."),
+
+        new TestCaseData(_addingToc_mainly_windows_before_md, new string[] {"-t", "1", "-f", "common"}, _addingToc_mainly_windows_after_md, ExitCodes.Success).
         SetName("TOC.9: Given a doc with mostly windows line endings, when inserting TOC, windows line endings are used by default"),
 
-        new TestCaseData(_addingToc_mainly_unix_before_md, new string[] {"-t", "1"}, _addingToc_mainly_unix_after_md, ExitCodes.Success).
+        new TestCaseData(_addingToc_mainly_unix_before_md, new string[] {"-t", "1", "-f", "common"}, _addingToc_mainly_unix_after_md, ExitCodes.Success).
         SetName("TOC.10: Given a doc with mostly unix line endings, when inserting TOC, unix line endings are used by default"),
 
-        new TestCaseData(_addingToc_mainly_windows_before_md, new string[] {"-t", "1", "--newline-strategy", "unix"}, _addingToc_all_unix_after_md, ExitCodes.Success).
+        new TestCaseData(_addingToc_mainly_windows_before_md, new string[] {"-t", "1", "-f", "common", "--newline-strategy", "unix"}, _addingToc_all_unix_after_md, ExitCodes.Success).
         SetName("TOC.11: Given a doc with mostly windows line endings, when inserting TOC with unix newline strategy, results in a file with a TOC and only unix line endings"),
 
-        new TestCaseData(_addingToc_mainly_unix_before_md, new string[] {"-t", "1", "--newline-strategy", "windows"}, _addingToc_all_windows_after_md, ExitCodes.Success).
+        new TestCaseData(_addingToc_mainly_unix_before_md, new string[] {"-t", "1", "-f", "common", "--newline-strategy", "windows"}, _addingToc_all_windows_after_md, ExitCodes.Success).
         SetName("TOC.12: Given a doc with mostly unix line endings, when inserting TOC with windows newline strategy, results in a file with a TOC and only windows line endings"),
 
 
@@ -179,10 +202,10 @@ public class ProgramTests
         new TestCaseData(_UnclosedFencedRegion_windows_md, new string[] {"--newline-strategy", "Unix"}, _UnclosedFencedRegion_unix_md, ExitCodes.Success).
         SetName("Line-Endings-Unclosed.2: Given a file that ends with an unclosed fenced code block, converting from windows to unix does not lose information."),
 
-        new TestCaseData(_UnclosedTocRegion_unix_before_md, new string[] {"--newline-strategy", "Windows", "-t", "1"}, _UnclosedTocRegion_windows_after_md, ExitCodes.Success).
+        new TestCaseData(_UnclosedTocRegion_unix_before_md, new string[] {"--newline-strategy", "Windows"}, _UnclosedTocRegion_windows_after_md, ExitCodes.Success).
         SetName("Line-Endings-Unclosed.3: Given a file that ends with an unclosed TOC, converting from unix to windows closes TOC and changes newlines."),
 
-        new TestCaseData(_UnclosedTocRegion_windows_before_md, new string[] {"--newline-strategy", "Unix", "-t", "1"}, _UnclosedTocRegion_unix_after_md, ExitCodes.Success).
+        new TestCaseData(_UnclosedTocRegion_windows_before_md, new string[] {"--newline-strategy", "Unix"}, _UnclosedTocRegion_unix_after_md, ExitCodes.Success).
         SetName("Line-Endings-Unclosed.4: Given a file that ends with an unclosed TOC, converting from windows to unix closes TOC and changes newlines."),
 
 
@@ -215,34 +238,55 @@ public class ProgramTests
         new TestCaseData(_headingNumbering_none_md, new string[] {"--heading-numbers", "NONE"}, _headingNumbering_none_md, ExitCodes.Success).
         SetName("Heading-Numbering.1b: Given a file without heading numbering, When heading numbering is removed, Then no change."),
 
-        new TestCaseData(_headingNumbering_none_md, new string[] { "-h", "1"}, _headingNumbering_1_md, ExitCodes.Success).
-        SetName("Heading-Numbering.2: Given a file without heading numbering, When apply heading numbering with no trailing period, Then heading numbering with no trailing period is applied."),
+        new TestCaseData(_headingNumbering_none_md, new string[] {"-h", "1", "-t", "1", "-f", "common"}, _headingNumbering_1_md, ExitCodes.Success).
+        SetName("Heading-Numbering.2a: Given a file without heading numbering, When apply heading numbering with no trailing period, Then heading numbering with no trailing period is applied."),
 
-        new TestCaseData(_headingNumbering_none_md, new string[] { "-h", "1."}, _headingNumbering_1dot_md, ExitCodes.Success).
-        SetName("Heading-Numbering.3: Given a file without heading numbering, When apply heading numbering with trailing period, Then heading numbering with trailing period is applied."),
+        new TestCaseData(_headingNumbering_none_md, new string[] {"-h", "1", "-f", "common"}, _headingNumbering_1_md, ExitCodes.Success).
+        SetName("Heading-Numbering.2b: Given a file without heading numbering, When apply heading numbering with no trailing period, Then heading numbering with no trailing period is applied."),
 
-        new TestCaseData(_headingNumbering_1_md, new string[] { "-h", "none"}, _headingNumbering_none_md, ExitCodes.Success).
+        new TestCaseData(_headingNumbering_none_md, new string[] {"-h", "1.", "-t", "1", "-f", "common"}, _headingNumbering_1dot_md, ExitCodes.Success).
+        SetName("Heading-Numbering.3a: Given a file without heading numbering, When apply heading numbering with trailing period, Then heading numbering with trailing period is applied."),
+
+        new TestCaseData(_headingNumbering_none_md, new string[] {"-h", "1.", "-f", "common"}, _headingNumbering_1dot_md, ExitCodes.Success).
+        SetName("Heading-Numbering.3b: Given a file without heading numbering, When apply heading numbering with trailing period, Then heading numbering with trailing period is applied."),
+
+        new TestCaseData(_headingNumbering_1_md, new string[] {"-h", "none", "-t", "1", "-f", "common"}, _headingNumbering_none_md, ExitCodes.Success).
         SetName("Heading-Numbering.4a: Given a file with heading numbering without a trailing period, When heading numbering is removed, Then there are no heading numbers."),
 
-        new TestCaseData(_headingNumbering_1_md, new string[] { "--heading-numbers", "NONE"}, _headingNumbering_none_md, ExitCodes.Success).
+        new TestCaseData(_headingNumbering_1_md, new string[] {"--heading-numbers", "NONE", "-t", "1", "-f", "common"}, _headingNumbering_none_md, ExitCodes.Success).
         SetName("Heading-Numbering.4b: Given a file with heading numbering without a trailing period, When heading numbering is removed, Then there are no heading numbers."),
 
-        new TestCaseData(_headingNumbering_1_md, new string[] { "-h", "1"}, _headingNumbering_1_md, ExitCodes.Success).
+        new TestCaseData(_headingNumbering_1_md, new string[] {"-h", "none", "-f", "common"}, _headingNumbering_none_md, ExitCodes.Success).
+        SetName("Heading-Numbering.4c: Given a file with heading numbering without a trailing period, When heading numbering is removed, Then there are no heading numbers."),
+
+        new TestCaseData(_headingNumbering_1_md, new string[] {"--heading-numbers", "NONE", "-f", "common"}, _headingNumbering_none_md, ExitCodes.Success).
+        SetName("Heading-Numbering.4d: Given a file with heading numbering without a trailing period, When heading numbering is removed, Then there are no heading numbers."),
+
+        new TestCaseData(_headingNumbering_1_md, new string[] {"-h", "1"}, _headingNumbering_1_md, ExitCodes.Success).
         SetName("Heading-Numbering.5: Given a file with heading numbering without a trailing period, When apply heading numbering with no trailing period, Then no change."),
 
-        new TestCaseData(_headingNumbering_1_md, new string[] { "-h", "1."}, _headingNumbering_1dot_md, ExitCodes.Success).
-        SetName("Heading-Numbering.6: Given a file with heading numbering without a trailing period, When apply heading numbering with a trailing period, Then heading numbering with trailing period is applied."),
+        new TestCaseData(_headingNumbering_1_md, new string[] {"-h", "1.", "-t", "1", "-f", "common"}, _headingNumbering_1dot_md, ExitCodes.Success).
+        SetName("Heading-Numbering.6a: Given a file with heading numbering without a trailing period, When apply heading numbering with a trailing period, Then heading numbering with trailing period is applied."),
 
-        new TestCaseData(_headingNumbering_1dot_md, new string[] { "-h", "none"}, _headingNumbering_none_md, ExitCodes.Success).
+        new TestCaseData(_headingNumbering_1_md, new string[] {"-h", "1.", "-f", "common"}, _headingNumbering_1dot_md, ExitCodes.Success).
+        SetName("Heading-Numbering.6b: Given a file with heading numbering without a trailing period, When apply heading numbering with a trailing period, Then heading numbering with trailing period is applied."),
+
+        new TestCaseData(_headingNumbering_1dot_md, new string[] {"-h", "none", "-t", "1", "-f", "common"}, _headingNumbering_none_md, ExitCodes.Success).
         SetName("Heading-Numbering.7a: Given a file with heading numbering that includes a trailing period, When heading numbering is removed, Then there are no heading numbers."),
 
-        new TestCaseData(_headingNumbering_1dot_md, new string[] { "--heading-numbers", "NONE"}, _headingNumbering_none_md, ExitCodes.Success).
+        new TestCaseData(_headingNumbering_1dot_md, new string[] {"--heading-numbers", "NONE", "-t", "1", "-f", "common"}, _headingNumbering_none_md, ExitCodes.Success).
         SetName("Heading-Numbering.7b: Given a file with heading numbering that includes a trailing period, When heading numbering is removed, Then there are no heading numbers."),
 
-        new TestCaseData(_headingNumbering_1dot_md, new string[] { "-h", "1"}, _headingNumbering_1_md, ExitCodes.Success).
+        new TestCaseData(_headingNumbering_1dot_md, new string[] {"-h", "none", "-f", "common"}, _headingNumbering_none_md, ExitCodes.Success).
+        SetName("Heading-Numbering.7c: Given a file with heading numbering that includes a trailing period, When heading numbering is removed, Then there are no heading numbers."),
+
+        new TestCaseData(_headingNumbering_1dot_md, new string[] {"--heading-numbers", "NONE", "-f", "common"}, _headingNumbering_none_md, ExitCodes.Success).
+        SetName("Heading-Numbering.7d: Given a file with heading numbering that includes a trailing period, When heading numbering is removed, Then there are no heading numbers."),
+
+        new TestCaseData(_headingNumbering_1dot_md, new string[] {"-h", "1", "-f", "common"}, _headingNumbering_1_md, ExitCodes.Success).
         SetName("Heading-Numbering.8: Given a file with heading numbering that includes a trailing period, When apply heading numbering with no trailing period, Then heading numbering with no trailing period is applied."),
 
-        new TestCaseData(_headingNumbering_1dot_md, new string[] { "-h", "1."}, _headingNumbering_1dot_md, ExitCodes.Success).
+        new TestCaseData(_headingNumbering_1dot_md, new string[] {"-h", "1."}, _headingNumbering_1dot_md, ExitCodes.Success).
         SetName("Heading-Numbering.9: Given a file with heading numbering that includes a trailing period, When apply heading numbering with a trailing period, Then no change."),
 
         new TestCaseData(_headingNumbering_1_md, Array.Empty<string>(), _headingNumbering_1_md, ExitCodes.Success).

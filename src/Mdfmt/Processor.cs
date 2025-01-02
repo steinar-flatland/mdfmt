@@ -89,9 +89,38 @@ internal class Processor
                 $"with {md.HeadingCount} heading{(md.HeadingCount != 1 ? 's' : string.Empty)}.");
         }
 
-        HeadingNumberUpdater.Update(md, fpo.HeadingNumbering, _options.Verbose);
-        _tocUpdaters[(Flavor)fpo.Flavor].Update(md, (int)fpo.TocThreshold, _options.Verbose);
-        _linkUpdaters[(Flavor)fpo.Flavor].Update(md, _options.Verbose);
+        if (fpo.HeadingNumbering != null)
+        {
+            HeadingNumberUpdater.Update(md, fpo.HeadingNumbering, _options.Verbose);
+        }
+
+        if (fpo.TocThreshold is int tocThreshold)
+        {
+            if (tocThreshold == 0)
+            {
+                TocDeleter.DeleteToc(md, _options.Verbose);
+            }
+            else if (tocThreshold > 0)
+            {
+                // options validation has already assured non-null fpo.Flavor in this case.
+                _tocUpdaters[(Flavor)fpo.Flavor].Update(md, tocThreshold, _options.Verbose);
+            }
+            else
+            {
+                throw new InvalidOperationException("Code maintenance error.  tocThreshold < 0 is an invalid state");
+            }
+        }
+
+        if (fpo.Flavor is Flavor flavor)
+        {
+            // If options don't indicate anything about TOC threshold, but there's already a TOC
+            // present, then we need to maintain it, making sure its up to date with the the flavor.
+            if (fpo.TocThreshold == null && md.HasToc)
+            {
+                _tocUpdaters[flavor].Update(md, 1, _options.Verbose);
+            }
+            _linkUpdaters[flavor].Update(md, _options.Verbose);
+        }
 
         // If the MdStruct was modified, save the Markdown file.
         if (md.IsModified)
