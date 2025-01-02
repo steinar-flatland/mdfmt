@@ -3,8 +3,7 @@
     "default": {
       "Flavor": "Common",
       "TocThreshold": 3,
-      "HeadingNumbering": "1.",
-      "NewlineStrategy": "PreferWindows"
+      "HeadingNumbering": "1."
     },
     "noHeadings": {
       "HeadingNumbering": "none"

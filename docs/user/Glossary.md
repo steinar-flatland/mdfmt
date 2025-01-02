@@ -10,6 +10,9 @@
   - [Mdfmt](#mdfmt)
   - [slug](#slug)
   - [slugification](#slugification)
+  - [table of contents](#table-of-contents)
+  - [TOC](#toc)
+  - [TOC threshold](#toc-threshold)
 <!--END_TOC-->
 
 This file defines terms that form the ubiquitous language of Mdfmt.
@@ -59,3 +62,15 @@ in the context of [Mdfmt](#mdfmt), a string that can be used as a [destination](
 ## slugification
 
 in the context of [Mdfmt](#mdfmt), the process of converting a [Markdown](#markdown) file name and the text of a heading the way it displays to the user, to a [destination](#destination) that can be used in a [link](#link).  There are different slugification algorithms that support different [Markdown](#markdown) rendering environments.  For example, [Markdown rendered on GitHub](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax) requires a different format of slug than [Azure DevOps Wiki](https://learn.microsoft.com/en-us/azure/devops/project/wiki).
+
+## table of contents
+
+a region of a [Markdown](#markdown) document that [Mdfmt](#mdfmt) maintains.  It comprises a hierarchical outline of [links](#link), where each [destination](#destination) goes to a heading of the document.
+
+## TOC
+
+short for [table of contents](#table-of-contents).
+
+## TOC threshold
+
+an integer greater than or equal to 0, indicating the minimum number of headings that a document should have before a [TOC](#toc) is generated.

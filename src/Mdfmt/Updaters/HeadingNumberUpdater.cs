@@ -10,13 +10,22 @@ namespace Mdfmt.Updaters;
 /// </summary>
 internal static class HeadingNumberUpdater
 {
+    /// <summary>
+    /// Ensure that each heading in the Markdown document either does or does not have a heading
+    /// number, as per a provided option value.
+    /// </summary>
+    /// <param name="md">
+    /// A Markdown file loaded into <see cref="MdStruct"/>.
+    /// </param>
+    /// <param name="headingNumbering">
+    /// One of the options for heading numbering as defined in <see cref="Options.HeadingNumbering"/>.
+    /// </param>
+    /// <param name="verbose">
+    /// Whether to generate verbose output.
+    /// </param>
+    /// <exception cref="InvalidOperationException"></exception>
     public static void Update(MdStruct md, string headingNumbering, bool verbose)
     {
-        if (headingNumbering == null)
-        {
-            return;
-        }
-
         bool headingsModified = false;
 
         if (headingNumbering.Equals(HeadingNumbering.None, StringComparison.OrdinalIgnoreCase))
