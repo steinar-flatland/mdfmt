@@ -76,12 +76,12 @@ internal class Processor
         FileProcessingOptions fpo = _options.GetFileProcessingOptions(cpath);
         if (_options.Verbose)
         {
-            Output.Info($"{Environment.NewLine}Processing {filePath}", true, ConsoleColor.White);
+            Output.Info($"{Environment.NewLine}Processing {filePath}", true, ConsoleColor.Cyan);
             Output.Info($"{fpo.GetType().Name}:{Environment.NewLine}{fpo}");
         }
 
         // Load Markdown file into MdStruct data structure.
-        MdStruct md = _mdStructLoader.Load(filePath, (NewlineStrategy)fpo.NewlineStrategy);
+        MdStruct md = _mdStructLoader.Load(filePath, fpo.NewlineStrategy);
 
         if (_options.Verbose)
         {

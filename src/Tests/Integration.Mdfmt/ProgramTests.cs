@@ -44,6 +44,12 @@ public class ProgramTests
     private static readonly string _UnclosedTocRegion_windows_before_md = "Unclosed-Toc-Region_windows_before.md";
     private static readonly string _UnclosedTocRegion_unix_after_md = "Unclosed-Toc-Region_unix_after.md";
     private static readonly string _UnclosedTocRegion_unix_before_md = "Unclosed-Toc-Region_unix_before.md";
+    private static readonly string _addingToc_mainly_windows_before_md = "Adding-Toc_mainly_windows_before.md";
+    private static readonly string _addingToc_mainly_windows_after_md = "Adding-Toc_mainly_windows_after.md";
+    private static readonly string _addingToc_mainly_unix_before_md = "Adding-Toc_mainly_unix_before.md";
+    private static readonly string _addingToc_mainly_unix_after_md = "Adding-Toc_mainly_unix_after.md";
+    private static readonly string _addingToc_all_windows_after_md = "Adding-Toc_all_windows_after.md";
+    private static readonly string _addingToc_all_unix_after_md = "Adding-Toc_all_unix_after.md";
 
     [OneTimeSetUp]
     public void OneTimeSetup()
@@ -102,6 +108,18 @@ public class ProgramTests
 
         new TestCaseData(_title_toc_outdated_md, new string[] {"-h", "1.", "-t", "1"}, _title_toc_updated2_md, ExitCodes.Success).
         SetName("TOC.8: Update outdated headings and TOC"),
+
+        new TestCaseData(_addingToc_mainly_windows_before_md, new string[] {"-t", "1"}, _addingToc_mainly_windows_after_md, ExitCodes.Success).
+        SetName("TOC.9: Given a doc with mostly windows line endings, when inserting TOC, windows line endings are used by default"),
+
+        new TestCaseData(_addingToc_mainly_unix_before_md, new string[] {"-t", "1"}, _addingToc_mainly_unix_after_md, ExitCodes.Success).
+        SetName("TOC.10: Given a doc with mostly unix line endings, when inserting TOC, unix line endings are used by default"),
+
+        new TestCaseData(_addingToc_mainly_windows_before_md, new string[] {"-t", "1", "--newline-strategy", "unix"}, _addingToc_all_unix_after_md, ExitCodes.Success).
+        SetName("TOC.11: Given a doc with mostly windows line endings, when inserting TOC with unix newline strategy, results in a file with a TOC and only unix line endings"),
+
+        new TestCaseData(_addingToc_mainly_unix_before_md, new string[] {"-t", "1", "--newline-strategy", "windows"}, _addingToc_all_windows_after_md, ExitCodes.Success).
+        SetName("TOC.12: Given a doc with mostly unix line endings, when inserting TOC with windows newline strategy, results in a file with a TOC and only windows line endings"),
 
 
 

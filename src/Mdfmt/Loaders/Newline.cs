@@ -8,7 +8,8 @@ internal static class Newline
     /// <summary>
     /// <para>
     /// Determine the kind of newline characters to use, considering both the --newline-strategy
-    /// command line option and the kinds of newlines present in the file being parsed.
+    /// command line option (or null if it was not provided) and the kinds of newlines present in
+    /// the file being parsed.
     /// </para>
     /// <para>
     /// Throws a <c>NotImplementedException</c> if the <c>newlineStrategy</c> passed in is
@@ -16,7 +17,8 @@ internal static class Newline
     /// </para>
     /// </summary>
     /// <param name="newlineStrategy">
-    /// Command line option selected by user.
+    /// Enum value communicating user's preferred strategy for managing newlines, or null if no 
+    /// preference.
     /// </param>
     /// <param name="fileContent">
     /// File content being processed.
@@ -28,7 +30,7 @@ internal static class Newline
     /// A string that is either <c>"\n"</c> or <c>"\r\n"</c>.
     /// </returns>
     /// <exception cref="NotImplementedException"></exception>
-    public static string DetermineNewline(NewlineStrategy newlineStrategy, string fileContent, out bool rewriteRequired)
+    public static string DetermineNewline(NewlineStrategy? newlineStrategy, string fileContent, out bool rewriteRequired)
     {
         int unixNewlineCount = UnixNewlineCount(fileContent);
         int windowsNewlineCount = WindowsNewlineCount(fileContent);
@@ -73,6 +75,9 @@ internal static class Newline
                     rewriteRequired = true;
                     return Constants.WindowsNewline;
                 }
+            case null:
+                rewriteRequired = false;
+                return unixNewlineCount >= windowsNewlineCount ? Constants.UnixNewline : Constants.WindowsNewline;
             default:
                 throw new NotImplementedException($"Unhandled {nameof(NewlineStrategy)}: {newlineStrategy}");
         }

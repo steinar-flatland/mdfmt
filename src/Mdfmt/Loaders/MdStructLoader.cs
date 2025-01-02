@@ -51,7 +51,16 @@ internal class MdStructLoader
     private FileContentParser _fileContentParser;
 
     /// <summary>
-    /// Newline region to use for line breaks.
+    /// The newline strategy to use for loading this Markdown file, or null if no preference.
+    /// </summary>
+    private NewlineStrategy? _newlineStrategy;
+
+    /// <summary>
+    /// <see cref="NewlineRegion"/> to forward to <see cref="MdStruct"/> constructor, to know what
+    /// newline to use when making any changes to the loaded Markdown file.  Only in the case when
+    /// <c>_newlineStrategy</c> is non-null, <c>_newlineRegion</c> reflects the target newline 
+    /// character of the strategy considered in light of the file being loaded, and in this case
+    /// any newlines loaded from file will be replaced by this <c>_newlineRegion</c> when loading.
     /// </summary>
     private NewlineRegion _newlineRegion;
 
@@ -82,12 +91,16 @@ internal class MdStructLoader
     /// <param name="fileContent"">
     /// Content of the file being parsed.
     /// </param>
-    /// <param name="newlineRegion">
-    /// Newline region to use for line breaks.
+    /// <param name="newlineStrategy">
+    /// The newline strategy to use for loading this Markdown file, or null if no preference.
     /// </param>
-    private void Reset(string fileContent, NewlineRegion newlineRegion)
+    /// <param name="newlineRegion">
+    /// See discussion of <c>_newlineRegion</c> above.
+    /// </param>
+    private void Reset(string fileContent, NewlineStrategy? newlineStrategy, NewlineRegion newlineRegion)
     {
         _fileContentParser = new FileContentParser(fileContent);
+        _newlineStrategy = newlineStrategy;
         _newlineRegion = newlineRegion;
         _lineParser = new();
         _regions = [];
@@ -111,12 +124,12 @@ internal class MdStructLoader
     /// File path of the Markdown file to load.
     /// </param>
     /// <param name="newlineStrategy">
-    /// Option for how to manage newlines when modified Markdown files are written.
+    /// The newline strategy to use for loading this Markdown file, or null if no preference.
     /// </param>
     /// <returns>MdStruct</returns>
     /// <exception cref="NotImplementedException">
     /// </exception>
-    public MdStruct Load(string filePath, NewlineStrategy newlineStrategy)
+    public MdStruct Load(string filePath, NewlineStrategy? newlineStrategy)
     {
         // Load the file content to parse.
         string fileContent = File.ReadAllText(filePath);
@@ -126,7 +139,7 @@ internal class MdStructLoader
         string newline = Newline.DetermineNewline(newlineStrategy, fileContent, out bool isModified);
 
         // Reset the parser, making it ready for a run.
-        Reset(fileContent, NewlineRegion.Containing(newline));
+        Reset(fileContent, newlineStrategy, NewlineRegion.Containing(newline));
 
         // The token most recently parsed by the _fileContentParser.  This is either the text of a
         // non-empty line (without trailing newline), or it is a newline character or sequence.
@@ -152,7 +165,7 @@ internal class MdStructLoader
                 case NormalState:
                     if (isNewline)
                     {
-                        _regions.Add(_newlineRegion);
+                        _regions.Add(GetNewlineRegion(token));
                         continue;
                     }
 
@@ -192,7 +205,7 @@ internal class MdStructLoader
                 case InTableOfContentsState:
                     if (isNewline)
                     {
-                        _regionContent.Append(_newlineRegion.Content);
+                        _regionContent.Append(GetNewlineRegion(token).Content);
                         continue;
                     }
                     _regionContent.Append(line);
@@ -207,7 +220,7 @@ internal class MdStructLoader
                 case InFencedCodeBlockState:
                     if (isNewline)
                     {
-                        _regionContent.Append(_newlineRegion.Content);
+                        _regionContent.Append(GetNewlineRegion(token).Content);
                         continue;
                     }
                     _regionContent.Append(line);
@@ -222,7 +235,7 @@ internal class MdStructLoader
                 case InHtmlCommentState:
                     if (isNewline)
                     {
-                        _regions.Add(_newlineRegion);
+                        _regions.Add(GetNewlineRegion(token));
                         continue;
                     }
                     RegionsAdd(_lineParser.Parse(line));
@@ -283,6 +296,27 @@ internal class MdStructLoader
             {
                 SaveTocRegion();
             }
+        }
+    }
+
+    /// <summary>
+    /// Determine the Newline region to use, given a current token that is a newline character or
+    /// sequence parsed from the Markdown file.
+    /// </summary>
+    /// <param name="token">string containing newline character or sequence just parsed</param>
+    /// <returns>Region containing newline chracter or sequence to use.</returns>
+    private NewlineRegion GetNewlineRegion(string token)
+    {
+        if (_newlineStrategy == null)
+        {
+            // Use the newline that was just parsed, since there is no other strategy in play.
+            return NewlineRegion.Containing(token);
+        }
+        else
+        {
+            // Use the newline of this region that was already determined based on the
+            // --newline-strategy option  and the content of Markdown file being processed.
+            return _newlineRegion;
         }
     }
 
