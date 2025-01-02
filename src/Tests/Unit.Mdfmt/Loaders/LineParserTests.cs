@@ -3,7 +3,7 @@ using Mdfmt.Model;
 using System;
 using System.Collections.Generic;
 
-namespace Integration.Mdfmt.Loaders;
+namespace Unit.Mdfmt.Loaders;
 
 [TestFixture]
 public class LineParserTests
