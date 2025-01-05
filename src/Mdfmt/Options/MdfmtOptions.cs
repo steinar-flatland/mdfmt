@@ -48,11 +48,11 @@ internal class MdfmtOptions
     private readonly MdfmtProfile _mdfmtProfile = mdfmtProfile;
 
     /// <summary>
-    /// Instance of <see cref="FileProcessingOptions"/> instantiated based on command line options.
-    /// This knowledge is used as a fallback mechanism:  Any file processing options not 
-    /// specified through the .mdfmt file are taken from here as a fallback.
+    /// Instance of <see cref="FormattingOptions"/> instantiated based on command line options.
+    /// This knowledge is used as a fallback mechanism:  Any formatting options not specified
+    /// through the .mdfmt file are taken from here as a fallback.
     /// </summary>
-    private readonly FileProcessingOptions _commandLineFileProcessingOptions = FileProcessingOptionsOf(commandLineOptions);
+    private readonly FormattingOptions _commandLineFormattingOptions = FormattingOptionsOf(commandLineOptions);
 
     /// <summary>
     /// Build and return a set of argument names that were specified on the command line.
@@ -73,22 +73,22 @@ internal class MdfmtOptions
     }
 
     /// <summary>
-    /// Create the fallback file-specific options, based on command line options.
+    /// Create fallback formatting options, based on command line options.
     /// Use these options for processing a file, if more specific options are not
     /// determined through the .mdfmt file.
     /// </summary>
     /// <param name="commandLineOptions">options determined by parsing the program's command line</param>
-    /// <returns><see cref="FileProcessingOptions"/></returns>
-    private static FileProcessingOptions FileProcessingOptionsOf(CommandLineOptions commandLineOptions)
+    /// <returns><see cref="FormattingOptions"/></returns>
+    private static FormattingOptions FormattingOptionsOf(CommandLineOptions commandLineOptions)
     {
-        FileProcessingOptions fileProcessingOptions = new()
+        FormattingOptions formattingOptions = new()
         {
             Flavor = commandLineOptions.Flavor,
             HeadingNumbering = commandLineOptions.HeadingNumbering,
             TocThreshold = commandLineOptions.TocThreshold,
             NewlineStrategy = commandLineOptions.NewlineStrategy
         };
-        return fileProcessingOptions;
+        return formattingOptions;
     }
 
     /// <summary>
@@ -107,66 +107,66 @@ internal class MdfmtOptions
     public bool Recursive => _commandLineOptions.Recursive;
 
     /// <summary>
-    /// Get the options that determine how a specific Markdown file is processed.
+    /// Get the options that determine how a specific Markdown file should be formatted.
     /// </summary>
     /// <param name="cpath">
     /// The canonical relative path of a Markdown file, from the root of the Mdfmt context.
     /// </param>
     /// <returns>
-    /// The file procssing options to use for the specified file.
+    /// The formatting options to use for the specified file.
     /// </returns>
-    public FileProcessingOptions GetFileProcessingOptions(string cpath)
+    public FormattingOptions GetFormattingOptions(string cpath)
     {
         // If a .mdfmt file was loaded into _mdfmtProfile, and it maps the cpath to an instance of
-        // FileProcessingOptions, then return based on that.
-        if (_mdfmtProfile != null && _mdfmtProfile.TryGetFileProcessingOptions(cpath, out var fileProcessingOptions))
+        // FormattingOptions, then return based on that.
+        if (_mdfmtProfile != null && _mdfmtProfile.TryGetFormattingOptions(cpath, out var formattingOptions))
         {
-            // If fileProcessingOptions has values that were overridden explicitly on the command line,
-            // then write the values from the command into fileProcessingOptions.
-            OverwriteExplicitlySetCommandLineOptionsOnto(fileProcessingOptions);
+            // If formattingOptions has values that were overridden explicitly on the command line,
+            // then write the values from the command onto formattingOptions.
+            OverwriteExplicitlySetCommandLineOptionsOnto(formattingOptions);
 
-            // If the file processing options are incomplete, backfill from the command line,
-            // to make the file processing options as complete as possible.  fileProcessingOptions,
+            // If the formattingOptions are incomplete, backfill from the command line,
+            // to make the formatting options as complete as possible.  formattingOptions,
             // in the end, may still be incomplete after this, since the options on the command
             // line are nullable.  Mdfmt has default behavior for null/missing options, as documented
             // on the info displayed by mdfmt --help.
-            if (!fileProcessingOptions.IsComplete())
+            if (!formattingOptions.IsComplete())
             {
-                fileProcessingOptions.PopulateFrom(_commandLineFileProcessingOptions);
+                formattingOptions.PopulateFrom(_commandLineFormattingOptions);
             }
 
-            return fileProcessingOptions;
+            return formattingOptions;
         }
-        // In all other cases, simply return FileProcessingOptions based on the values passed to the
+        // In all other cases, simply return FormattingOptions based on the values passed to the
         // command line.
         else
         {
-            return _commandLineFileProcessingOptions;
+            return _commandLineFormattingOptions;
         }
     }
 
     /// <summary>
-    /// In the instance of <see cref="FileProcessingOptions"/> passed in, replace property values
+    /// In the instance of <see cref="FormattingOptions"/> passed in, replace property values
     /// by explicit overrides from the command line.
     /// </summary>
-    /// <param name="fileProcessingOptions">Instance of <see cref="FileProcessingOptions"/> to edit</param>
-    private void OverwriteExplicitlySetCommandLineOptionsOnto(FileProcessingOptions fileProcessingOptions)
+    /// <param name="formattingOptions">Instance of <see cref="FormattingOptions"/> to edit</param>
+    private void OverwriteExplicitlySetCommandLineOptionsOnto(FormattingOptions formattingOptions)
     {
         if (_argNames.Contains("-f") || _argNames.Contains("--flavor"))
         {
-            fileProcessingOptions.Flavor = _commandLineFileProcessingOptions.Flavor;
+            formattingOptions.Flavor = _commandLineFormattingOptions.Flavor;
         }
         if (_argNames.Contains("-h") || _argNames.Contains("--heading-numbers"))
         {
-            fileProcessingOptions.HeadingNumbering = _commandLineFileProcessingOptions.HeadingNumbering;
+            formattingOptions.HeadingNumbering = _commandLineFormattingOptions.HeadingNumbering;
         }
         if (_argNames.Contains("-t") || _argNames.Contains("--toc-threshold"))
         {
-            fileProcessingOptions.TocThreshold = _commandLineFileProcessingOptions.TocThreshold;
+            formattingOptions.TocThreshold = _commandLineFormattingOptions.TocThreshold;
         }
         if (_argNames.Contains("--newline-strategy"))
         {
-            fileProcessingOptions.NewlineStrategy = _commandLineFileProcessingOptions.NewlineStrategy;
+            formattingOptions.NewlineStrategy = _commandLineFormattingOptions.NewlineStrategy;
         }
     }
 
@@ -179,7 +179,7 @@ internal class MdfmtOptions
         sb.Append(Environment.NewLine);
         sb.Append(Environment.NewLine);
 
-        sb.Append($"Names of arguments explicitly passed to the command line:{Environment.NewLine}{(_argNames.Count == 0 ? "none" : string.Join(", ", _argNames))}");
+        sb.Append($"Names:{Environment.NewLine}{(_argNames.Count == 0 ? "none" : string.Join(", ", _argNames))}");
         sb.Append(Environment.NewLine);
         sb.Append(Environment.NewLine);
 

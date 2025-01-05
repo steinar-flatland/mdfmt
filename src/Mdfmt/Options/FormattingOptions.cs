@@ -8,7 +8,7 @@ namespace Mdfmt.Options;
 /// Options for how to format a Markdown file that can vary per Markdown file.
 /// This does not include global settings that are the same for all Markdown files.
 /// </summary>
-internal class FileProcessingOptions
+internal class FormattingOptions
 {
     /// <summary>
     /// Flavor of Markdown formatting to apply.  Optional / may be null.
@@ -39,7 +39,7 @@ internal class FileProcessingOptions
     /// properties from another instance, in an effort to make them non-null.
     /// </summary>
     /// <param name="other">Another instance of this class.</param>
-    public void PopulateFrom(FileProcessingOptions other)
+    public void PopulateFrom(FormattingOptions other)
     {
         ArgumentNullException.ThrowIfNull(other);
 

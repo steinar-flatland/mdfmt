@@ -46,10 +46,7 @@ internal class LinkUpdater(ILinkDestinationGenerator linkDestinationGenerator)
                 }
                 else
                 {
-                    if (verbose)
-                    {
-                        Output.Warn($"Could not match link to heading: {linkRegion.Content}");
-                    }
+                    Output.Warn($"{md.FilePath}: Could not match link to heading: {linkRegion.Content}");
                 }
             }
         }

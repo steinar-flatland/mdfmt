@@ -82,10 +82,10 @@ try {
     $releaseDir = "$mdfmtRoot/release" 
     DeleteDirectory -directoryPath $releaseDir
 
-    PackageZip -runtime "win-x64" -selfContained $true -zipFileName "mdfmt_${version}_win-x64_self-contained.zip"
-    PackageZip -runtime "linux-x64" -selfContained $true -zipFileName "mdfmt_${version}_linux-x64_self-contained.zip"
-    PackageZip -runtime "win-x64" -selfContained $false -zipFileName "mdfmt_${version}_win-x64_framework-net8.0.zip"
-    PackageZip -runtime "linux-x64" -selfContained $false -zipFileName "mdfmt_${version}_linux-x64_framework-net8.0.zip"
+    PackageZip -runtime "win-x64" -selfContained $true -zipFileName "mdfmt_${version}_win-x64_self-contained-net8.0.zip"
+    PackageZip -runtime "linux-x64" -selfContained $true -zipFileName "mdfmt_${version}_linux-x64_self-contained-net8.0.zip"
+    PackageZip -runtime "win-x64" -selfContained $false -zipFileName "mdfmt_${version}_win-x64_framework-dependent-net8.0.zip"
+    PackageZip -runtime "linux-x64" -selfContained $false -zipFileName "mdfmt_${version}_linux-x64_framework-dependent-net8.0.zip"
 
 } catch {
     Write-Host "Error: $($_.Exception.Message)" -ForegroundColor Red

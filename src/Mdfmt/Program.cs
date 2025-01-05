@@ -14,7 +14,7 @@ namespace Mdfmt;
 
 internal class Program
 {
-    private const string Version = "0.3.8";
+    public const string Version = "1.0.0";
 
     public static void Main(string[] args)
     {
@@ -132,7 +132,7 @@ internal class Program
                 HelpText helpText = HelpText.AutoBuild(parsedResult, h => {
                     h.AdditionalNewLineAfterOption = false;
                     h.Heading = $"Mdfmt version {Version}";
-                    h.Copyright = "Copyright (c) 2024 Steinar Flatland.\nThis software is licensed under the Apache License 2.0.\nSee https://github.com/steinar-flatland/mdfmt/blob/main/LICENSE for details.";
+                    h.Copyright = "Copyright (c) 2024-2025 Steinar Flatland.\nThis software is licensed under the Apache License 2.0.\nSee https://github.com/steinar-flatland/mdfmt/blob/main/LICENSE for details.";
                     return h;
                 });
                 Output.Info(helpText);

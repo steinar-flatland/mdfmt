@@ -8,7 +8,7 @@ namespace Mdfmt.Options;
 /// Validator of an instance of <see cref="MdfmtProfile"/>.  Validates the following:
 /// <list type="number">
 /// <item>
-/// Each of the <see cref="FileProcessingOptions"/> contained in the <c>Options</c> dictionary has
+/// Each of the <see cref="FormattingOptions"/> contained in the <c>Options</c> dictionary has
 /// a collection of properties where, for each property, it is either <c>null</c> or a non-<c>null</c>
 /// value that is in range based on expected command line option values.
 /// </item>
@@ -28,16 +28,16 @@ internal class MdfmtProfileValidator : AbstractValidator<MdfmtProfile>
 {
     public MdfmtProfileValidator(string filePath, MdfmtProfile profile)
     {
-        // Every value in the Options dictionary must pass the FileProcessingOptionsValidator.
+        // Every value in the Options dictionary must be approved by the FormattingOptionsValidator.
         RuleFor(o => o.Options).Must((d) =>
         {
             return d.Values.All((f) =>
             {
-                FileProcessingOptionsValidator validator = new();
+                FormattingOptionsValidator validator = new();
                 ValidationResult validationResult = validator.Validate(f);
                 return validationResult.IsValid;
             });
-        }).WithMessage($"Failed to validate {nameof(MdfmtProfile)} loaded from file {filePath}: The {nameof(MdfmtProfile.Options)} dictionary contains one or more values that is not a valid instance of {nameof(FileProcessingOptions)}.");
+        }).WithMessage($"Failed to validate {nameof(MdfmtProfile)} loaded from file {filePath}: The {nameof(MdfmtProfile.Options)} dictionary contains one or more values that is not a valid instance of {nameof(FormattingOptions)}.");
 
         // Every value in the CpathToOptions dictionary must be a key of the Options dictionary.
         RuleFor(o => o.CpathToOptions).Must((d) =>
