@@ -3,9 +3,9 @@ using System;
 
 namespace Mdfmt.Options;
 
-internal class FileProcessingOptionsValidator : AbstractValidator<FileProcessingOptions>
+internal class FormattingOptionsValidator : AbstractValidator<FormattingOptions>
 {
-    public FileProcessingOptionsValidator()
+    public FormattingOptionsValidator()
     {
         RuleFor(o => o.Flavor).Must((v) => { return v == null || Enum.IsDefined(typeof(Flavor), v); });
         RuleFor(o => o.HeadingNumbering).Must((v) => { return v == null || HeadingNumbering.Options.Contains(v); });

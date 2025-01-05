@@ -37,7 +37,7 @@ If necessary, do a pull request to update this.
 
 ## Test The Code
 
-Be in the `mdfmt/src` directory and do 
+Be in the `mdfmt/src` directory and do
 
 ```console
 dotnet test

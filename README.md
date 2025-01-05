@@ -18,6 +18,11 @@ Mdfmt is being developed in C#/.NET 8.0, with plans to upgrade to the next LTS v
   - Supports different strategies for managing newline characters in Markdown files, which can be tricky in a cross-platform environment.
 - When working on a documentation repository, or more generally any time there is a directory structure containing Markdown files, supports creation of a `.mdfmt` profile that specifies how to format the Markdown files in the directory.  The profile supports an inheritance scheme where you can specify in general how to format the Markdown, and override the general behavior in specific subdirectories or even individual files.  For example, maybe you prefer heading numbers in general, but not in a document that is a glossary containing a flat list of terms, where the heading numbers would be distracting not helpful.
 
+## Getting Started
+
+- Download a [release](https://github.com/steinar-flatland/mdfmt/releases).
+- See the [Mdfmt User's Guide](./docs/user/Mdfmt-Users-Guide.md) for installation instructions and documentation about how to use the tool.
+
 ## Contact
 
 If you would like to get in touch with me about Mdfmt, please feel free to reach out to <steinar.flatland+mdfmt@gmail.com>.

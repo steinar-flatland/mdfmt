@@ -61,6 +61,7 @@ internal class Processor
     {
         if (_options.Verbose)
         {
+            Output.Info($"Mdfmt v{Program.Version}{Environment.NewLine}");
             Output.Info(_options);
         }
 
@@ -73,7 +74,7 @@ internal class Processor
     private void Process(string filePath)
     {
         string cpath = PathUtils.MakeRelative(_options.Path, filePath);
-        FileProcessingOptions fpo = _options.GetFileProcessingOptions(cpath);
+        FormattingOptions fpo = _options.GetFormattingOptions(cpath);
         if (_options.Verbose)
         {
             Output.Info($"{Environment.NewLine}Processing {filePath}", true, ConsoleColor.Cyan);

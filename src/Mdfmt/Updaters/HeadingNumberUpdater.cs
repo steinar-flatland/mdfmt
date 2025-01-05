@@ -57,17 +57,6 @@ internal static class HeadingNumberUpdater
                 // indicating that we don't count at that level:  That's the document title.
                 int n = headingRegion.Level - 1;
 
-                // Beware of documents with too many heading levels.
-                if (n == counters.Length)
-                {
-                    Output.Warn($"Only {counters.Length} levels of heading numbering are supported.");
-                    // Short circuit the execution of this method, so other updaters can still run.  
-                    // To the extent that this method DID change any headings before it ran into heading
-                    // overflow, its still good to run other updaters so that they can patch up 
-                    // links to headings that changed, update the TOC, etc.
-                    break;
-                }
-
                 // Handle edge case.  We will not assign a section number to a heading with only
                 // one '#', which is typically just the title of the document.
                 if (n < 0)

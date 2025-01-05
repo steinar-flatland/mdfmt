@@ -9,43 +9,42 @@ namespace Mdfmt.Options;
 /// </summary>
 internal class MdfmtProfile
     (
-        Dictionary<string, FileProcessingOptions> options,
+        Dictionary<string, FormattingOptions> options,
         Dictionary<string, string> cpathToOptions
     )
 {
     /// <summary>
-    /// Dictionary keyed on a name that maps to associated <see cref="FileProcessingOptions"/>.
+    /// Dictionary keyed on a name that maps to associated <see cref="FormattingOptions"/>.
     /// </summary>
-    public Dictionary<string, FileProcessingOptions> Options { get; } = options ?? [];
+    public Dictionary<string, FormattingOptions> Options { get; } = options ?? [];
 
     /// <summary>
     /// Dictionary mapping a canonical relative path (cpath) to a key to the <c>Options</c> dictionary,
-    /// indicating the <see cref="FileProcessingOptions"/> that apply to the cpath and its substructure.
+    /// indicating the <see cref="FormattingOptions"/> that apply to the cpath and its substructure.
     /// </summary>
     public Dictionary<string, string> CpathToOptions { get; } = cpathToOptions ?? [];
 
     /// <summary>
-    /// Try to find <see cref="FileProcessingOptions"/> for a cpath.
+    /// Try to find <see cref="FormattingOptions"/> for a cpath.
     /// </summary>
     /// <param name="cpath">
     ///   Canonical relative path of a Markdown file.
     /// </param>
     /// <param name="options">
-    ///   Output parameter that is set to the <see cref="FileProcessingOptions"/> that were found or to
+    ///   Output parameter that is set to the <see cref="FormattingOptions"/> that were found or to
     ///   <c>null</c> if none found.
     /// </param>
     /// <returns>
     ///   <c>true</c> if and only if an object is being returned through the <c>options</c> output
     ///   parameter.  Note that a <c>true</c> return value does not guarantee that the returned
-    ///   object is <em>complete</em>.  See the <c>IsComplete()</c> method of class
-    ///   <c>FileProcessingOptions</c>.
+    ///   object is <em>complete</em>.  See the <c>IsComplete()</c> method of class <see cref="FormattingOptions"/>.
     /// </returns>
-    public bool TryGetFileProcessingOptions(string cpath, out FileProcessingOptions options)
+    public bool TryGetFormattingOptions(string cpath, out FormattingOptions options)
     {
         // Start building an object to return.  Its properties are all null initially.
-        FileProcessingOptions optionsToReturn = new();
+        FormattingOptions optionsToReturn = new();
 
-        // Populate the object incrementally starting with the most specific FileProcessingOptions
+        // Populate the object incrementally starting with the most specific FormattingOptions
         // based on the full cpath, and then trying incrementally shorter paths.  This implements
         // an inheritance model.
         foreach (string leftCpath in PathUtils.LeftPaths(cpath))
