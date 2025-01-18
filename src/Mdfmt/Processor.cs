@@ -43,17 +43,17 @@ internal class Processor
 
     private List<string> FindFilePathsToProcess()
     {
-        if (!Directory.Exists(_options.Path))
+        if (!Directory.Exists(_options.TargetPath))
         {
-            return [_options.Path];
+            return [_options.TargetPath];
         }
         else if (_options.Recursive)
         {
-            return new List<string>(Directory.GetFiles(_options.Path, MdWildcard, SearchOption.AllDirectories));
+            return new List<string>(Directory.GetFiles(_options.TargetPath, MdWildcard, SearchOption.AllDirectories));
         }
         else
         {
-            return new List<string>(Directory.GetFiles(_options.Path, MdWildcard, SearchOption.TopDirectoryOnly));
+            return new List<string>(Directory.GetFiles(_options.TargetPath, MdWildcard, SearchOption.TopDirectoryOnly));
         }
     }
 
@@ -62,7 +62,21 @@ internal class Processor
         if (_options.Verbose)
         {
             Output.Info($"Mdfmt v{Program.Version}{Environment.NewLine}");
-            Output.Info(_options);
+            Output.Info($"Current Working Directory: {Directory.GetCurrentDirectory()}{Environment.NewLine}");
+            Output.Info($"{nameof(_options.CommandLineOptions)} {_options.CommandLineOptions}{Environment.NewLine}");
+            Output.Info($"Absolute TargetPath: {Path.GetFullPath(_options.CommandLineOptions.TargetPath)}{Environment.NewLine}");
+            Output.Info($"Explicitly Set Option Names:{Environment.NewLine}{(_options.ArgNames.Count == 0 ? "none" : string.Join(", ", _options.ArgNames))}{Environment.NewLine}");
+            Output.Info($"Processing Root: {_options.ProcessingRoot}{Environment.NewLine}");
+            if (_options.MdfmtProfile == null)
+            {
+                Output.Info($".mdfmt: none");
+            }
+            else
+            {
+                Output.Info($".mdfmt file loaded from Processing Root directory:");
+                Output.Info(_options.MdfmtProfile);
+                Output.Info($"Note: CpathToOptions keys are relative to Procesing Root.");
+            }
         }
 
         foreach (string filePath in _filePaths)
@@ -73,16 +87,17 @@ internal class Processor
 
     private void Process(string filePath)
     {
-        string cpath = PathUtils.MakeRelative(_options.Path, filePath);
+        string cpath = PathUtils.MakeRelative(_options.ProcessingRoot, filePath);
         FormattingOptions fpo = _options.GetFormattingOptions(cpath);
+        string absolutePath = Path.GetFullPath(filePath);
         if (_options.Verbose)
         {
-            Output.Info($"{Environment.NewLine}Processing {filePath}", true, ConsoleColor.Cyan);
+            Output.Info($"{Environment.NewLine}Processing {absolutePath}", true, ConsoleColor.Cyan);
             Output.Info($"{fpo.GetType().Name}:{Environment.NewLine}{fpo}");
         }
 
         // Load Markdown file into MdStruct data structure.
-        MdStruct md = _mdStructLoader.Load(filePath, fpo.NewlineStrategy);
+        MdStruct md = _mdStructLoader.Load(absolutePath, fpo.NewlineStrategy);
 
         if (_options.Verbose)
         {
@@ -126,14 +141,14 @@ internal class Processor
         // If the MdStruct was modified, save the Markdown file.
         if (md.IsModified)
         {
-            File.WriteAllText(filePath, md.Content);
+            File.WriteAllText(absolutePath, md.Content);
             if (_options.Verbose)
             {
-                Output.Emphasis($"Wrote file {filePath}");
+                Output.Emphasis($"Wrote file {absolutePath}");
             }
             else
             {
-                Output.Emphasis(filePath);
+                Output.Emphasis(absolutePath);
             }
         }
     }

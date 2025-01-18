@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace Mdfmt.Options;
 
@@ -17,6 +15,10 @@ namespace Mdfmt.Options;
 /// <see cref="CommandLineOptions"/> instance that was parsed from the raw command line arguments by the 
 /// <c>CommandLineParser</c> NuGet package.
 /// </param>
+/// <param name="processingRoot">
+/// Full path defining the root of files that Mdfmt can see and process.  If there is a
+/// .mdfmt file, it is in this directory.
+/// </param>
 /// <param name="mdfmtProfile">
 /// Information from a <c>.mdfmt</c> JSON file that was loaded from the directory being processed by Mdfmt.
 /// This is only provided if the positional argument to the command line parser is a
@@ -27,6 +29,7 @@ internal class MdfmtOptions
     (
         string[] args,
         CommandLineOptions commandLineOptions,
+        string processingRoot,
         MdfmtProfile mdfmtProfile
     )
 {
@@ -34,18 +37,24 @@ internal class MdfmtOptions
     /// Names of arguments that were explicitly set on the command line.  This knowledge is used to
     /// give precedence to explicitly set command line arguments, overriding values from .mdfmt file.
     /// </summary>
-    private readonly HashSet<string> _argNames = GetNamesOf(args);
+    public IReadOnlySet<string> ArgNames { get; } = GetNamesOf(args);
 
     /// <summary>
     /// <see cref="CommandLineOptions"/> instance that was parsed from the raw command line arguments by the 
     /// <c>CommandLineParser</c> NuGet package.
     /// </summary>
-    private readonly CommandLineOptions _commandLineOptions = commandLineOptions;
+    public CommandLineOptions CommandLineOptions { get; } = commandLineOptions;
+
+    /// <summary>
+    /// Full path defining the root of files that Mdfmt can see and process.  If there is a
+    /// .mdfmt file, it is in this directory.
+    /// </summary>
+    public string ProcessingRoot { get; } = processingRoot;
 
     /// <summary>
     /// Data structure with information loaded from .mdfmt file, or null if there is no such profile.
     /// </summary>
-    private readonly MdfmtProfile _mdfmtProfile = mdfmtProfile;
+    public MdfmtProfile MdfmtProfile { get; } = mdfmtProfile;
 
     /// <summary>
     /// Instance of <see cref="FormattingOptions"/> instantiated based on command line options.
@@ -94,17 +103,17 @@ internal class MdfmtOptions
     /// <summary>
     /// Directory in which to process .md files, or a specific .md file.
     /// </summary>
-    public string Path => _commandLineOptions.Path;
+    public string TargetPath => CommandLineOptions.TargetPath;
 
     /// <summary>
     /// Whether to use verbose output.
     /// </summary>
-    public bool Verbose => _commandLineOptions.Verbose;
+    public bool Verbose => CommandLineOptions.Verbose;
 
     /// <summary>
     /// Whether to process .md files in all sub-folders.
     /// </summary>
-    public bool Recursive => _commandLineOptions.Recursive;
+    public bool Recursive => CommandLineOptions.Recursive;
 
     /// <summary>
     /// Get the options that determine how a specific Markdown file should be formatted.
@@ -119,7 +128,7 @@ internal class MdfmtOptions
     {
         // If a .mdfmt file was loaded into _mdfmtProfile, and it maps the cpath to an instance of
         // FormattingOptions, then return based on that.
-        if (_mdfmtProfile != null && _mdfmtProfile.TryGetFormattingOptions(cpath, out var formattingOptions))
+        if (MdfmtProfile != null && MdfmtProfile.TryGetFormattingOptions(cpath, out var formattingOptions))
         {
             // If formattingOptions has values that were overridden explicitly on the command line,
             // then write the values from the command onto formattingOptions.
@@ -152,40 +161,21 @@ internal class MdfmtOptions
     /// <param name="formattingOptions">Instance of <see cref="FormattingOptions"/> to edit</param>
     private void OverwriteExplicitlySetCommandLineOptionsOnto(FormattingOptions formattingOptions)
     {
-        if (_argNames.Contains("-f") || _argNames.Contains("--flavor"))
+        if (ArgNames.Contains("-f") || ArgNames.Contains("--flavor"))
         {
             formattingOptions.Flavor = _commandLineFormattingOptions.Flavor;
         }
-        if (_argNames.Contains("-h") || _argNames.Contains("--heading-numbers"))
+        if (ArgNames.Contains("-h") || ArgNames.Contains("--heading-numbers"))
         {
             formattingOptions.HeadingNumbering = _commandLineFormattingOptions.HeadingNumbering;
         }
-        if (_argNames.Contains("-t") || _argNames.Contains("--toc-threshold"))
+        if (ArgNames.Contains("-t") || ArgNames.Contains("--toc-threshold"))
         {
             formattingOptions.TocThreshold = _commandLineFormattingOptions.TocThreshold;
         }
-        if (_argNames.Contains("--newline-strategy"))
+        if (ArgNames.Contains("--newline-strategy"))
         {
             formattingOptions.NewlineStrategy = _commandLineFormattingOptions.NewlineStrategy;
         }
-    }
-
-    public override string ToString()
-    {
-        StringBuilder sb = new();
-
-        sb.Append($"{nameof(CommandLineOptions)}:{Environment.NewLine}");
-        sb.Append(_commandLineOptions);
-        sb.Append(Environment.NewLine);
-        sb.Append(Environment.NewLine);
-
-        sb.Append($"Names:{Environment.NewLine}{(_argNames.Count == 0 ? "none" : string.Join(", ", _argNames))}");
-        sb.Append(Environment.NewLine);
-        sb.Append(Environment.NewLine);
-
-        sb.Append($"{nameof(MdfmtProfile)}:{Environment.NewLine}");
-        sb.Append(_mdfmtProfile == null ? "none" : _mdfmtProfile);
-
-        return sb.ToString();
     }
 }

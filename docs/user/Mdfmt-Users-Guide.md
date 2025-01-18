@@ -9,7 +9,7 @@
     - [2.3. Displaying Help](#23-displaying-help)
   - [3. md File Extension](#3-md-file-extension)
   - [4. Usage Overview](#4-usage-overview)
-  - [5. Options And Path](#5-options-and-path)
+  - [5. Options And Target Path](#5-options-and-target-path)
     - [5.1. Traversal Options](#51-traversal-options)
       - [5.1.1. Recursive](#511-recursive)
     - [5.2. Informational Options](#52-informational-options)
@@ -21,7 +21,7 @@
       - [5.3.2. Heading Numbers](#532-heading-numbers)
       - [5.3.3. TOC Threshold](#533-toc-threshold)
       - [5.3.4. Newline Strategy](#534-newline-strategy)
-    - [5.4. Path](#54-path)
+    - [5.4. Target Path](#54-target-path)
   - [6. Output](#6-output)
     - [6.1. Non-Verbose Output](#61-non-verbose-output)
     - [6.2. Verbose Output](#62-verbose-output)
@@ -58,10 +58,10 @@ mdfmt_{version}_{runtime}_{deploymentType}.zip
 
 Examples of `.zip` file names in a release:
 
-- mdfmt_0.3.8_linux-x64_framework-dependent-net8.0.zip
-- mdfmt_0.3.8_linux-x64_self-contained-net8.0.zip
-- mdfmt_0.3.8_win-x64_framework-dependent-net8.0.zip
-- mdfmt_0.3.8_win-x64_self-contained-net8.0.zip
+- mdfmt_1.1.0_linux-x64_framework-dependent-net8.0.zip
+- mdfmt_1.1.0_linux-x64_self-contained-net8.0.zip
+- mdfmt_1.1.0_win-x64_framework-dependent-net8.0.zip
+- mdfmt_1.1.0_win-x64_self-contained-net8.0.zip
 
 To download and install Mdfmt:
 
@@ -124,10 +124,10 @@ This behavior is a design choice to keep the application of the tool focused and
 Mdfmt is a CLI that you call from a command prompt or shell.  An Mdfmt command follows this basic template:
 
 ```console
-mdfmt {options} {path}
+mdfmt {options} {target-path}
 ```
 
-The basic idea is that the specified `{options}` indicate formatting to be done to either a single Markdown file specified as the `{path}` or to all the Markdown files contained in a directory specified as the `{path}`.
+The basic idea is that the specified `{options}` indicate formatting to be done to either a single Markdown file specified as the `{target-path}`, or to all the Markdown files contained in a directory specified as the `{target-path}`.
 
 In a technical sense, an option is a variable or property in the Mdfmt program, to which a value is being passed from the command line used to invoke the CLI.
 
@@ -145,15 +145,15 @@ The above command adds heading numbers like the ones that this [Mdfmt User's Gui
 mdfmt --heading-numbers none --flavor Common -r /my-project/docs
 ```
 
-The above command both removes heading numbers and assures that the `Common` [slugification](./Glossary.md#slug) algorithm is used on all in-document links.  This makes the links work on common platforms including GitHub and VS Code Markdown preview.  In this example, the path is a directory (the `docs` folder of a project called `my-project`), and the `-r` option applies the specified formatting options to all Markdown files that are either directly in the `docs` folder or in a subfolder that is a descendant of `docs`.
+The above command both removes heading numbers and assures that the `Common` [slugification](./Glossary.md#slug) algorithm is used on all in-document links so that they work on common platforms including GitHub and VS Code Markdown preview.  In this example, the target path is a directory (the `docs` folder of a project called `my-project`), and the `-r` option applies the specified formatting options to all Markdown files that are either directly in the `docs` folder or in a subfolder that is a descendant of `docs`.
 
-For more information about available options, run `mdfmt --help`.  For a deeper discussion, see the section on [Options And Path](#5-options-and-path) below.
+For more information about available options, run `mdfmt --help`.  For a deeper discussion, see the next section on [Options And Target Path](#5-options-and-target-path) below.
 
-## 5. Options And Path
+## 5. Options And Target Path
 
-This section discusses the command line options and path that are passed to Mdfmt on the command line.
+This section discusses the command line options and target path that are passed to Mdfmt on the command line.
 
-To best understand this section, be familiar with the [Usage Overview](#4-usage-overview) above, and what is meant by the terms _options_ and _path_ in the context of Mdfmt usage.
+To best understand this section, be familiar with the [Usage Overview](#4-usage-overview) above, and what is meant by the terms _options_ and _target path_ in the context of Mdfmt usage.
 
 A few words about how each option is described in the subsections below below:
 
@@ -186,7 +186,7 @@ These options control how the program traverses the file system when a directory
 - Long name: **`--recursive`**
 - Short name: **`-r`**
 - Type: flag
-- Description: This option is applicable only when the path is a directory, and it is ignored when the path is a specific Markdown file.  When true, processes Markdown files both in the path directory and in all subfolders.  When false, processes Markdown files in the path directory only, not in subfolders.
+- Description: This option is applicable only when the target path is a directory, and it is ignored when the target path is a specific Markdown file.  When true, processes Markdown files both in the target path directory and in all subfolders.  When false, processes Markdown files in the target path directory only, not in subfolders.
 - Values: true, false
 - Default: false
 
@@ -295,7 +295,7 @@ These options are used to specify formatting that Mdfmt should apply to Markdown
 
 - Default: `null`.  If this option is omitted, no changes are made to existing newlines, and any new newlines introduced by Mdfmt follow the predominant style of the current file.  (In the event of a tie, Mdfmt uses `\n` for newly added newlines.)
 
-### 5.4. Path
+### 5.4. Target Path
 
 - Type: string
 - Description:  The path of either a single Markdown file or of a directory.  If a Markdown file is specified, its name must end in `.md` (see [md File Extension](#3-md-file-extension)).
@@ -309,7 +309,7 @@ These options are used to specify formatting that Mdfmt should apply to Markdown
 
 Independent of the verbosity (`-v`) setting, Mdfmt always displays errors and warnings on the console.
 
-- When updating links, if unable to match a link to a heading, Mdfmt displays a message like `.\path\file.md: Could not match link to heading: [label](destination)`.  This helps you notice and correct broken links within your document.  Any warnings that occur are written to the console in yellow.
+- When updating links, if unable to match a link to a heading, Mdfmt displays a message like `C:\path\file.md: Could not match link to heading: [label](destination)`.  This helps you notice and correct broken links within your document.  Any warnings that occur are written to the console in yellow.
 - Errors can occur for a variety of reasons including:
   - Invalid options and/or path passed in on the command line.
   - Invalid JSON in .mdfmt file.
@@ -319,19 +319,22 @@ Independent of the verbosity (`-v`) setting, Mdfmt always displays errors and wa
 
 ### 6.1. Non-Verbose Output
 
-In non-verbose mode (without the `-v` or `--verbose` flag), the output written to the console by Mdfmt is minimal.  In addition to errors and warnings, Mdfmt writes the names of modified files as they are saved.
+In non-verbose mode (without the `-v` or `--verbose` flag), the output written to the console by Mdfmt is minimal.  In addition to errors and warnings, Mdfmt writes the full path names of modified files as they are saved.
 
 ### 6.2. Verbose Output
 
 Verbose output includes more information, providing a bit more insight into what Mdfmt is doing.  In addition to errors and warnings, Mdfmt writes the following information to the console:
 
-- The version of Mdfmt used.
-- A `CommandLineOptions` object, showing the options and path parsed from the command line.  Only options with non-null values are shown.
-- The names of options that were explicitly set on the command line are shown.
+- The Mdfmt version number.
+- The current working directory.
+- A `CommandLineOptions` object, showing the options and target path parsed from the command line.  Note that the target path may be relative or absolute, depending upon how it was specified.  Only options with non-null values are shown.
+- The target path as an absolute path, for clarity.
+- The names of options that were explicitly set on the command line.
+- The [processing root](./Glossary.md#processing-root), which is an important concept when configuring a `.mdfmt` file.
 - The loaded `.mdfmt` file, if any, is shown.  See the next section [Using a .mdfmt File](#7-using-a-mdfmt-file) for more information about the `.mdfmt` files.
 - For each file processed during the Mdfmt run:
 
-  - In cyan, a line showing `Processing` and the file being processed.
+  - In cyan, a line showing `Processing` and the full path of the file being processed.
   - The `FormattingOptions` being applied to the file.  Only options that are non-null are shown.
   - The number of regions and headings loaded as part of loading the Markdown file.
   - If the file is modified and saved, a summary of actions taken is shown in green.  The possible actions are:
@@ -422,15 +425,22 @@ The first options found become the base options, and more specific options, if f
 
 Finally, any formatting options passed in on the command line are considered the most specific, providing a final level of override to determine the final configuration.
 
-In this way, a formatting options configuration is determined for each file processed during a recursive (`-r`) Mdfmt run, allowing for different Markdown files to be processed with different options.
+In this way, a formatting options configuration is determined for each file processed.  In a large recursive (`-r`) Mdfmt run, this allows different Markdown files to be processed with different options.
 
 ### 7.4. What Triggers The Use Of .mdfmt
 
-If the path passed to Mdfmt on the command line is a directory, and this directory contains a file named `.mdfmt`, this triggers the loading and use of the `.mdfmt` file.
+The definition of [processing root](./Glossary.md#processing-root) describes how, on startup, Mdfmt finds its `.mdfmt` file.
 
-This is a bit limiting, and needs to be improved.  It means that the only way to apply a `.mdfmt` file when working with a large repository of documentation is recursively from the root.  
+Mdfmt looks at the [target path](./Glossary.md#target-path) being processed.  Let the [target directory](./Glossary.md#target-directory) be defined as follows:
 
-> Idea for future improvement: If there is no `.mdfmt` file in the directory being processed, scan the parent directories for `.mdfmt` files and use the nearest one that is found.
+- If the target path from the command line is a file, the _target directory_ is the directory containing this file.
+- If the target path from the command line is a directory, the _target directory_ is the target path.
+
+Mdfmt first checks to see if the target directory has a `.mdfmt` file, and then it checks the parent directory, and each successive ancestor directory.  The first directory containing a `.mdfmt` file defines the [processing root](./Glossary.md#processing-root), which is the root of the files that Mdfmt can see and process.  The `.mdfmt` file in the processing root directory determines the formatting options that are applied.
+
+If an `.mdfmt` file is found, the formatting options it specifies can be overridden on the command line.
+
+The presence of a `.mdfmt` file is not required.  In the absence of a `.mdfmt` file, the only formatting options that are applied are any that are specified on the command line.
 
 ## 8. Return Value
 
