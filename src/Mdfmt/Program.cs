@@ -14,7 +14,7 @@ namespace Mdfmt;
 
 internal class Program
 {
-    public const string Version = "1.0.0";
+    public const string Version = "1.1.0";
 
     public static void Main(string[] args)
     {
@@ -74,53 +74,109 @@ internal class Program
 
     private static void HandleParsed(string[] args, ParserResult<CommandLineOptions> parsedResult)
     {
-        MdfmtProfile mdfmtProfile = null;
-
         parsedResult.WithParsed(options =>
         {
-            if (Directory.Exists(options.Path))
-            {
-                string mdfmtFileName = Path.Combine(options.Path, ".mdfmt");
-                if (File.Exists(mdfmtFileName))
-                {
-                    mdfmtProfile = MdfmtProfileLoader.Load(mdfmtFileName);
-                }
-            }
-            else
-            {
-                if (!File.Exists(options.Path))
-                {
-                    Output.Error($"{options.Path} does not exist.");
-                    throw new ExitException(ExitCodes.GeneralError);
-                }
-                else
-                {
-                    if (!options.Path.EndsWith(".md"))
-                    {
-                        Output.Error("File cannot be processed because it is not a .md file");
-                        throw new ExitException(ExitCodes.GeneralError);
-                    }
-                }
-            }
-
-            // Ensure options are valid.
-            CommandLineOptionsValidator validator = new();
-            try
-            {
-                validator.ValidateAndThrow(options);
-            }
-            catch (ValidationException ex)
-            {
-                Output.Error(ex.Message);
-                throw new ExitException(ExitCodes.MisuseOfCommand);
-            }
-
-            MdfmtOptions mdfmtOptions = new(args, options, mdfmtProfile);
-
+            ValidateOptions(options, out string processingRoot, out string mdfmtFilePath);
+            MdfmtProfile mdfmtProfile = (mdfmtFilePath == null) ? null : MdfmtProfileLoader.Load(mdfmtFilePath);
+            MdfmtOptions mdfmtOptions = new(args, options, processingRoot, mdfmtProfile);
             Processor processor = new(mdfmtOptions);
             processor.Run();
             throw new ExitException(ExitCodes.Success);
         });
+    }
+
+    /// <summary>
+    /// Validate that the command line options passed to the program are valid.
+    /// Throws an <see cref="ExitException"/> if validation fails.
+    /// </summary>
+    /// <param name="commandLineOptions">
+    /// The <see cref="CommandLineOptions"/> to validate.
+    /// </param>
+    /// <param name="processingRoot">
+    /// Output parameter that is set to a full path defining the root of the files the Mdfmt can see
+    /// and process.  Always returns a full path, never null.
+    /// </param>
+    /// <param name="mdfmtFilePath">
+    /// Output parameter that is set to the full path of .mdfmt file, or null if there is none.
+    /// When non-null, the path indicates a file that is an immediate descendant of the <c>processingRoot</c>.
+    /// </param>
+    /// <exception cref="ExitException"/>
+    private static void ValidateOptions(CommandLineOptions commandLineOptions, out string processingRoot, out string mdfmtFilePath)
+    {
+        // Make sure the path is either a directory, or a file whose name ends in .md
+        ValidateTargetPath(commandLineOptions.TargetPath, out bool targetPathIsDirectory);
+
+        // Validate the rest of the options.
+        CommandLineOptionsValidator validator = new();
+        try
+        {
+            validator.ValidateAndThrow(commandLineOptions);
+        }
+        catch (ValidationException ex)
+        {
+            Output.Error(ex.Message);
+            throw new ExitException(ExitCodes.MisuseOfCommand);
+        }
+
+        // The goal is to set these output parameters.
+        // processingRoot always gets a full path as a value.
+        // mdfmtFilePath will get a full path or may remain null if no .mdfmt file is available.
+        processingRoot = null;
+        mdfmtFilePath = null;
+
+        string targetDirectory = targetPathIsDirectory ? commandLineOptions.TargetPath : Path.GetDirectoryName(commandLineOptions.TargetPath);
+        DirectoryInfo candidateProcessingRootDirectoryInfo = new(targetDirectory);
+        do
+        {
+            string candidateProcessingRoot = candidateProcessingRootDirectoryInfo.FullName;
+            string candidateMdfmtFilePath = Path.Combine(candidateProcessingRoot, ".mdfmt");
+            if (File.Exists(candidateMdfmtFilePath))
+            {
+                processingRoot = candidateProcessingRoot;
+                mdfmtFilePath = candidateMdfmtFilePath;
+                break;
+            }
+        } while ((candidateProcessingRootDirectoryInfo = candidateProcessingRootDirectoryInfo.Parent) != null);
+        processingRoot ??= new DirectoryInfo(targetDirectory).FullName;
+    }
+
+    /// <summary>
+    /// Validate that a string, <c>targetPath</c>, is either the path of a directory or of a .md file.
+    /// Throws an <see cref="ExitException"/> if validation fails.
+    /// </summary>
+    /// <param name="targetPath">
+    /// The string to validate.  This path can be either relative to the current working directory
+    /// or absolute.
+    /// </param>
+    /// <param name="targetPathIsDirectory">
+    /// Output parameter that is set to <c>true</c> if <c>targetPath</c> is a directory or else to
+    /// <c>false</c> if it is a file.</param>
+    /// <exception cref="ExitException"/>
+    private static void ValidateTargetPath(string targetPath, out bool targetPathIsDirectory)
+    {
+        if (Directory.Exists(targetPath))
+        {
+            targetPathIsDirectory = true;
+            return;
+        }
+        else if (File.Exists(targetPath))
+        {
+            if (targetPath.EndsWith(".md"))
+            {
+                targetPathIsDirectory = false;
+                return;
+            }
+            else
+            {
+                Output.Error("File cannot be processed because it is not a .md file");
+                throw new ExitException(ExitCodes.MisuseOfCommand);
+            }
+        }
+        else
+        {
+            Output.Error($"{targetPath} does not exist");
+            throw new ExitException(ExitCodes.MisuseOfCommand);
+        }
     }
 
     private static void HandleNotParsed(ParserResult<CommandLineOptions> parsedResult)

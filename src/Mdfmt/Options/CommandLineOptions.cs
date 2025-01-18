@@ -19,14 +19,14 @@ internal class CommandLineOptions
     [Option("newline-strategy", HelpText = "Strategy for maintaining newlines.  When specified, one of: [Unix, Windows, PreferUnix, PreferWindows].  Preferred options do nothing unless the file has a mixture of newline styles.  If this option is omitted, no changes are made to existing newlines, and any new newlines introduced by Mdfmt follow the predominant style of the current file.")]
     public NewlineStrategy? NewlineStrategy { get; set; }
 
-    [Option('r', "recursive", Default = false, HelpText = "Process .md files recursively in all subfolders.  This option is ignored if the positional argument is a file, not a directory.")]
+    [Option('r', "recursive", Default = false, HelpText = "Process .md files recursively in all subfolders of the target path.  This option is ignored if the target path indicates a specific file, not a directory.")]
     public bool Recursive { get; set; }
 
     [Option('v', "verbose", Default = false, HelpText = "Whether to use verbose output.")]
     public bool Verbose { get; set; }
 
-    [Value(0, Default = ".", HelpText = "A path, either to a single .md file to process, or to a directory that contains the .md files to process.")]
-    public string Path { get; set; }
+    [Value(0, Default = ".", HelpText = "The target path that Mdfmt is being asked to process, either a single .md file or a directory that contains the .md files to process.  This path may be either absolute or relative to the current working directory where the program was started.")]
+    public string TargetPath { get; set; }
 
     public override string ToString()
     {

@@ -12,6 +12,6 @@ internal class CommandLineOptionsValidator : AbstractValidator<CommandLineOption
         RuleFor(o => o).Must(o => (o.TocThreshold == null) || (o.TocThreshold == 0) || (o.TocThreshold > 0 && o.Flavor != null)).
             WithMessage($"When specified, -t must be >= 0.  When -t > 0, -f is required.");
         RuleFor(o => o.NewlineStrategy).IsInEnum().Unless(o => o == null);
-        RuleFor(o => o.Path).NotEmpty();
+        RuleFor(o => o.TargetPath).NotEmpty();
     }
 }
