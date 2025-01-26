@@ -14,7 +14,7 @@ namespace Mdfmt;
 
 internal class Program
 {
-    public const string Version = "1.1.0";
+    public const string Version = "1.1.1";
 
     public static void Main(string[] args)
     {
@@ -76,6 +76,7 @@ internal class Program
     {
         parsedResult.WithParsed(options =>
         {
+            AdjustOptions(options);
             ValidateOptions(options, out string processingRoot, out string mdfmtFilePath);
             MdfmtProfile mdfmtProfile = (mdfmtFilePath == null) ? null : MdfmtProfileLoader.Load(mdfmtFilePath);
             MdfmtOptions mdfmtOptions = new(args, options, processingRoot, mdfmtProfile);
@@ -83,6 +84,16 @@ internal class Program
             processor.Run();
             throw new ExitException(ExitCodes.Success);
         });
+    }
+
+    private static void AdjustOptions(CommandLineOptions options)
+    {
+        // If the target path is just a simple file name with no directory name component, prepend
+        // "./" to indicate the current working directory by default.
+        if (string.IsNullOrEmpty(Path.GetDirectoryName(options.TargetPath)))
+        {
+            options.TargetPath = "./" + options.TargetPath;
+        }
     }
 
     /// <summary>
