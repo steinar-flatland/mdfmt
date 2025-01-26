@@ -14,7 +14,7 @@ namespace Mdfmt;
 
 internal class Program
 {
-    public const string Version = "1.1.1";
+    public const string Version = "1.1.2";
 
     public static void Main(string[] args)
     {
@@ -90,7 +90,7 @@ internal class Program
     {
         // If the target path is just a simple file name with no directory name component, prepend
         // "./" to indicate the current working directory by default.
-        if (string.IsNullOrEmpty(Path.GetDirectoryName(options.TargetPath)))
+        if (options.TargetPath != "." && string.IsNullOrEmpty(Path.GetDirectoryName(options.TargetPath)))
         {
             options.TargetPath = "./" + options.TargetPath;
         }
