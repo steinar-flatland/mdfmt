@@ -7,22 +7,22 @@ using System;
 namespace Mdfmt.Options;
 
 /// <summary>
-/// Static class providing a method to load a .mdfmt file into an instance of  <see cref="MdfmtProfile"/>.
+/// Static class providing a method to load a JSON configuration file into an instance of <see cref="MdfmtProfile"/>.
 /// </summary>
 internal static class MdfmtProfileLoader
 {
     /// <summary>
-    /// Load a .mdfmt file into a new instance of <see cref="MdfmtProfile"/>.
-    /// Note that property names enum values in the .mdfmt file are case-insensitive,
+    /// Load a configuration file into a new instance of <see cref="MdfmtProfile"/>.
+    /// Note that property names enum values in the file are case-insensitive,
     /// and extra properties are disallowed.
     /// </summary>
-    /// <param name="filePath">The path of the .mdfmt file to load</param>
+    /// <param name="filePath">The path of the configuration file to load as the <c>MdfmtProfile</c>></param>
     /// <returns>
     /// Validated <see cref="MdfmtProfile"/> instance.  For details of the validation, see <see cref="MdfmtProfileValidator"/>.
     /// </returns>
     public static MdfmtProfile Load(string filePath)
     {
-        // Options for JSON deserialization of .mdfmt file.
+        // Options for JSON deserialization.
         var options = new JsonSerializerOptions
         {
             // Ignore case when matching property names

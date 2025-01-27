@@ -16,26 +16,24 @@ namespace Mdfmt.Options;
 /// <c>CommandLineParser</c> NuGet package.
 /// </param>
 /// <param name="processingRoot">
-/// Full path defining the root of files that Mdfmt can see and process.  If there is a
-/// .mdfmt file, it is in this directory.
+/// Full path defining the root of files that Mdfmt can see and process.
 /// </param>
-/// <param name="mdfmtProfile">
-/// Information from a <c>.mdfmt</c> JSON file that was loaded from the directory being processed by Mdfmt.
-/// This is only provided if the positional argument to the command line parser is a
-/// directory, and that directory immediately contains (i.e., not through a subdirectory)
-/// a file named <c>.mdfmt</c>.  If no <c>.mdfmt</c> file is available, this is <c>null</c>.
+/// <param name="mdfmtConfigurationFilePath">
+/// The full path of a file in the <c>processingRoot</c> directory that is a configuration file from
+/// which to load a <see cref="MdfmtProfile"/>, or <c>null</c> if there is no such file.
 /// </param>
 internal class MdfmtOptions
     (
         string[] args,
         CommandLineOptions commandLineOptions,
         string processingRoot,
-        MdfmtProfile mdfmtProfile
+        string mdfmtConfigurationFilePath
     )
 {
     /// <summary>
     /// Names of arguments that were explicitly set on the command line.  This knowledge is used to
-    /// give precedence to explicitly set command line arguments, overriding values from .mdfmt file.
+    /// give precedence to explicitly set command line arguments, overriding values from mdfmt
+    /// configuration file.
     /// </summary>
     public IReadOnlySet<string> ArgNames { get; } = GetNamesOf(args);
 
@@ -46,20 +44,27 @@ internal class MdfmtOptions
     public CommandLineOptions CommandLineOptions { get; } = commandLineOptions;
 
     /// <summary>
-    /// Full path defining the root of files that Mdfmt can see and process.  If there is a
-    /// .mdfmt file, it is in this directory.
+    /// Full path defining the root of files that Mdfmt can see and process.  If there exists a configuration
+    /// file for loading the <see cref="MdfmtProfile"/>, it is directly inside this same directory.
     /// </summary>
     public string ProcessingRoot { get; } = processingRoot;
 
     /// <summary>
-    /// Data structure with information loaded from .mdfmt file, or null if there is no such profile.
+    /// The full path of a file in the <c>ProcessingRoot</c> directory that is a configuration file from
+    /// which to load a <see cref="MdfmtProfile"/>, or <c>null</c> if there is no such file.
     /// </summary>
-    public MdfmtProfile MdfmtProfile { get; } = mdfmtProfile;
+    public string MdfmtConfigurationFilePath { get; } = mdfmtConfigurationFilePath;
+
+    /// <summary>
+    /// A data structure with information loaded from the <c>MdfmtConfigurationFilePath</c>, or <c>null</c> if
+    /// the <c>MdfmtConfigurationFilePath</c> is <c>null</c>, and so there is no data structure to load.
+    /// </summary>
+    public MdfmtProfile MdfmtProfile { get; } = (mdfmtConfigurationFilePath == null) ? null : MdfmtProfileLoader.Load(mdfmtConfigurationFilePath);
 
     /// <summary>
     /// Instance of <see cref="FormattingOptions"/> instantiated based on command line options.
     /// This knowledge is used as a fallback mechanism:  Any formatting options not specified
-    /// through the .mdfmt file are taken from here as a fallback.
+    /// through the optional Mdfmt configuration file are taken from here as a fallback.
     /// </summary>
     private readonly FormattingOptions _commandLineFormattingOptions = FormattingOptionsOf(commandLineOptions);
 
@@ -84,7 +89,7 @@ internal class MdfmtOptions
     /// <summary>
     /// Create fallback formatting options, based on command line options.
     /// Use these options for processing a file, if more specific options are not
-    /// determined through the .mdfmt file.
+    /// determined through the mdfmt configuration file.
     /// </summary>
     /// <param name="commandLineOptions">options determined by parsing the program's command line</param>
     /// <returns><see cref="FormattingOptions"/></returns>
@@ -126,8 +131,7 @@ internal class MdfmtOptions
     /// </returns>
     public FormattingOptions GetFormattingOptions(string cpath)
     {
-        // If a .mdfmt file was loaded into _mdfmtProfile, and it maps the cpath to an instance of
-        // FormattingOptions, then return based on that.
+        // If there is an MdfmtProfile, and it maps the cpath to an instance of FormattingOptions, then return based on that.
         if (MdfmtProfile != null && MdfmtProfile.TryGetFormattingOptions(cpath, out var formattingOptions))
         {
             // If formattingOptions has values that were overridden explicitly on the command line,

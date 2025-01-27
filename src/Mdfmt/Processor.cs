@@ -67,13 +67,9 @@ internal class Processor
             Output.Info($"Absolute TargetPath: {Path.GetFullPath(_options.CommandLineOptions.TargetPath)}{Environment.NewLine}");
             Output.Info($"Explicitly Set Option Names:{Environment.NewLine}{(_options.ArgNames.Count == 0 ? "none" : string.Join(", ", _options.ArgNames))}{Environment.NewLine}");
             Output.Info($"Processing Root: {_options.ProcessingRoot}{Environment.NewLine}");
-            if (_options.MdfmtProfile == null)
+            Output.Info($"Mdfmt configuration file: {_options.MdfmtConfigurationFilePath ?? "none"}");
+            if (_options.MdfmtProfile != null)
             {
-                Output.Info($".mdfmt: none");
-            }
-            else
-            {
-                Output.Info($".mdfmt file loaded from Processing Root directory:");
                 Output.Info(_options.MdfmtProfile);
                 Output.Info($"Note: CpathToOptions keys are relative to Procesing Root.");
             }
