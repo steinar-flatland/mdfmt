@@ -17,19 +17,20 @@
       - [5.2.2. Help](#522-help)
       - [5.2.3. Version](#523-version)
     - [5.3. Formatting Options](#53-formatting-options)
-      - [5.3.1. Flavor](#531-flavor)
-      - [5.3.2. Heading Numbers](#532-heading-numbers)
-      - [5.3.3. TOC Threshold](#533-toc-threshold)
-      - [5.3.4. Newline Strategy](#534-newline-strategy)
+      - [5.3.1. Environment](#531-environment)
+      - [5.3.2. Flavor](#532-flavor)
+      - [5.3.3. Heading Numbers](#533-heading-numbers)
+      - [5.3.4. TOC Threshold](#534-toc-threshold)
+      - [5.3.5. Newline Strategy](#535-newline-strategy)
     - [5.4. Target Path](#54-target-path)
   - [6. Output](#6-output)
     - [6.1. Non-Verbose Output](#61-non-verbose-output)
     - [6.2. Verbose Output](#62-verbose-output)
-  - [7. Using a .mdfmt File](#7-using-a-mdfmt-file)
+  - [7. Using Mdfmt Configuration File](#7-using-mdfmt-configuration-file)
     - [7.1. Overview And Motivation](#71-overview-and-motivation)
-    - [7.2. Example of .mdfmt File](#72-example-of-mdfmt-file)
+    - [7.2. Example of Mdfmt Configuration File](#72-example-of-mdfmt-configuration-file)
     - [7.3. How .mdfmt Options Are Evaluated](#73-how-mdfmt-options-are-evaluated)
-    - [7.4. What Triggers The Use Of .mdfmt](#74-what-triggers-the-use-of-mdfmt)
+    - [7.4. Configuration File Name And Location](#74-configuration-file-name-and-location)
   - [8. Return Value](#8-return-value)
 <!--END_TOC-->
 
@@ -58,10 +59,10 @@ mdfmt_{version}_{runtime}_{deploymentType}.zip
 
 Examples of `.zip` file names in a release:
 
-- mdfmt_1.1.0_linux-x64_framework-dependent-net8.0.zip
-- mdfmt_1.1.0_linux-x64_self-contained-net8.0.zip
-- mdfmt_1.1.0_win-x64_framework-dependent-net8.0.zip
-- mdfmt_1.1.0_win-x64_self-contained-net8.0.zip
+- mdfmt_1.2.0_linux-x64_framework-dependent-net8.0.zip
+- mdfmt_1.2.0_linux-x64_self-contained-net8.0.zip
+- mdfmt_1.2.0_win-x64_framework-dependent-net8.0.zip
+- mdfmt_1.2.0_win-x64_self-contained-net8.0.zip
 
 To download and install Mdfmt:
 
@@ -129,8 +130,6 @@ mdfmt {options} {target-path}
 
 The basic idea is that the specified `{options}` indicate formatting to be done to either a single Markdown file specified as the `{target-path}`, or to all the Markdown files contained in a directory specified as the `{target-path}`.
 
-In a technical sense, an option is a variable or property in the Mdfmt program, to which a value is being passed from the command line used to invoke the CLI.
-
 **Example:**
 
 ```console
@@ -169,6 +168,7 @@ A few words about how each option is described in the subsections below below:
 
   - enumeration - an option that takes as input one value from a list of possible values.
   - nonnegative int - an option that takes as input an integer that is `>= 0`.  Passing a value that is out of range results in an error message.
+  - string - a string of characters.
 - Description - A description of the effect of the option; what it does; how it works.
 - Values - Describes the valid values of the Type.  For an enumeration, lists the values and explains what each one means.
 - Default - Some options have a default value, which is the value that the option assumes when it is omitted from the command line.  When there is no default, omission of the option from the command line leads to a `null`/missing value.  The Mdfmt program reacts to this either by providing an error message if the omission is unacceptable, or by implementing a default behavior if the omission is acceptable.
@@ -178,8 +178,6 @@ In addition, some details about the path are covered in the last subsection of t
 ### 5.1. Traversal Options
 
 These options control how the program traverses the file system when a directory is being processed.  At this time there is only one option (`-r`, `--recursive`).
-
-> An idea for future work is to augment traversal options with filtering options, to limit the files that are processed during a recursive traversal.
 
 #### 5.1.1. Recursive
 
@@ -235,12 +233,21 @@ These options allow you to:
 
 These options are used to specify formatting that Mdfmt should apply to Markdown files targeted by the path that is passed on the command line.
 
-#### 5.3.1. Flavor
+#### 5.3.1. Environment
+
+- Long name: **`--environment`**
+- Short name: **`-e`**
+- Type: string
+- Description: Optional environment name affecting configuration.  When specified, Mdfmt looks for a file named, `mdfmt.{environment}.json`, where `{environment}` is replaced by the value passed to this option.  When omitted, Mdfmt looks for a file named `.mdfmt`.  Directory location: Mdfmt first looks in the directory of the target path, then in the parent directory if any, then in ancestor directories, until found.  If not found, Mdfmt still runs, just without configuration file input.  Explicit formatting from command line overrides formatting from configuration file.
+- Values: Use a string with characters that are valid to use as part of file names in your operating system's file system.
+- Defult: `null`.  If this option is omitted, Mdfmt looks for a configuration file named `.mdfmt`.
+
+#### 5.3.2. Flavor
 
 - Long name: **`--flavor`**
 - Short name: **`-f`**
 - Type: enumeration
-- Description: Sets the [slugification](./Glossary.md#slugification) algorithm used to convert headings to link destinations.  This affects in-document links both in the body and in the table of contents of the document.
+- Description: Sets the [slugification](./Glossary.md#slugification) algorithm used to convert headings to link destinations.  This affects in-document links both in the body and in the table of contents of the document.  Dependency: If the value of the `--toc-threshold, -t` option > 0, then this `--flavor, -f` option is required, to inform the flavor of TOC link destinations.
 - Values:
   - `Common` - Use a common slugification algorithm that works on multiple platforms including GitHub and VS Code Markdown preview.
   - `Azure` - Use a slugification algorithm that works in Azure DevOps Wiki.
@@ -249,7 +256,7 @@ These options are used to specify formatting that Mdfmt should apply to Markdown
 
 - Default: `null`.  If this option is omitted, in-document links are not updated.
 
-#### 5.3.2. Heading Numbers
+#### 5.3.3. Heading Numbers
 
 - Long name: **`--heading-numbers`**
 - Short name: **`-h`**
@@ -266,7 +273,7 @@ These options are used to specify formatting that Mdfmt should apply to Markdown
   - `1` - Include heading numbers that do not end in a period.  The first section is numbered `1`, and its children are `1.1`, `1.2`, ... etc.
 - Default: `null`.  If this option is omitted, no changes are made to heading numbers.
 
-#### 5.3.3. TOC Threshold
+#### 5.3.4. TOC Threshold
 
 - Long name: **`--toc-threshold`**
 - Short name: **`-t`**
@@ -277,7 +284,7 @@ These options are used to specify formatting that Mdfmt should apply to Markdown
     - Dependency:  The `-f` option is required when the value of `-t` > 0, so that TOC generation knows how to make link destinations.
 - Default: `null`.  If this option is omitted, threshold-based TOC maintenance does not occur; however, a pre-existing TOC can still be maintained if the `-f` option is specified in this case.
 
-#### 5.3.4. Newline Strategy
+#### 5.3.5. Newline Strategy
 
 - Long name: **`--newline-strategy`**
 - Short name: _none_
@@ -330,8 +337,8 @@ Verbose output includes more information, providing a bit more insight into what
 - A `CommandLineOptions` object, showing the options and target path parsed from the command line.  Note that the target path may be relative or absolute, depending upon how it was specified.  Only options with non-null values are shown.
 - The target path as an absolute path, for clarity.
 - The names of options that were explicitly set on the command line.
-- The [processing root](./Glossary.md#processing-root), which is an important concept when configuring a `.mdfmt` file.
-- The loaded `.mdfmt` file, if any, is shown.  See the next section [Using a .mdfmt File](#7-using-a-mdfmt-file) for more information about the `.mdfmt` files.
+- The [processing root](./Glossary.md#processing-root), which is an important concept when there is a configuration file.  Please see the description of the [`--environment, -e option`](#531-environment) for a discussion of how the Mdfmt configuration file is named and located.
+- The path name and content of the loaded configuration file, if any, is shown.  See also the next section [Using Mdfmt Configuration File](#7-using-mdfmt-configuration-file).
 - For each file processed during the Mdfmt run:
 
   - In cyan, a line showing `Processing` and the full path of the file being processed.
@@ -363,20 +370,20 @@ Note that fewer `CommandLineOptions` are shown, since only provided (non-null) o
 
 The end of the output shows that the `FormattingOptions` are empty, since no formatting options were provided.  With no formatting options, Mdfmt is not being asked to do any work, so of course there is no green output and the file is not modified or saved.
 
-## 7. Using a .mdfmt File
+## 7. Using Mdfmt Configuration File
 
 ### 7.1. Overview And Motivation
 
-A `.mdfmt` file allows you to configure formatting options that govern how the `.md` files within a directory and its subdirectories are formatted.  This can be useful when developing a documentation repository, and there needs to be consistent formatting across numerous Markdown files organized under a root directory.
+An Mdfmt configuration file allows you to configure formatting options that govern how the `.md` files within a directory and its subdirectories are formatted.  This can be useful when developing a documentation repository, and there needs to be consistent formatting across numerous Markdown files organized under a root directory.
 
-A `.mdfmt` file allows configuration of the following:
+An Mdfmt configuration file allows configuration of the following:
 
 - Named collections of formatting options.
 - Bindings between relative paths ([cpaths](./Glossary.md#cpath)) of directories and/or Markdown files to these named collections of formatting options.
 
-This provides a flexible mechanism which, as explained below, implements an inheritance scheme for options.  It is important to have flexibility.  When working on a documentation repository, is might be common for many documents to be formatted a certain way, but there can be exceptions.  For example, heading numbering might typically be desired, but in a glossary, which has a long flat outline organized by term, section numbers would be distracting.  It is useful to be able to define base formatting options that can be overridden in specific directories or files.  The `.mdfmt` file provides this.
+This provides a flexible mechanism which, as explained below, implements an inheritance scheme for options.  It is important to have flexibility.  When working on a documentation repository, is might be common for many documents to be formatted a certain way, but there can be exceptions.  For example, heading numbering might typically be desired, but in a glossary, which has a long flat outline organized by term, section numbers would be distracting.  It is useful to be able to define base formatting options that can be overridden in specific directories or files.
 
-### 7.2. Example of .mdfmt File
+### 7.2. Example of Mdfmt Configuration File
 
 As an example, here is the [.mdfmt file](https://github.com/steinar-flatland/mdfmt/blob/main/docs/.mdfmt) from the [docs directory](https://github.com/steinar-flatland/mdfmt/tree/main/docs) of the [mdfmt respository](https://github.com/steinar-flatland/mdfmt):
 
@@ -405,11 +412,11 @@ There are two named sets of options:
 1. There is one called `default` that defines a Markdown flavor, a TOC threshold, and a heading numbering style.
 2. There is another called `noHeadings`, that calls for no heading numbers.
 
-The `CpathToOptions` section contains bindings **from** paths that are relative to the `mdfmt/docs` directory (where the `.mdfmt` file resides) **to** option set names.  In the keys in the `CpathToOptions` section, `.` represents `mdfmt/docs`, the directory containing the `.mdfmt` file.
+The `CpathToOptions` section contains bindings **from** paths that are relative to the `mdfmt/docs` directory (where the `.mdfmt` file resides) **to** option set names.  In the keys in the `CpathToOptions` section, `.` represents `mdfmt/docs`, the directory containing the `.mdfmt` file.  The directory containing the configuration file is called the [processing root](./Glossary.md#processing-root).
 
-The [cpath](./Glossary.md#cpath) `.` matches each `.md` file under `mdfmt/docs`, no matter how deeply the file is nested in subdirectories.  The `default` options apply to all these `.md` files.  Think of this as a formatting base class.  Some or all of these options can be overridden with more specific `CpathToOptions` bindings.
+The [cpath](./Glossary.md#cpath) `.` matches every `.md` file under `mdfmt/docs` (the [processing root](./Glossary.md#processing-root)), no matter how deeply the file is nested in subdirectories.  The `default` options apply to all these `.md` files.  Think of this as a formatting base class.  Some or all of these options can be overridden with more specific `CpathToOptions` bindings.
 
-The [cpath](./Glossary.md#cpath) `./user/Glossary.md` is bound to `noHeadings`.  `./user/Glossary.md` inherits the `default` options, and then the more specific `noHeadings` option set is applied, changing the inherited value of `1.` for `HeadingNumbering` to `none`.
+The [cpath](./Glossary.md#cpath) `./user/Glossary.md` is bound to `noHeadings`.  First, `./user/Glossary.md` inherits the `default` options.  Then, the more specific `noHeadings` option set is applied, overwriting the value of `1.` from the `default` option set to `none`.
 
 ### 7.3. How .mdfmt Options Are Evaluated
 
@@ -427,20 +434,9 @@ Finally, any formatting options passed in on the command line are considered the
 
 In this way, a formatting options configuration is determined for each file processed.  In a large recursive (`-r`) Mdfmt run, this allows different Markdown files to be processed with different options.
 
-### 7.4. What Triggers The Use Of .mdfmt
+### 7.4. Configuration File Name And Location
 
-The definition of [processing root](./Glossary.md#processing-root) describes how, on startup, Mdfmt finds its `.mdfmt` file.
-
-Mdfmt looks at the [target path](./Glossary.md#target-path) being processed.  Let the [target directory](./Glossary.md#target-directory) be defined as follows:
-
-- If the target path from the command line is a file, the _target directory_ is the directory containing this file.
-- If the target path from the command line is a directory, the _target directory_ is the target path.
-
-Mdfmt first checks to see if the target directory has a `.mdfmt` file, and then it checks the parent directory, and each successive ancestor directory.  The first directory containing a `.mdfmt` file defines the [processing root](./Glossary.md#processing-root), which is the root of the files that Mdfmt can see and process.  The `.mdfmt` file in the processing root directory determines the formatting options that are applied.
-
-If an `.mdfmt` file is found, the formatting options it specifies can be overridden on the command line.
-
-The presence of a `.mdfmt` file is not required.  In the absence of a `.mdfmt` file, the only formatting options that are applied are any that are specified on the command line.
+Please see the description of the [`--environment, -e option`](#531-environment) for a discussion of how the Mdfmt configuration file is named and located.
 
 ## 8. Return Value
 

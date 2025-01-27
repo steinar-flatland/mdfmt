@@ -5,7 +5,7 @@ using System.Text.Json;
 namespace Mdfmt.Options;
 
 /// <summary>
-/// Data loaded from .mdfmt file.
+/// Data loaded from configuration file that optionally exists in the processing root directory.
 /// </summary>
 internal class MdfmtProfile
     (

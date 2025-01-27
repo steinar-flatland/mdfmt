@@ -8,8 +8,8 @@
   - [label](#label)
   - [link](#link)
   - [Markdown](#markdown)
-  - [.mdfmt file](#mdfmt-file)
   - [Mdfmt](#mdfmt)
+  - [mdfmt configuration file](#mdfmt-configuration-file)
   - [processing root](#processing-root)
   - [slug](#slug)
   - [slugification](#slugification)
@@ -24,7 +24,7 @@ This file defines terms that form the ubiquitous language of Mdfmt.
 
 ## cpath
 
-the canonical relative path of a file being processed by [Mdfmt](#mdfmt).  Such a path is relative to the [processing root](#processing-root), where the [.mdfmt file](#mdfmt-file) (if any) is.  _Cpaths_ are used as keys in the [.mdfmt file](#mdfmt-file) to bind sets of formatting options to directories or to individual files.
+the canonical relative path of a file being processed by [Mdfmt](#mdfmt).  Such a path is relative to the [processing root](#processing-root), where the [mdfmt configuration file](#mdfmt-configuration-file) (if any) is.  _Cpaths_ are used as keys in the [mdfmt configuration file](#mdfmt-configuration-file) to bind sets of formatting options to directories or to individual files.
 
 ## current working directory
 
@@ -32,8 +32,8 @@ the directory in which [Mdfmt](#mdfmt) was launched and that is dynamically asso
 
 Uses of the _current working directory_ by [Mdfmt](#mdfmt):
 
-1. When the [target](target) that [Mdfmt](#mdfmt) is being asked to process is a relative path, this path is understood relative to the _current working directory_.
-2. When determing the [processing root](#processing-root) of the [Mdfmt](#mdfmt) run, in the absence of an [.mdfmt file](#mdfmt-file), the _current working directory_ is used as the [processing root](#processing-root).
+1. When the [target path](#target-path) that [Mdfmt](#mdfmt) is being asked to process is a relative path, this path is understood relative to the _current working directory_.
+2. When determing the [processing root](#processing-root) of the [Mdfmt](#mdfmt) run, in the absence of an [mdfmt configuration file](#mdfmt-configuration-file), the _current working directory_ is used as the [processing root](#processing-root).
 
 ## destination
 
@@ -51,7 +51,7 @@ a construct in a [Markdown](#markdown) document that provides a navigable hyperl
 [label](destination)
 ```
 
-where the [`label`](#label) is text that is rendered as part of the [Markdown](#markdown) document as a clickable hyperlink, and the [`destination`](#destination) indicates a navigation target in the form of a URL or a relative path to a [Markdown](#markdown) document, optionally with an indication of the specific heading within the target document to navigate to.  
+where the [`label`](#label) is text that is rendered as part of the [Markdown](#markdown) document as a clickable hyperlink, and the [`destination`](#destination) indicates a navigation target in the form of a URL or a relative path.  The relative path may be to a [Markdown](#markdown) document, optionally with an indication of the specific heading within the target document to navigate to.  
 
 ## Markdown
 
@@ -61,24 +61,27 @@ created by [John Gruber](https://daringfireball.net/contact/) in 2004, he descri
 
 Since its introduction, Markdown has been widely adopted.  There are numerous implementations with varying features and details.  The [Wikipedia article on Markdown](https://en.wikipedia.org/wiki/Markdown) provides more context, history, examples, and lists many of the implementations.
 
-## .mdfmt file
-
-a configuration file that specifies formatting options applied by [Mdfmt](#mdfmt) to [Markdown](#markdown) files in the directory where the file named `.mdfmt` exists and in subdirectories thereof.  The location of this file also defines the [processing root](#processing-root).  Note that explicit command line options override settings from the _.mdfmt file_.
-
 ## Mdfmt
 
 a CLI tool for formatting either individual [Markdown](#markdown) files or all the [Markdown](#markdown) files found in a directory.
+
+## mdfmt configuration file
+
+an optional configuration file that specifies formatting options applied by [Mdfmt](#mdfmt) to [Markdown](#markdown) files.
+
+How the file itself (not considering path) is expected to be named: If the `-e, --environment` option has been specified, the _mdfmt configuration file_ is expected to be named `mdfmt.{environment}.json`, where `{environment}` is replaced by value passed to the `-e, --environment` option.  If the `-e, --environment` is not being used, the expected name of the file is simply `.mdfmt`.
+
+How the file is located at runtime:  [Mdfmt](#mdfmt) first looks in the [target directory](#target-directory), then in the parent directory (if any) of the [target directory](#target-directory), and on up to all ancestor directories:  The first directory that contains a file with the expected name of the _mdfmt configuration file_ defines the [processing root](#processing-root).  The configuration file is then loaded, and it governs the formatting that is applied to all [Markdown](#markdown) files that are formatted within the [processing root](#processing-root) and any of its subdirectories.  Canonical relative paths, or [cpaths](#cpath), configured in the _mdfmt configuration file_ are relative to the [processing root](#processing-root).
+
+Formatting options explicitly provided on the command line are more powerful than, and will override, formatting options provided through the _mdfmt configuration file_.
+
+The _mdfmt configuration file_ is optional.  If not present, then the [current working directory](#current-working-directory) is used as the [processing root](#processing-root), and only command line options govern the formatting that happens.
 
 ## processing root
 
 a directory that defines the root of files that [Mdfmt](#mdfmt) can see.  [Mdfmt](#mdfmt) can only format `.md` files that are in the _processing root_ directory or one of its subdirectories, and the program is unaware of any other files outside the _processing root_.
 
-[Mdfmt](#mdfmt) determines the processing root on startup as follows:
-
-- Starting in the [target directory](target-directory), go to the parent directory and to each successive ancestor directory.  The first directory that contains a [.mdfmt file](#mdfmt-file) is the _processing root_.
-- If there exists no [.mdfmt file](#mdfmt-file) in the [target directory](target-directory) or in any of its ancestor directories, then use the [current working directory](#current-working-directory) as the _processing root_.
-
-Canonical relative paths, or [cpaths](#cpath), configured in the optional [.mdfmt file](#mdfmt-file), are relative to the _processing root_ directory.
+If there exists an [mdfmt configuration file](#mdfmt-configuration-file), the directory containing it, by definition, is the _processing root_.
 
 ## slug
 
@@ -86,7 +89,7 @@ in the context of [Mdfmt](#mdfmt), a string that can be used as a [destination](
 
 ## slugification
 
-in the context of [Mdfmt](#mdfmt), the process of converting a [Markdown](#markdown) file name and the text of a heading the way it displays to the user, to a [destination](#destination) that can be used in a [link](#link).  There are different slugification algorithms that support different [Markdown](#markdown) rendering environments.  For example, [Markdown rendered on GitHub](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax) requires a different format of slug than [Azure DevOps Wiki](https://learn.microsoft.com/en-us/azure/devops/project/wiki).
+in the context of [Mdfmt](#mdfmt), the process of converting a [Markdown](#markdown) file name and the text of a heading the way it displays to the user, to a [destination](#destination) that can be used in a [link](#link).  There are different slugification algorithms that support different [Markdown](#markdown) rendering environments.  For example, [Markdown rendered on GitHub](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax) requires a different format of [slug](#slug) than [Azure DevOps Wiki](https://learn.microsoft.com/en-us/azure/devops/project/wiki).
 
 ## table of contents
 
@@ -109,4 +112,4 @@ short for [table of contents](#table-of-contents).
 
 ## TOC threshold
 
-an integer greater than or equal to 0, indicating the minimum number of headings that a document should have before a [TOC](#toc) is generated.  A _TOC threshold_ of 0 causes an existing table of contents to be removed.
+an integer greater than or equal to 0, indicating the minimum number of headings that a document must have before a [TOC](#toc) is generated.  A _TOC threshold_ of 0 causes an existing table of contents to be removed.

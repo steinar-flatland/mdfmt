@@ -14,7 +14,7 @@ namespace Mdfmt;
 
 internal class Program
 {
-    public const string Version = "1.1.2";
+    public const string Version = "1.2.0";
 
     public static void Main(string[] args)
     {
@@ -77,9 +77,8 @@ internal class Program
         parsedResult.WithParsed(options =>
         {
             AdjustOptions(options);
-            ValidateOptions(options, out string processingRoot, out string mdfmtFilePath);
-            MdfmtProfile mdfmtProfile = (mdfmtFilePath == null) ? null : MdfmtProfileLoader.Load(mdfmtFilePath);
-            MdfmtOptions mdfmtOptions = new(args, options, processingRoot, mdfmtProfile);
+            ValidateOptions(options, out string processingRoot, out string mdfmtConfigurationFilePath);
+            MdfmtOptions mdfmtOptions = new(args, options, processingRoot, mdfmtConfigurationFilePath);
             Processor processor = new(mdfmtOptions);
             processor.Run();
             throw new ExitException(ExitCodes.Success);
@@ -107,12 +106,13 @@ internal class Program
     /// Output parameter that is set to a full path defining the root of the files the Mdfmt can see
     /// and process.  Always returns a full path, never null.
     /// </param>
-    /// <param name="mdfmtFilePath">
-    /// Output parameter that is set to the full path of .mdfmt file, or null if there is none.
-    /// When non-null, the path indicates a file that is an immediate descendant of the <c>processingRoot</c>.
+    /// <param name="mdfmtConfigurationFilePath">
+    /// Output parameter that is set to the full path of the configuration file for loading the
+    /// <see cref="MdfmtProfile"/>, or null if there is none. When non-null, the path indicates
+    /// a file that is directly in the <c>processingRoot</c> directory.
     /// </param>
     /// <exception cref="ExitException"/>
-    private static void ValidateOptions(CommandLineOptions commandLineOptions, out string processingRoot, out string mdfmtFilePath)
+    private static void ValidateOptions(CommandLineOptions commandLineOptions, out string processingRoot, out string mdfmtConfigurationFilePath)
     {
         // Make sure the path is either a directory, or a file whose name ends in .md
         ValidateTargetPath(commandLineOptions.TargetPath, out bool targetPathIsDirectory);
@@ -131,23 +131,25 @@ internal class Program
 
         // The goal is to set these output parameters.
         // processingRoot always gets a full path as a value.
-        // mdfmtFilePath will get a full path or may remain null if no .mdfmt file is available.
+        // mdfmtConfigurationFilePath will get a full path or may remain null if no file is available.
         processingRoot = null;
-        mdfmtFilePath = null;
+        mdfmtConfigurationFilePath = null;
 
         string targetDirectory = targetPathIsDirectory ? commandLineOptions.TargetPath : Path.GetDirectoryName(commandLineOptions.TargetPath);
-        DirectoryInfo candidateProcessingRootDirectoryInfo = new(targetDirectory);
+        DirectoryInfo directoryInfo = new(targetDirectory);
         do
         {
-            string candidateProcessingRoot = candidateProcessingRootDirectoryInfo.FullName;
-            string candidateMdfmtFilePath = Path.Combine(candidateProcessingRoot, ".mdfmt");
-            if (File.Exists(candidateMdfmtFilePath))
+            string candidateProcessingRoot = directoryInfo.FullName;
+            string candidateMdfmtConfigurationFilePath = string.IsNullOrEmpty(commandLineOptions.Environment) ?
+                    Path.Combine(candidateProcessingRoot, ".mdfmt") :
+                    Path.Combine(candidateProcessingRoot, $"mdfmt.{commandLineOptions.Environment}.json");
+            if (File.Exists(candidateMdfmtConfigurationFilePath))
             {
                 processingRoot = candidateProcessingRoot;
-                mdfmtFilePath = candidateMdfmtFilePath;
+                mdfmtConfigurationFilePath = candidateMdfmtConfigurationFilePath;
                 break;
             }
-        } while ((candidateProcessingRootDirectoryInfo = candidateProcessingRootDirectoryInfo.Parent) != null);
+        } while ((directoryInfo = directoryInfo.Parent) != null);
         processingRoot ??= new DirectoryInfo(targetDirectory).FullName;
     }
 
