@@ -100,6 +100,7 @@ internal class MdfmtOptions
             Flavor = commandLineOptions.Flavor,
             HeadingNumbering = commandLineOptions.HeadingNumbering,
             TocThreshold = commandLineOptions.TocThreshold,
+            LineNumberingThreshold = commandLineOptions.LineNumberingThreshold,
             NewlineStrategy = commandLineOptions.NewlineStrategy
         };
         return formattingOptions;
@@ -176,6 +177,10 @@ internal class MdfmtOptions
         if (ArgNames.Contains("-t") || ArgNames.Contains("--toc-threshold"))
         {
             formattingOptions.TocThreshold = _commandLineFormattingOptions.TocThreshold;
+        }
+        if (ArgNames.Contains("-l") || ArgNames.Contains("--line-numbering-threshold"))
+        {
+            formattingOptions.LineNumberingThreshold = _commandLineFormattingOptions.LineNumberingThreshold;
         }
         if (ArgNames.Contains("--newline-strategy"))
         {

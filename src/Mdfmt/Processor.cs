@@ -134,6 +134,11 @@ internal class Processor
             _linkUpdaters[flavor].Update(md, _options.Verbose);
         }
 
+        if (fpo.LineNumberingThreshold is int lineNumberingThreshold)
+        {
+            LineNumberUpdater.Update(md, lineNumberingThreshold, _options.Verbose);
+        }
+
         // If the MdStruct was modified, save the Markdown file.
         if (md.IsModified)
         {
