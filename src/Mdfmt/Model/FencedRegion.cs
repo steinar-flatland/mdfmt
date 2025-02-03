@@ -1,74 +1,92 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Mdfmt.Model;
 
-internal class FencedRegion(IReadOnlyList<AtomicRegion> atomicRegions) : CompositeRegion(Adjust(atomicRegions))
+/// <summary>
+/// Contains a fenced code block from a Markdown document.  It is a composite region that always starts
+/// with a <see cref="FenceMarkerRegion"/>, followed by <see cref="NewlineRegion"/>s and
+/// <see cref="ContentRegion"/>s, and usually (but not necessarily) ending with a closing
+/// <see cref="FenceMarkerRegion"/>.  The missing closing fence marker could occur if the Markdown file
+/// ends in the middle of a fenced code block that does not have a closing fence marker.  Runs of adjacent
+/// newlines are always separated by empty content regions.  This makes it easier to turn line numbers
+/// on and off.
+/// </summary>
+/// <param name="atomicRegions">Atomic regions of this fenced region</param>
+internal class FencedRegion(IReadOnlyList<AtomicRegion> atomicRegions) : CompositeRegion(atomicRegions)
 {
-    private static readonly Regex _lineNumberRegex = new(@"^\s*(\d+)", RegexOptions.Compiled);
-
     /// <summary>
-    /// Adjust the list of <see cref="AtomicRegion"/> passed in such that there are never two consecutive
-    /// <see cref="NewlineRegion"/>.  Whenever two newline regions are seen in a row, insert an empty
-    /// <see cref="ContentRegion"/> between them.  This is done to make it easy to add line numbers
-    /// to a <c>FencedRegion</c>:  Just visit all the <c>ContentRegion</c>s.
+    /// Regex for determining whether a line starts with what looks like a line number:
+    /// <list type="bullet">
+    ///   <item><c>^</c> matches the beginning of the string.</item>
+    ///   <item><c>\s*</c> matches zero or more whitespace characters.</item>
+    ///   <item><c>(\d+)</c> captures one or more digits into capture group 1.</item>
+    ///   <item><c>(?: |$)</c> a non-capturing group that matches either a literal space () or the end of line.</item>
+    /// </list>
     /// </summary>
-    /// <param name="atomicRegions"></param>
-    /// <returns></returns>
-    private static List<AtomicRegion> Adjust(IReadOnlyList<AtomicRegion> atomicRegions)
-    {
-        List<AtomicRegion> result = [];
-        bool previousRegionWasNewlineRegion = false;
-        foreach (AtomicRegion region in atomicRegions)
-        {
-            if (region is FenceMarkerRegion || region is ContentRegion)
-            {
-                previousRegionWasNewlineRegion = false;
-            }
-            else if (region is NewlineRegion)
-            {
-                if (previousRegionWasNewlineRegion)
-                {
-                    result.Add(new ContentRegion(""));
-                }
-                previousRegionWasNewlineRegion = true;
-            }
-            else
-            {
-                throw new InvalidOperationException($"Unhandled type of atomic region: {region.GetType().Name}");
-            }
-            result.Add(region);
-        }
-        return result;
-    }
+    private static readonly Regex _lineNumberRegex = new(@"^\s*(\d+)(?: |$)", RegexOptions.Compiled);
 
     public bool HasLineNumbers => DetermineWhetherHasLineNumbers();
 
     /// <summary>
     /// Enumerable over the content regions of this composite regions.
     /// </summary>
-    public IEnumerable<AtomicRegion> ContentRegions => _atomicRegions.OfType<ContentRegion>();
+    public IEnumerable<ContentRegion> ContentRegions => _atomicRegions.OfType<ContentRegion>();
 
-
-
+    /// <summary>
+    /// Determine whether this fenced code block has line numbers.
+    /// </summary>
+    /// <returns>bool</returns>
     private bool DetermineWhetherHasLineNumbers()
     {
-        // Enumerate the ContentRegions, and let n be 1-based index into the enumeration.
-        // Return if for each region, its content matches the _lineNumberRegex and the capture group, converted to int, = n.
-        // Otherwise return false
-
+        int lineNumber = 0;
+        foreach (ContentRegion contentRegion in ContentRegions)
+        {
+            Match match = _lineNumberRegex.Match(contentRegion.Content);
+            if ( (!match.Success) ||
+                 (!int.TryParse(match.Groups[1].Value, out int number)) ||
+                 (number != ++lineNumber) )
+                return false;
+        }
+        return true;
     }
 
-    public void AddLineNumbers()
+    /// <summary>
+    /// Idempotently ensure that the content of this fenced region has line numbers.
+    /// </summary>
+    /// <returns>
+    /// Whether it is the case that a transition from not having line numbers, to having line
+    /// numbers, occurred.
+    /// </returns>
+    public bool AddLineNumbers()
     {
-        // Idempotently add line numbers to the fenced region
+        if (HasLineNumbers) return false;
+        int lineCount = ContentRegions.Count();
+        int fieldWidth = lineCount.ToString().Length;
+        int lineNumber = 0;
+        foreach (ContentRegion region in ContentRegions)
+        {
+            region.Content = $"{(++lineNumber).ToString().PadLeft(fieldWidth, ' ')} {region.Content}"; 
+        }
+        return true;
     }
 
-    public void RemoveLineNumbers()
+    /// <summary>
+    /// Idempotently ensure that the content of this fenced region does not have line numbers.
+    /// </summary>
+    /// <returns>
+    /// Whether it is the case that a transition from having line numbers, to not having line
+    /// numbers, occurred.
+    /// </returns>
+    public bool RemoveLineNumbers()
     {
-        // Idempotently remove line numbers from the fenced region
+        if (!HasLineNumbers) return false;
+        foreach (ContentRegion region in ContentRegions)
+        {
+            region.Content = _lineNumberRegex.Replace(region.Content, "");
+        }
+        return true;
     }
 
 }
