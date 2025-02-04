@@ -21,7 +21,8 @@
       - [5.3.2. Flavor](#532-flavor)
       - [5.3.3. Heading Numbers](#533-heading-numbers)
       - [5.3.4. TOC Threshold](#534-toc-threshold)
-      - [5.3.5. Newline Strategy](#535-newline-strategy)
+      - [5.3.5. Line Numbering Threshold](#535-line-numbering-threshold)
+      - [5.3.6. Newline Strategy](#536-newline-strategy)
     - [5.4. Target Path](#54-target-path)
   - [6. Output](#6-output)
     - [6.1. Non-Verbose Output](#61-non-verbose-output)
@@ -36,7 +37,7 @@
 
 ## 1. Introduction
 
-Mdfmt is a command line interface (CLI) for Markdown formatting.  Able to operate on individual Markdown files and on directory structures containing many Markdown files, it offers assistance with automated maintenance of heading numbers, in-document links, table of contents, and consistent newlines.
+Mdfmt is a command line interface (CLI) for Markdown formatting.  Able to operate on individual Markdown files and on directory structures containing many Markdown files, it offers assistance with automated maintenance of heading numbers, in-document links, table of contents, line numbering of fenced code blocks, and consistent newlines.
 
 See also this [Glossary](./Glossary.md), which defines the language used to talk about Mdfmt.
 
@@ -172,6 +173,7 @@ A few words about how each option is described in the subsections below below:
 - Description - A description of the effect of the option; what it does; how it works.
 - Values - Describes the valid values of the Type.  For an enumeration, lists the values and explains what each one means.
 - Default - Some options have a default value, which is the value that the option assumes when it is omitted from the command line.  When there is no default, omission of the option from the command line leads to a `null`/missing value.  The Mdfmt program reacts to this either by providing an error message if the omission is unacceptable, or by implementing a default behavior if the omission is acceptable.
+- Configuration file key - When using the advanced configuration file feature (see the section, [Using Mdfmt Configuration File](#7-using-mdfmt-configuration-file)), provides the key to use to identify this formatting option.  This is only specified for formatting options that can be configured in the configuration file.
 
 In addition, some details about the path are covered in the last subsection of this section.
 
@@ -255,6 +257,7 @@ These options are used to specify formatting that Mdfmt should apply to Markdown
   > If you have a need for another slugification algorithm, it is likely an easy addition to make.  The code has been architected with an interface that can be implemented for more algorithms.  Feel free to [reach out](../../README.md#contact).
 
 - Default: `null`.  If this option is omitted, in-document links are not updated.
+- Configuration file key: `Flavor`
 
 #### 5.3.3. Heading Numbers
 
@@ -272,6 +275,7 @@ These options are used to specify formatting that Mdfmt should apply to Markdown
   - `1.` - Include heading numbers that end in a period.  The first section is numbered `1.`, and its children are `1.1.`, `1.2.`, ... etc.  Note that this [Mdfmt User's Guide](#mdfmt-users-guide) document uses the `-h 1.` option.
   - `1` - Include heading numbers that do not end in a period.  The first section is numbered `1`, and its children are `1.1`, `1.2`, ... etc.
 - Default: `null`.  If this option is omitted, no changes are made to heading numbers.
+- Configuration file key: `HeadingNumbering`
 
 #### 5.3.4. TOC Threshold
 
@@ -283,8 +287,20 @@ These options are used to specify formatting that Mdfmt should apply to Markdown
   - When a positive int:  If the number of headings in the document meets or exceeds the threshold, ensures that a TOC is added or updated, and if the number of headings is below the threshold, ensures removal of the TOC.
     - Dependency:  The `-f` option is required when the value of `-t` > 0, so that TOC generation knows how to make link destinations.
 - Default: `null`.  If this option is omitted, threshold-based TOC maintenance does not occur; however, a pre-existing TOC can still be maintained if the `-f` option is specified in this case.
+- Configuration file key: `TocThreshold`
 
-#### 5.3.5. Newline Strategy
+#### 5.3.5. Line Numbering Threshold
+
+- Long name: **`--line-numbering-threshold`**
+- Short name: **`-l`**
+- Type: nonnegative int
+- Description: The minimum number of lines in a fenced code block, for line numbering.
+  - When 0: Always assures removal of line numbers from fenced code blocks.
+  - When a positive int: If the number of lines in a fenced code block meets or exceeds the threshold, ensures that each line of the code block starts with a 1-based line number, and if the number of lines is below the threshold, ensures removal of the line numbers.
+  - Default: `null`.  If this option is omitted, Mdfmt does not edit line numbers in fenced code blocks.
+  - Configuration file key: `LineNumberingThreshold`
+
+#### 5.3.6. Newline Strategy
 
 - Long name: **`--newline-strategy`**
 - Short name: _none_
@@ -301,6 +317,7 @@ These options are used to specify formatting that Mdfmt should apply to Markdown
   The preferred options only take effect if the file being processed has a mixture of different kinds of newlines:  Then, all newlines are switched over to the preference, and any new newlines introduced by Mdfmt also follow the preference.  If, the file being processed has only one kind of newline, Mdfmt ignores the preferred option and just continues to use the kind of newline that is already being used.
 
 - Default: `null`.  If this option is omitted, no changes are made to existing newlines, and any new newlines introduced by Mdfmt follow the predominant style of the current file.  (In the event of a tie, Mdfmt uses `\n` for newly added newlines.)
+- Configuration file key: `NewlineStrategy`
 
 ### 5.4. Target Path
 
@@ -406,6 +423,8 @@ As an example, here is the [.mdfmt file](https://github.com/steinar-flatland/mdf
   }
 }
 ```
+
+Note that `"Flavor"`, `"TocThreshold"`, and `"HeadingNumbering"` keys in the JSON shown above are configuration file key values as specified in section on [Formatting Options](#53-formatting-options).  Configuration file keys give you the ability to refer to command line options when building an Mdfmt configuration file.
 
 There are two named sets of options:
 
