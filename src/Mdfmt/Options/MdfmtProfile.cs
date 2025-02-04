@@ -1,4 +1,5 @@
 ﻿using Mdfmt.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Text.Json;
 
@@ -16,13 +17,13 @@ internal class MdfmtProfile
     /// <summary>
     /// Dictionary keyed on a name that maps to associated <see cref="FormattingOptions"/>.
     /// </summary>
-    public Dictionary<string, FormattingOptions> Options { get; } = options ?? [];
+    public Dictionary<string, FormattingOptions> Options { get; } = new Dictionary<string, FormattingOptions>(options ?? [], StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Dictionary mapping a canonical relative path (cpath) to a key to the <c>Options</c> dictionary,
     /// indicating the <see cref="FormattingOptions"/> that apply to the cpath and its substructure.
     /// </summary>
-    public Dictionary<string, string> CpathToOptions { get; } = cpathToOptions ?? [];
+    public Dictionary<string, string> CpathToOptions { get; } = new Dictionary<string, string>(cpathToOptions ?? [], StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Try to find <see cref="FormattingOptions"/> for a cpath.
