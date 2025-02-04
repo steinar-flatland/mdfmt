@@ -67,7 +67,15 @@ internal class FencedRegion(IReadOnlyList<AtomicRegion> atomicRegions) : Composi
         int lineNumber = 0;
         foreach (ContentRegion region in ContentRegions)
         {
-            region.Content = $"{(++lineNumber).ToString().PadLeft(fieldWidth, ' ')} {region.Content}"; 
+            string lineNumberContent = (++lineNumber).ToString().PadLeft(fieldWidth, ' ');
+            if (region.Content.Length == 0)
+            {
+                region.Content = lineNumberContent;
+            }
+            else
+            {
+                region.Content = $"{lineNumberContent} {region.Content}";
+            }
         }
         return true;
     }
