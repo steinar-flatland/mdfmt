@@ -50,6 +50,13 @@ public class ProgramTests
     private static readonly string _addingToc_mainly_unix_after_md = "Adding-Toc_mainly_unix_after.md";
     private static readonly string _addingToc_all_windows_after_md = "Adding-Toc_all_windows_after.md";
     private static readonly string _addingToc_all_unix_after_md = "Adding-Toc_all_unix_after.md";
+    private static readonly string _fencedExamples_l0_md = "Fenced-Examples_l0.md";
+    private static readonly string _fencedExamples_l1_md = "Fenced-Examples_l1.md";
+    private static readonly string _fenced_l0_md = "Fenced_l0.md";
+    private static readonly string _fenced_l1_md = "Fenced_l1.md";
+    private static readonly string _fenced_l2_md = "Fenced_l2.md";
+    private static readonly string _fenced_l3_md = "Fenced_l3.md";
+
 
     [OneTimeSetUp]
     public void OneTimeSetup()
@@ -297,6 +304,52 @@ public class ProgramTests
 
 
 
+        new TestCaseData(_fencedExamples_l0_md, new string[] {"-l", "1"}, _fencedExamples_l1_md, ExitCodes.Success).SetName("Fenced.1a"),
+
+        new TestCaseData(_fencedExamples_l0_md, new string[] {"--line-numbering-threshold", "1"}, _fencedExamples_l1_md, ExitCodes.Success).SetName("Fenced.1b"),
+
+        new TestCaseData(_fenced_l0_md, new string[] {"-l", "0"}, _fenced_l0_md, ExitCodes.Success).SetName("Fenced.0-->0"),
+
+        new TestCaseData(_fenced_l0_md, new string[] {"-l", "1"}, _fenced_l1_md, ExitCodes.Success).SetName("Fenced.0-->1"),
+
+        new TestCaseData(_fenced_l0_md, new string[] {"-l", "2"}, _fenced_l2_md, ExitCodes.Success).SetName("Fenced.0-->2"),
+
+        new TestCaseData(_fenced_l0_md, new string[] {"-l", "3"}, _fenced_l3_md, ExitCodes.Success).SetName("Fenced.0-->3"),
+
+        new TestCaseData(_fenced_l0_md, new string[] {"-l", "4"}, _fenced_l0_md, ExitCodes.Success).SetName("Fenced.0-->4"),
+
+        new TestCaseData(_fenced_l1_md, new string[] {"-l", "0"}, _fenced_l0_md, ExitCodes.Success).SetName("Fenced.1-->0"),
+
+        new TestCaseData(_fenced_l1_md, new string[] {"-l", "1"}, _fenced_l1_md, ExitCodes.Success).SetName("Fenced.1-->1"),
+
+        new TestCaseData(_fenced_l1_md, new string[] {"-l", "2"}, _fenced_l2_md, ExitCodes.Success).SetName("Fenced.1-->2"),
+
+        new TestCaseData(_fenced_l1_md, new string[] {"-l", "3"}, _fenced_l3_md, ExitCodes.Success).SetName("Fenced.1-->3"),
+
+        new TestCaseData(_fenced_l1_md, new string[] {"-l", "4"}, _fenced_l0_md, ExitCodes.Success).SetName("Fenced.1-->4"),
+
+        new TestCaseData(_fenced_l2_md, new string[] {"-l", "0"}, _fenced_l0_md, ExitCodes.Success).SetName("Fenced.2-->0"),
+
+        new TestCaseData(_fenced_l2_md, new string[] {"-l", "1"}, _fenced_l1_md, ExitCodes.Success).SetName("Fenced.2-->1"),
+
+        new TestCaseData(_fenced_l2_md, new string[] {"-l", "2"}, _fenced_l2_md, ExitCodes.Success).SetName("Fenced.2-->2"),
+
+        new TestCaseData(_fenced_l2_md, new string[] {"-l", "3"}, _fenced_l3_md, ExitCodes.Success).SetName("Fenced.2-->3"),
+
+        new TestCaseData(_fenced_l2_md, new string[] {"-l", "4"}, _fenced_l0_md, ExitCodes.Success).SetName("Fenced.2-->4"),
+
+        new TestCaseData(_fenced_l3_md, new string[] {"-l", "0"}, _fenced_l0_md, ExitCodes.Success).SetName("Fenced.3-->0"),
+
+        new TestCaseData(_fenced_l3_md, new string[] {"-l", "1"}, _fenced_l1_md, ExitCodes.Success).SetName("Fenced.3-->1"),
+
+        new TestCaseData(_fenced_l3_md, new string[] {"-l", "2"}, _fenced_l2_md, ExitCodes.Success).SetName("Fenced.3-->2"),
+
+        new TestCaseData(_fenced_l3_md, new string[] {"-l", "3"}, _fenced_l3_md, ExitCodes.Success).SetName("Fenced.3-->3"),
+
+        new TestCaseData(_fenced_l3_md, new string[] {"-l", "4"}, _fenced_l0_md, ExitCodes.Success).SetName("Fenced.3-->4"),
+
+
+
         new TestCaseData(null, new string[] { "--bogus-option" }, null, ExitCodes.MisuseOfCommand).
         SetName("Options.01: When the program is run with unknown options, Then an exit code of MisueOfCommand."),
 
@@ -327,6 +380,11 @@ public class ProgramTests
         new TestCaseData(null, new string[] {"--newline-strategy", "bad-value"}, null, ExitCodes.MisuseOfCommand).
         SetName("Options.10: When the program is run with a bad value passed to the --newline-strategy option, Then an exit code of MisuseOfCommand."),
 
+        new TestCaseData(null, new string[] {"-l", "-1"}, null, ExitCodes.MisuseOfCommand).
+        SetName("Options.11: When the program is run with a bad value passed to the -l, Then an exit code of MisuseOfCommand."),
+
+        new TestCaseData(null, new string[] {"--line-numbering-threshold", "-1"}, null, ExitCodes.MisuseOfCommand).
+        SetName("Options.12: When the program is run with a bad value passed to the --line-numbering-threshold, Then an exit code of MisuseOfCommand."),
     ];
 
     [TestCaseSource(nameof(_testCases))]

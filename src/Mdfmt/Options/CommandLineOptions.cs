@@ -19,6 +19,9 @@ internal class CommandLineOptions
     [Option('t', "toc-threshold", HelpText = "The minimum number of headings for which to include a TOC.  When specified, if the number of headings in the document meets or exceeds the threshold, ensures that a TOC is added or updated, and if the number of headings is below the threshold, ensures removal of the TOC.  0 actively removes any TOC.  If this option is omitted, threshold-based TOC maintenance does not occur; however, a pre-existing TOC can still be maintained if -f is specified in this case.  Note that a value > 0 requires the -f option, so that TOC generation will know how to make link destinations.")]
     public int? TocThreshold { get; set; }
 
+    [Option('l', "line-numbering-threshold", HelpText = "The minimum number of lines in a fenced code block, for line numbering.  When specified, if the line count of a fenced code block meets or exceeds the threshold, ensures that each line starts with a line number, and if the line count is below the threshold, ensures no line numbers.  0 actively removes any line numbers from fenced code blocks.  If this option is omitted, do not edit line numbers in fenced code blocks.")]
+    public int? LineNumberingThreshold { get; set; }
+
     [Option("newline-strategy", HelpText = "Strategy for maintaining newlines.  When specified, one of: [Unix, Windows, PreferUnix, PreferWindows].  Preferred options do nothing unless the file has a mixture of newline styles.  If this option is omitted, no changes are made to existing newlines, and any new newlines introduced by Mdfmt follow the predominant style of the current file.")]
     public NewlineStrategy? NewlineStrategy { get; set; }
 

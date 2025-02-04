@@ -28,6 +28,12 @@ internal class FormattingOptions
     public int? TocThreshold { get; set; }
 
     /// <summary>
+    /// The minimum number of lines in a fenced code block, for line numbering.  0 ensures no line
+    /// numbering.  Optional /  may be null.
+    /// </summary>
+    public int? LineNumberingThreshold { get; set; }
+
+    /// <summary>
     /// Enumerated value indicating strategy for newlines.  One of [Unix, Windows, PreferUnix,
     /// PreferWindows].  Preferred options respect the file and take effect only if the file has a
     /// mixture.  Optional / may be null.

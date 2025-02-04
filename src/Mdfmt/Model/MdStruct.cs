@@ -40,6 +40,7 @@ internal class MdStruct
         LinkRegions = new RegionEnumerable<LinkRegion>(regions);
         HeadingRegions = new RegionEnumerable<HeadingRegion>(regions);
         TocRegions = new RegionEnumerable<TocRegion>(regions);
+        FencedRegions = new RegionEnumerable<FencedRegion>(regions);
         _headingRegionDictionary = MakeHeadingRegionDictionary();
     }
 
@@ -159,6 +160,21 @@ internal class MdStruct
     /// Whether this Markdown document has a table of contents.
     /// </summary>
     public bool HasToc => TocRegions.Any();
+
+    /// <summary>
+    /// Enumerate the regions of type <c>FencedRegion</c>.
+    /// </summary>
+    public IEnumerable<FencedRegion> FencedRegions { get; }
+
+    /// <summary>
+    /// The number of fenced regions.
+    /// </summary>
+    public int FencedRegionCount => FencedRegions.Count();
+
+    /// <summary>
+    /// Whether this Markdown document has any fenced regions.
+    /// </summary>
+    public bool HasFencedRegion => FencedRegions.Any();
 
     /// <summary>
     /// <para>

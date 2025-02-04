@@ -72,7 +72,7 @@ internal class MdStructLoader
     /// <summary>
     /// A sequence of content regions parsed from the Markdown file.
     /// </summary>
-    private List<Region> _regions;
+    private readonly List<Region> _regions = [];
 
     /// <summary>
     /// State that controls the behavior of the parser.
@@ -80,9 +80,14 @@ internal class MdStructLoader
     private int _state;
 
     /// <summary>
-    /// Used to build up state of a region, when the region spans multiple lines.
+    /// Builds up the content of a table of contents region, which spans multiple lines.
     /// </summary>
     private readonly StringBuilder _regionContent = new();
+
+    /// <summary>
+    /// Builds up the state of a fenced region, which spans multiple lines.
+    /// </summary>
+    private readonly FencedRegionBuilder _fencedRegionBuilder = new();
 
     /// <summary>
     /// Reset the loader at start of load of a Markdown file.  This makes it safe to call the
@@ -103,9 +108,10 @@ internal class MdStructLoader
         _newlineStrategy = newlineStrategy;
         _newlineRegion = newlineRegion;
         _lineParser = new();
-        _regions = [];
+        _regions.Clear();
         _state = NormalState;
         _regionContent.Clear();
+        _fencedRegionBuilder.Clear();
     }
 
     #endregion Resettable_State
@@ -179,7 +185,7 @@ internal class MdStructLoader
 
                     if (trimmedLine.StartsWith(Markers.FenceMarker))
                     {
-                        _regionContent.Append(line);
+                        _fencedRegionBuilder.AddRegion(new FenceMarkerRegion(line));
                         _state = InFencedCodeBlockState;
                         continue;
                     }
@@ -198,7 +204,6 @@ internal class MdStructLoader
                     if (_lineParser.InHtmlComment)
                     {
                         _state = InHtmlCommentState;
-                        continue;
                     }
                     break;
 
@@ -213,22 +218,24 @@ internal class MdStructLoader
                     {
                         SaveTocRegion();
                         _state = NormalState;
-                        continue;
                     }
                     break;
 
                 case InFencedCodeBlockState:
                     if (isNewline)
                     {
-                        _regionContent.Append(GetNewlineRegion(token).Content);
+                        _fencedRegionBuilder.AddRegion(GetNewlineRegion(token));
                         continue;
                     }
-                    _regionContent.Append(line);
                     if (trimmedLine.StartsWith(Markers.FenceMarker))
                     {
+                        _fencedRegionBuilder.AddRegion(new FenceMarkerRegion(line));
                         SaveFencedRegion();
                         _state = NormalState;
-                        continue;
+                    }
+                    else
+                    {
+                        _fencedRegionBuilder.AddRegion(new ContentRegion(line));
                     }
                     break;
 
@@ -242,7 +249,6 @@ internal class MdStructLoader
                     if (!_lineParser.InHtmlComment)
                     {
                         _state = NormalState;
-                        continue;
                     }
                     break;
 
@@ -254,7 +260,8 @@ internal class MdStructLoader
         MopUp();
 
         // Assemble and return the MdStruct
-        MdStruct mdStruct = new(filePath, _regions, isModified, _newlineRegion);
+        List<Region> regionsShallowCopy = new(_regions);
+        MdStruct mdStruct = new(filePath, regionsShallowCopy, isModified, _newlineRegion);
         return mdStruct;
     }
 
@@ -268,34 +275,30 @@ internal class MdStructLoader
 
     private void SaveFencedRegion()
     {
-        FencedRegion fencedRegion = new(_regionContent.ToString());
+        FencedRegion fencedRegion = _fencedRegionBuilder.BuildFencedRegion();
         _regions.Add(fencedRegion);
-        _regionContent.Clear();
+        // BuildFencedRegion() already cleared the _fencedRegionBuilder
     }
 
     private void SaveTocRegion()
     {
-        string regionContent = _regionContent.ToString();
-        TocRegion tocRegion = new(regionContent);
+        TocRegion tocRegion = new(_regionContent.ToString());
         _regions.Add(tocRegion);
         _regionContent.Clear();
     }
 
     private void MopUp()
     {
-        // Avoid losing left over state in _regionContent.  This is an issue if the Markdwon file
+        // Avoid losing left over state in _regionContent.  This is an issue if the Markdown file
         // has either an unclosed fenced code block or a table of contents region that has an
         // opening comment but no closing comment.
-        if (_regionContent.Length > 0)
+        if (_fencedRegionBuilder.HasRegions)
         {
-            if (_state == InFencedCodeBlockState)
-            {
-                SaveFencedRegion();
-            }
-            else if (_state == InTableOfContentsState)
-            {
-                SaveTocRegion();
-            }
+            SaveFencedRegion();
+        }
+        else if (_regionContent.Length > 0)
+        {
+            SaveTocRegion();
         }
     }
 
