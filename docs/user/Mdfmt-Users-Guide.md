@@ -367,6 +367,8 @@ Verbose output includes more information, providing a bit more insight into what
     - Inserted new TOC
     - Updated TOC
     - Removed TOC
+    - Added line numbers to fenced code block(s)
+    - Removed line numbers from fenced code block(s)
     - Wrote file {filePath}
 
 Below is an example of verbose output.  Imagine that this user's guide is in a state of having no heading numbers or TOC.  Also, many of the links are incompatible with the Common flavor of Markdown.  In this state, the following mdfmt command is applied, with verbose output requested through the `-v` option:
