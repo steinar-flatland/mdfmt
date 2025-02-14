@@ -67,7 +67,30 @@ internal class Processor
             Output.Info($"Absolute TargetPath: {Path.GetFullPath(_options.CommandLineOptions.TargetPath)}{Environment.NewLine}");
             Output.Info($"Explicitly Set Option Names:{Environment.NewLine}{(_options.ArgNames.Count == 0 ? "none" : string.Join(", ", _options.ArgNames))}{Environment.NewLine}");
             Output.Info($"Processing Root: {_options.ProcessingRoot}{Environment.NewLine}");
-            Output.Info($"Mdfmt configuration file: {_options.MdfmtConfigurationFilePath ?? "none"}");
+
+            string loadedFromInfo;
+            if (_options.MdfmtConfigurationFilePaths == null || _options.MdfmtConfigurationFilePaths.Count == 0)
+            {
+                loadedFromInfo = ": none";
+            }
+            else if (_options.MdfmtConfigurationFilePaths.Count == 1)
+            {
+                loadedFromInfo = $": {_options.MdfmtConfigurationFilePaths[0]}";
+            }
+            else
+            {
+                loadedFromInfo = $" loaded from the following files:";
+            }
+            Output.Info($"Mdfmt configuration file{loadedFromInfo}");
+
+            if (_options.MdfmtConfigurationFilePaths.Count > 1)
+            {
+                foreach (string filePath in _options.MdfmtConfigurationFilePaths)
+                {
+                    Output.Info($"  - {filePath}");
+                }
+            }
+
             if (_options.MdfmtProfile != null)
             {
                 Output.Info(_options.MdfmtProfile);

@@ -65,6 +65,28 @@ internal class FormattingOptions
     }
 
     /// <summary>
+    /// If another instance has properties that are non-null, copy them onto this instance, to
+    /// implement configuration override functionality.
+    /// </summary>
+    /// <param name="other">Another instance of this class.</param>
+    public void OverwriteFrom(FormattingOptions other)
+    {
+        ArgumentNullException.ThrowIfNull(other);
+
+        // Get all public instance properties
+        var properties = GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+        foreach (var property in properties)
+        {
+            var otherValue = property.GetValue(other);
+            if (otherValue != null)
+            {
+                property.SetValue(this, otherValue);
+            }
+        }
+    }
+
+    /// <summary>
     /// Determine whether all properties are set to a non-null value.
     /// </summary>
     /// <returns>

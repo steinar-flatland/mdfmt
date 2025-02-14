@@ -5,11 +5,14 @@
   - [cpath](#cpath)
   - [current working directory](#current-working-directory)
   - [destination](#destination)
+  - [environment](#environment)
+  - [fenced code block](#fenced-code-block)
   - [label](#label)
+  - [line numbering threshold](#line-numbering-threshold)
   - [link](#link)
   - [Markdown](#markdown)
   - [Mdfmt](#mdfmt)
-  - [mdfmt configuration file](#mdfmt-configuration-file)
+  - [mdfmt configuration files](#mdfmt-configuration-files)
   - [processing root](#processing-root)
   - [slug](#slug)
   - [slugification](#slugification)
@@ -24,24 +27,31 @@ This file defines terms that form the ubiquitous language of Mdfmt.
 
 ## cpath
 
-the canonical relative path of a file being processed by [Mdfmt](#mdfmt).  Such a path is relative to the [processing root](#processing-root), where the [mdfmt configuration file](#mdfmt-configuration-file) (if any) is.  _Cpaths_ are used as keys in the [mdfmt configuration file](#mdfmt-configuration-file) to bind sets of formatting options to directories or to individual files.
+the canonical relative path of a file being processed by [Mdfmt](#mdfmt).  Such a path is relative to the [processing root](#processing-root), where any [mdfmt configuration files](#mdfmt-configuration-files) are.  _Cpaths_ are used as keys in the [mdfmt configuration files](#mdfmt-configuration-files) to bind sets of formatting options to directories or to individual files.
 
 ## current working directory
 
-the directory in which [Mdfmt](#mdfmt) was launched and that is dynamically associated with the running program.
-
-Uses of the _current working directory_ by [Mdfmt](#mdfmt):
-
-1. When the [target path](#target-path) that [Mdfmt](#mdfmt) is being asked to process is a relative path, this path is understood relative to the _current working directory_.
-2. When determing the [processing root](#processing-root) of the [Mdfmt](#mdfmt) run, in the absence of an [mdfmt configuration file](#mdfmt-configuration-file), the _current working directory_ is used as the [processing root](#processing-root).
+the directory in which [Mdfmt](#mdfmt) was launched and that is dynamically associated with the running program.  The _current working directory_ is important for resolving omitted and relative [target path](#target-path).
 
 ## destination
 
 a URL or relative path indicating the navigation target of a [link](#link) in a [Markdown](#markdown) document.
 
+## environment
+
+when developting [Markdown](#markdown) files, _environment_ refers to where the files will be rendered.  Examples include a website such as [Github](https://github.com), a developer laptop, or a developer portal such as [Backstage](https://backstage.io).  [Mdfmt](#mdfmt) supports configuring different formatting options per _environment_, and designating the target _environment_ for formatting on the command line.
+
+## fenced code block
+
+a region of [Markdown](#markdown) that both starts with and ends with a line where the first non-whitespace characters are three backquotes.  Markdown rendering shows such a region as a block of code. [Mdfmt](#mdfmt) supports adding line numbers to such code blocks.  See [line numbering threshold](#line-numbering-threshold).
+
 ## label
 
 the text of a [link](#link) that is rendered as part of a [Markdown](#markdown) document as a clickable hyperlink.
+
+## line numbering threshold
+
+an integer greater than or equal to 0, indicating the minimum number of lines in a [fenced code block](#fenced-code-block) for which [Mdfmt](#mdfmt) will ensure line numbers.  A _line numbering threshold_ of 0 removes line numbering from [fenced code blocks](#fenced-code-block).
 
 ## link
 
@@ -65,23 +75,25 @@ Since its introduction, Markdown has been widely adopted.  There are numerous im
 
 a CLI tool for formatting either individual [Markdown](#markdown) files or all the [Markdown](#markdown) files found in a directory.
 
-## mdfmt configuration file
+## mdfmt configuration files
 
-an optional configuration file that specifies formatting options applied by [Mdfmt](#mdfmt) to [Markdown](#markdown) files.
+one or more optional configuration files immediately in the [processing root](#processing-root) directory (not in a subdirectory), specifying formatting options applied by [Mdfmt](#mdfmt) to [Markdown](#markdown) files.
 
-How the file itself (not considering path) is expected to be named: If the `-e, --environment` option has been specified, the _mdfmt configuration file_ is expected to be named `mdfmt.{environment}.json`, where `{environment}` is replaced by value passed to the `-e, --environment` option.  If the `-e, --environment` is not being used, the expected name of the file is simply `.mdfmt`.
+_Mdfmt configuration files_ are recognizable by their names:
 
-How the file is located at runtime:  [Mdfmt](#mdfmt) first looks in the [target directory](#target-directory), then in the parent directory (if any) of the [target directory](#target-directory), and on up to all ancestor directories:  The first directory that contains a file with the expected name of the _mdfmt configuration file_ defines the [processing root](#processing-root).  The configuration file is then loaded, and it governs the formatting that is applied to all [Markdown](#markdown) files that are formatted within the [processing root](#processing-root) and any of its subdirectories.  Canonical relative paths, or [cpaths](#cpath), configured in the _mdfmt configuration file_ are relative to the [processing root](#processing-root).
+- `.mdfmt` - This file plays the same role as `mdfmt.json` (see next bullet).  The file name, `.mdfmt`, is deprecated; use the name `mdfmt.json` instead.
+- `mdfmt.json` - Base formatting options that apply to all Markdown files in the folder where specified and in all subfolders.  These base options apply unless overridden in an [environment](#environment)-specific _configuration file_ (see next bullet).
+- `mdfmt.{environment}.json` - File with [environment](#environment)-specific formatting overrides.  This file must be in the same directory as `mdfmt.json`.  It is used to override and extend settings from `mdfmt.json`, for a specific [environment](#environment).
 
-Formatting options explicitly provided on the command line are more powerful than, and will override, formatting options provided through the _mdfmt configuration file_.
+Formatting options explicitly provided on the command line are more powerful than, and will override, formatting options provided through the _mdfmt configuration files_.
 
-The _mdfmt configuration file_ is optional.  If not present, then the [current working directory](#current-working-directory) is used as the [processing root](#processing-root), and only command line options govern the formatting that happens.
+Use of _mdfmt configuration files_ is optional.  If there are no _configuration files_, then the [target directory](#target-directory) is used as the [processing root](#processing-root), and only command line options govern the formatting that happens.
 
 ## processing root
 
-a directory that defines the root of files that [Mdfmt](#mdfmt) can see.  [Mdfmt](#mdfmt) can only format `.md` files that are in the _processing root_ directory or one of its subdirectories, and the program is unaware of any other files outside the _processing root_.
+a directory that defines the root of files that [Mdfmt](#mdfmt) can see and process.  [Mdfmt](#mdfmt) can only format `.md` files that are in the _processing root_ directory and its subdirectories.
 
-If there exists an [mdfmt configuration file](#mdfmt-configuration-file), the directory containing it, by definition, is the _processing root_.
+It is always the case that the _processing root_ either is the [target directory](#target-directory) or an ancestor directory of the [target directory](#target-directory).  Starting in the [target directory](#target-directory) and scanning up the file system to successive ancestor directories, the _processing root_ is the first directory that contains any [mdfmt configuration files](#mdfmt-configuration-files).
 
 ## slug
 
@@ -97,11 +109,11 @@ a region of a [Markdown](#markdown) document that [Mdfmt](#mdfmt) maintains.  It
 
 ## target path
 
-a path that [Mdfmt](#mdfmt) is being asked to process, specified on the command line as an absolute or relative path indicating either an individual [Markdown](#markdown) (`.md`) file or a directory.  When a relative path, it is relative to the [current working directory](#current-working-directory).  If a directory as opposed to a specific file, it means to process the [Markdown](#markdown) files in the directory (and optionally subdirectories depending on the `-r, --recursive` option).  If the _target path_ is not specified, it defaults to the [current working directory](#current-working-directory).
+the path that [Mdfmt](#mdfmt) is being asked to process, optionally specified on the command line as either an absolute path or relative path.  When omitted from the command line, it defaults to the [current working directory](#current-working-directory).  When a relative path, it is relative to the [current working directory](#current-working-directory).  The _target path_ indicates either an individual [Markdown](#markdown) (`.md`) file or a directory.  If an individual file, it means only that file should be processed.  If a directory, it means to process the files in that directory, and in subdirectories too if the `-r --recursive` option is specified.
 
 ## target directory
 
-The directory of the [target path](#target-path).  There are two cases:
+The directory of the [target path](#target-path):
 
 - If the [target path](#target-path) indicates a specific [Markdown](#markdown) (`.md`) file, then the _target directory_ is the directory containing this specific file.
 - If the [target path](#target-path) indicates a directory, then the _target directory_ and [target path](#target-path) are one and the same.

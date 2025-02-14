@@ -14,7 +14,7 @@ namespace Mdfmt;
 
 internal class Program
 {
-    public const string Version = "1.3.1";
+    public const string Version = "1.4.0";
 
     public static void Main(string[] args)
     {
@@ -77,8 +77,9 @@ internal class Program
         parsedResult.WithParsed(options =>
         {
             AdjustOptions(options);
-            ValidateOptions(options, out string processingRoot, out string mdfmtConfigurationFilePath);
-            MdfmtOptions mdfmtOptions = new(args, options, processingRoot, mdfmtConfigurationFilePath);
+            ValidateOptions(options, out bool targetPathIsDirectory);
+            ConfigFilesFinder configFileFinder = new(options, targetPathIsDirectory);
+            MdfmtOptions mdfmtOptions = new(args, options, configFileFinder.ProcessingRoot, configFileFinder.MdfmtConfigurationFilePaths);
             Processor processor = new(mdfmtOptions);
             processor.Run();
             throw new ExitException(ExitCodes.Success);
@@ -102,20 +103,15 @@ internal class Program
     /// <param name="commandLineOptions">
     /// The <see cref="CommandLineOptions"/> to validate.
     /// </param>
-    /// <param name="processingRoot">
-    /// Output parameter that is set to a full path defining the root of the files the Mdfmt can see
-    /// and process.  Always returns a full path, never null.
-    /// </param>
-    /// <param name="mdfmtConfigurationFilePath">
-    /// Output parameter that is set to the full path of the configuration file for loading the
-    /// <see cref="MdfmtProfile"/>, or null if there is none. When non-null, the path indicates
-    /// a file that is directly in the <c>processingRoot</c> directory.
+    /// <param name="targetPathIsDirectory">
+    /// Output parameter that is set to <c>true</c> if <c>targetPath</c> is a directory or else to
+    /// <c>false</c> if it is a file.
     /// </param>
     /// <exception cref="ExitException"/>
-    private static void ValidateOptions(CommandLineOptions commandLineOptions, out string processingRoot, out string mdfmtConfigurationFilePath)
+    private static void ValidateOptions(CommandLineOptions commandLineOptions, out bool targetPathIsDirectory)
     {
         // Make sure the path is either a directory, or a file whose name ends in .md
-        ValidateTargetPath(commandLineOptions.TargetPath, out bool targetPathIsDirectory);
+        ValidateTargetPath(commandLineOptions.TargetPath, out targetPathIsDirectory);
 
         // Validate the rest of the options.
         CommandLineOptionsValidator validator = new();
@@ -128,29 +124,6 @@ internal class Program
             Output.Error(ex.Message);
             throw new ExitException(ExitCodes.MisuseOfCommand);
         }
-
-        // The goal is to set these output parameters.
-        // processingRoot always gets a full path as a value.
-        // mdfmtConfigurationFilePath will get a full path or may remain null if no file is available.
-        processingRoot = null;
-        mdfmtConfigurationFilePath = null;
-
-        string targetDirectory = targetPathIsDirectory ? commandLineOptions.TargetPath : Path.GetDirectoryName(commandLineOptions.TargetPath);
-        DirectoryInfo directoryInfo = new(targetDirectory);
-        do
-        {
-            string candidateProcessingRoot = directoryInfo.FullName;
-            string candidateMdfmtConfigurationFilePath = string.IsNullOrEmpty(commandLineOptions.Environment) ?
-                    Path.Combine(candidateProcessingRoot, ".mdfmt") :
-                    Path.Combine(candidateProcessingRoot, $"mdfmt.{commandLineOptions.Environment}.json");
-            if (File.Exists(candidateMdfmtConfigurationFilePath))
-            {
-                processingRoot = candidateProcessingRoot;
-                mdfmtConfigurationFilePath = candidateMdfmtConfigurationFilePath;
-                break;
-            }
-        } while ((directoryInfo = directoryInfo.Parent) != null);
-        processingRoot ??= new DirectoryInfo(targetDirectory).FullName;
     }
 
     /// <summary>
@@ -163,7 +136,8 @@ internal class Program
     /// </param>
     /// <param name="targetPathIsDirectory">
     /// Output parameter that is set to <c>true</c> if <c>targetPath</c> is a directory or else to
-    /// <c>false</c> if it is a file.</param>
+    /// <c>false</c> if it is a file.
+    /// </param>
     /// <exception cref="ExitException"/>
     private static void ValidateTargetPath(string targetPath, out bool targetPathIsDirectory)
     {
@@ -181,7 +155,7 @@ internal class Program
             }
             else
             {
-                Output.Error("File cannot be processed because it is not a .md file");
+                Output.Error($"File cannot be processed because it is not a .md file: {targetPath}");
                 throw new ExitException(ExitCodes.MisuseOfCommand);
             }
         }
