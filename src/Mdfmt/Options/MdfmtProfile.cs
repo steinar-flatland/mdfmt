@@ -26,6 +26,36 @@ internal class MdfmtProfile
     public Dictionary<string, string> CpathToOptions { get; } = new Dictionary<string, string>(cpathToOptions ?? [], StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
+    /// Given another instance of this class, superimpose its configuration on this one to implement
+    /// configuration override.
+    /// </summary>
+    /// <param name="other">Another <c>MdfmtProfile</c> instance</param>
+    public MdfmtProfile OverwriteOptionsFrom(MdfmtProfile other)
+    {
+        foreach (string key in other.Options.Keys)
+        {
+            if (Options.TryGetValue(key, out FormattingOptions formattingOptions))
+            {
+                // This MdfmtProfile and the other one both have FormattingOptions with the same key.
+                // Overwrite the FormattingOptions in this MdfmtProfile with non-null values from 
+                // the other one.
+                formattingOptions.OverwriteFrom(other.Options[key]);
+            }
+            else
+            {
+                // The other MdfmtProfile has FormattingOptions with a key that does not exist in
+                // this MdfmtProfile.  Add this key/value pair to this MdfmtProfile.
+                Options[key] = other.Options[key];
+            }
+        }
+        foreach (string key in other.CpathToOptions.Keys)
+        {
+            CpathToOptions[key] = other.CpathToOptions[key];
+        }
+        return this;
+    }
+
+    /// <summary>
     /// Try to find <see cref="FormattingOptions"/> for a cpath.
     /// </summary>
     /// <param name="cpath">

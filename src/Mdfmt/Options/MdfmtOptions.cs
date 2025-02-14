@@ -16,18 +16,22 @@ namespace Mdfmt.Options;
 /// <c>CommandLineParser</c> NuGet package.
 /// </param>
 /// <param name="processingRoot">
-/// Full path defining the root of files that Mdfmt can see and process.
+/// Full path defining the root of files that Mdfmt can see and process.  When there are
+/// configuration files present, the directory in which these files exist defines the processing
+/// root.  When there are no configuration files, the directory of the target path is used.
+/// (The target path defines either the single Markdown file, or the directory, being processed
+/// by the program.)
 /// </param>
-/// <param name="mdfmtConfigurationFilePath">
-/// The full path of a file in the <c>processingRoot</c> directory that is a configuration file from
-/// which to load a <see cref="MdfmtProfile"/>, or <c>null</c> if there is no such file.
+/// <param name="mdfmtConfigurationFilePaths">
+/// A list of full paths of configuration file(s) to load, or null or empty list if there are no
+/// configuration files to load.  This is for optionally loading <see cref="MdfmtProfile"/>.
 /// </param>
 internal class MdfmtOptions
     (
         string[] args,
         CommandLineOptions commandLineOptions,
         string processingRoot,
-        string mdfmtConfigurationFilePath
+        IReadOnlyList<string> mdfmtConfigurationFilePaths
     )
 {
     /// <summary>
@@ -50,16 +54,16 @@ internal class MdfmtOptions
     public string ProcessingRoot { get; } = processingRoot;
 
     /// <summary>
-    /// The full path of a file in the <c>ProcessingRoot</c> directory that is a configuration file from
-    /// which to load a <see cref="MdfmtProfile"/>, or <c>null</c> if there is no such file.
+    /// A list of full paths of configuration file(s) to load, or null or empty list if there are no
+    /// configuration files to load.  This is for optionally loading the <see cref="MdfmtProfile"/>.
     /// </summary>
-    public string MdfmtConfigurationFilePath { get; } = mdfmtConfigurationFilePath;
+    public IReadOnlyList<string> MdfmtConfigurationFilePaths { get; } = mdfmtConfigurationFilePaths;
 
     /// <summary>
-    /// A data structure with information loaded from the <c>MdfmtConfigurationFilePath</c>, or <c>null</c> if
-    /// the <c>MdfmtConfigurationFilePath</c> is <c>null</c>, and so there is no data structure to load.
+    /// A data structure with information loaded from configuration file(s) or null if there are no
+    /// configuration files to load.
     /// </summary>
-    public MdfmtProfile MdfmtProfile { get; } = (mdfmtConfigurationFilePath == null) ? null : MdfmtProfileLoader.Load(mdfmtConfigurationFilePath);
+    public MdfmtProfile MdfmtProfile { get; } = MdfmtProfileLoader.Load(mdfmtConfigurationFilePaths);
 
     /// <summary>
     /// Instance of <see cref="FormattingOptions"/> instantiated based on command line options.

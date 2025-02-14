@@ -7,7 +7,7 @@ namespace Mdfmt.Options;
 
 internal class CommandLineOptions
 {
-    [Option('e', "environment", HelpText = "Optional environment name affecting configuration.  When specified, Mdfmt looks for a file named, \"mdfmt.{environment}.json\".  When omitted, Mdfmt looks for a file named \".mdfmt\".  Directory location: Mdfmt first looks in the directory of the target path, then in the parent directory if any, then in ancestor directories, until found.  If not found, Mdfmt still runs, just without configuration file input.  Explicit formatting from command line overrides formatting from configuration file.")]
+    [Option('e', "environment", HelpText = "Optional environment name.  When specified, Mdfmt insists on a file named \"mdfmt.{environment}.json\" in the processing root, and provided settings override and/or extend the optional base configuration of either mdfmt.json or .mdfmt (.mdfmt file is deprecated).")]
     public string Environment { get; set; }
 
     [Option('f', "flavor", HelpText = "Flavor of link slugification.  When specified, one of: [Common, Azure], causing in-document links, including both those in the body of the document and in any pre-existing table of contents (TOC), to be updated for the flavor.  If this option is omitted, links are not updated.  If the value of the -t option > 0, then this -f option is required, to inform the flavor of TOC link destinations.")]

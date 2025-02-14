@@ -2,7 +2,9 @@
 
 ## Summary
 
-Mdfmt is a command line interface (CLI) for Markdown formatting.  While it was initially developed to support software documentation development, it is a general purpose tool that is also applicable to other use cases.  Able to operate on individual Markdown files or on directory structures containing many Markdown files, it offers assistance with automated maintenance of heading numbers, in-document links, table of contents, line numbering of fenced code blocks, and consistent newlines.  It is a work in progress, and new features continue to be added.
+Mdfmt is a command line interface (CLI) for Markdown formatting.  Able to operate on individual Markdown files and on directory structures containing many Markdown files, it automates maintenance of heading numbers, in-document links, table of contents, line numbering of fenced code blocks, consistent newlines, etc.  Mdfmt is designed to help with both simple use cases where only one kind of formatting is required, and with more complex use cases involving multiple target Markdown rendering environments with different formatting needs.
+
+Mdfmt is a work in progress, and new features continue to be added.
 
 Mdfmt is being developed in C#/.NET 8.0, with plans to upgrade to the next LTS version of .NET when it comes out.
 
@@ -17,8 +19,8 @@ Mdfmt is being developed in C#/.NET 8.0, with plans to upgrade to the next LTS v
   - Optionally autogenerates table of contents based on document headings.  The resulting table of contents allows navigation to each section of the document.
   - Adds or removes line numbers to or from fenced code blocks, which can be useful when different rendering environments either do or do not automatically show line numbers.
   - Supports different strategies for managing newline characters in Markdown files, which can be tricky in a cross-platform environment.
-- When working on a documentation repository, or more generally any time there is a directory structure containing Markdown files, supports creation of a configuration file that specifies how to format the Markdown files in the directory and its subfolders.
-  - This configuration supports a flexible inheritance scheme, where you can specify in general how to format the Markdown, and override the general behavior in specific subdirectories or even individual files.  For example, maybe you prefer heading numbers in general, but not in a document that is a glossary containing a flat list of terms, where the heading numbers would be distracting not helpful.
+- When working on a documentation repository, or more generally any time there is a directory structure containing Markdown files, supports creation of configuration files that specify how to format the Markdown files in the directory and its subfolders.
+  - Mdfmt configuration supports a flexible inheritance scheme, where you can specify in general how to format the Markdown, and override the general behavior in specific subdirectories or even individual files.  For example, maybe you prefer heading numbers in general, but not in a document that is a glossary containing a flat list of terms, where the heading numbers would be distracting not helpful.
   - Different configuration files for different target rendering environments is supported, and it is easy to switch between them.
 
 ## Getting Started

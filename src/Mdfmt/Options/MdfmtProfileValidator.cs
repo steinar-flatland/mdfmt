@@ -26,7 +26,7 @@ namespace Mdfmt.Options;
 /// </summary>
 internal class MdfmtProfileValidator : AbstractValidator<MdfmtProfile>
 {
-    public MdfmtProfileValidator(string filePath, MdfmtProfile profile)
+    public MdfmtProfileValidator(MdfmtProfile profile)
     {
         // Every value in the Options dictionary must be approved by the FormattingOptionsValidator.
         RuleFor(o => o.Options).Must((d) =>
@@ -34,18 +34,31 @@ internal class MdfmtProfileValidator : AbstractValidator<MdfmtProfile>
             return d.Values.All((f) =>
             {
                 FormattingOptionsValidator validator = new();
-                ValidationResult validationResult = validator.Validate(f);
-                return validationResult.IsValid;
+                try
+                {
+                    validator.ValidateAndThrow(f);
+                }
+                catch (ValidationException ex)
+                {
+                    Output.Error($"Configuratiion validation failed: {ex.Message}");
+                    throw new ExitException(ExitCodes.GeneralError);
+                }
+                return true;
             });
-        }).WithMessage($"Failed to validate {nameof(MdfmtProfile)} loaded from file {filePath}: The {nameof(MdfmtProfile.Options)} dictionary contains one or more values that is not a valid instance of {nameof(FormattingOptions)}.");
+        });
 
         // Every value in the CpathToOptions dictionary must be a key of the Options dictionary.
         RuleFor(o => o.CpathToOptions).Must((d) =>
         {
             return d.Values.All((v) =>
             {
-                return profile.Options.ContainsKey(v);
+                if (! profile.Options.ContainsKey(v))
+                {
+                    Output.Error($"Configuration validation failed: The {nameof(MdfmtProfile.CpathToOptions)} dictionary contains a value that is not a key of the {nameof(MdfmtProfile.Options)} dictionary: {v}");
+                    throw new ExitException(ExitCodes.GeneralError);
+                }
+                return true;
             });
-        }).WithMessage($"Failed to validate {nameof(MdfmtProfile)} loaded from file {filePath}: The {nameof(MdfmtProfile.CpathToOptions)} dictionary contains one or more value that is not a key of the {nameof(MdfmtProfile.Options)} dictionary.");
+        });
     }
 }
