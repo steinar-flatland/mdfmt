@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using FluentValidation.Results;
 using System.Linq;
 
 namespace Mdfmt.Options;
@@ -26,6 +25,8 @@ namespace Mdfmt.Options;
 /// </summary>
 internal class MdfmtProfileValidator : AbstractValidator<MdfmtProfile>
 {
+    private const string Prefix = "Configuration validation failed: ";
+
     public MdfmtProfileValidator(MdfmtProfile profile)
     {
         // Every value in the Options dictionary must be approved by the FormattingOptionsValidator.
@@ -40,7 +41,21 @@ internal class MdfmtProfileValidator : AbstractValidator<MdfmtProfile>
                 }
                 catch (ValidationException ex)
                 {
-                    Output.Error($"Configuratiion validation failed: {ex.Message}");
+                    Output.Error($"{Prefix}{ex.Message}");
+                    throw new ExitException(ExitCodes.GeneralError);
+                }
+                return true;
+            });
+        });
+
+        // Every key in the CpathToOptions dictionary must be non-empty, must start with `.`, and may not contain backslashes.
+        RuleFor(o => o.CpathToOptions).Must((d) =>
+        {
+            return d.Keys.All((k) =>
+            {
+                if (string.IsNullOrEmpty(k) || !k.StartsWith('.') || k.Contains('\\'))
+                {
+                    Output.Error($"{Prefix}The {nameof(MdfmtProfile.CpathToOptions)} dictionary contains a key (\"{k}\") that does not appear to be a relative path.  Each key must start with a dot ('.').  Use forward slashes not backslashes.");
                     throw new ExitException(ExitCodes.GeneralError);
                 }
                 return true;
@@ -54,7 +69,7 @@ internal class MdfmtProfileValidator : AbstractValidator<MdfmtProfile>
             {
                 if (! profile.Options.ContainsKey(v))
                 {
-                    Output.Error($"Configuration validation failed: The {nameof(MdfmtProfile.CpathToOptions)} dictionary contains a value that is not a key of the {nameof(MdfmtProfile.Options)} dictionary: {v}");
+                    Output.Error($"{Prefix}The {nameof(MdfmtProfile.CpathToOptions)} dictionary contains a value that is not a key of the {nameof(MdfmtProfile.Options)} dictionary: {v}");
                     throw new ExitException(ExitCodes.GeneralError);
                 }
                 return true;

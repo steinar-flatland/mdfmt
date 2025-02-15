@@ -355,11 +355,11 @@ In non-verbose mode (without the `-v` or `--verbose` flag), the output written t
 Verbose output includes more information, providing a bit more insight into what Mdfmt is doing.  In addition to errors and warnings, Mdfmt writes the following information to the console:
 
 - The Mdfmt version number.
-- The current working directory.
-- A `CommandLineOptions` object, showing the options and target path parsed from the command line.  Note that the target path may be relative or absolute, depending upon how it was specified.  Only options with non-null values are shown.
+- The [current working directory](./Glossary.md#current-working-directory).
+- A `CommandLineOptions` object, showing the options and [target path](./Glossary.md#target-path) parsed from the command line.  Note that the target path may be relative or absolute, depending upon how it was specified.  Only options with non-null values are shown.
 - The target path as an absolute path, for clarity.
 - The names of options that were explicitly set on the command line.
-- The [processing root](./Glossary.md#processing-root), which is an important concept when there is a configuration file.  Please see the description of the [`--environment, -e option`](#53-environment) for a discussion of how the Mdfmt configuration file is named and located.
+- The [processing root](./Glossary.md#processing-root) directory, which both contains any configuration files and defines the scope of the Markdown files visible to Mdfmt.  See the section on [How Configuration Files Are Loaded](#72-how-configuration-files-are-located) for a discussion of how the processing root is determined and configuration files are located.
 - The path name(s) and (combined) content of the loaded configuration files, if any, is shown.  See also the next section [Configuration](#7-configuration).
 - For each file processed during the Mdfmt run:
 
@@ -396,7 +396,7 @@ The end of the output shows that the `FormattingOptions` are empty, since no for
 
 ## 7. Configuration
 
-Mdfmt supports configuration files for specifying formatting options that control how the Markdown (`.md`) files within a directory (called the [processing root](./Glossary.md#processing-root)) and its subdirectories will be formatted.  This is useful when developing a repository that includes numerous Markdown files, and there needs to be consistent formatting across these files.
+Mdfmt supports configuration files for specifying formatting options that control how the Markdown (`.md`) files within a directory (called the [processing root](./Glossary.md#processing-root)) and its subdirectories will be formatted.  This is useful when developing a directory or repository that includes numerous Markdown files, and there needs to be consistent formatting across these files.
 
 ### 7.1. Configuration File Names
 
@@ -476,7 +476,10 @@ Some observations:
 
 - Each key of the `"Options"` dictionary (such as `"default"`, `"noHeadings"`) is a descriptive name mapping to a value that is a JSON object containing name/value pairs for formatting options.
 - Within the JSON object comprising a value in `"Options"`, the keys such as `Flavor`, `TocThreshold`, `HeadingNumbering`, and `LineNumbereingThreshold` are documented as the "Configuration file key:" associated with each formatting option described in the [Formatting Options](#54-formatting-options) section of this document.
-- The keys of the `"CpathToOptions"` dictionary are relative paths, relative to the [processing root](./Glossary.md#processing-root).
+- The keys of the `"CpathToOptions"` dictionary are relative paths, relative to the [processing root](./Glossary.md#processing-root).  Some rules for these keys:
+  - Each key is a path, relative to the processing root, starting with `.`
+  - `.` means the processing root directory.
+  - If the relative path contains slashes, use forward slashes.
 - The values in the `"CpathToOptions"` dictionary are keys of the `"Options"` dictionary, establishing path to options bindings.
 - When a given Markdown file is processed by Mdfmt, multiple `"CpathToOptions"` bindings may apply to it.  Any binding where the `"CpathToOptions"` key is a prefix of the file's cpath, apply.  More specific options, i.e. those that were selected based on a longer `"CpathToOptions"` key override more general options.  For more details, please refer to [Options Inheritance](#75-options-inheritance).
 
@@ -484,7 +487,7 @@ Some observations:
 
 As discussed in in the section on [Configuration File Names](#71-configuration-file-names), it is possible to provide a base set of formatting options in a file, `mdfmt.json`, and then environment-specific overrides in a file, `mdfmt.{environment}.json`.  Here is a motivating example of where this could be useful:
 
-> Documentation in a documentation repository is published to the [Backstage](https://backstage.io/docs/overview/what-is-backstage/) developer portal.  When Backstage renders Markdown for display, it automatically includes line numbers for fenced code blocks, so it would be silly/redundant to include line numbers in the content itself.  Developers edit the documentation on the local laptop using Visual Studio Code, and in this environment, there are no automaticaly generated line numbers.  Developers would like to be able to see line numbers locally, so they can know how to refer to lines when they are writing descriptions in the documentation being maintained.  We would like to set things up so that running `mdfmt -r` from the processing root formats for backstage, and `mdfmt -r -e local` formats for local development with Mdfmt-generated line numbers in fenced code blocks.
+> Documentation in a documentation repository is published to the [Backstage](https://backstage.io/docs/overview/what-is-backstage/) developer portal.  When Backstage renders Markdown for display, it automatically includes line numbers for fenced code blocks, so it would be silly/redundant to include line numbers in the content itself.  Developers edit the documentation on the local laptop using Visual Studio Code, and in this environment, there are no automatically generated line numbers.  Developers would like to be able to see line numbers locally, so they can know how to refer to lines by line number when they are writing descriptions in the documentation being maintained.  We would like to set things up so that running `mdfmt -r` formats for Backstage, and `mdfmt -r -e local` formats for local development with Mdfmt-generated line numbers in fenced code blocks.
 
 To solve for this scenario, create a base `mdfmt.json` file that specifies how to format for Backstage.  It might look like this:
 
