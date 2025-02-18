@@ -30,7 +30,7 @@ internal class Processor
     /// Each key, with stale information, maps to the new updated heading text.  The purpose of this
     /// data structure is to drive cross-document link updating.
     /// </summary>
-    private readonly Dictionary<string, string> _staleCpathFragmentToUpdatedHeadingText = [];
+    private readonly Dictionary<string, string> _staleCpathFragmentToUpdatedHeadingText = new([], StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// This is a set of keys like the ones that occur in the <c>_staleCpathFragmentToUpdatedHeadingText</c>
@@ -41,7 +41,7 @@ internal class Processor
     /// must investigate manually.  With well-structured Markdown, this kind of ambiguity won't occur,
     /// but we have to be prepared for it.
     /// </summary>
-    private readonly HashSet<string> _ambiguousStaleCpathFragments = [];
+    private readonly HashSet<string> _ambiguousStaleCpathFragments = new([], StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// One of each different kind of link destination generator.
