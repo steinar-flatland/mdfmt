@@ -129,13 +129,16 @@ internal class MdStructLoader
     /// <param name="filePath">
     /// File path of the Markdown file to load.
     /// </param>
+    /// <param name="cpath">
+    /// Canonical relative path of Markdown file, relative to processing root.
+    /// </param>
     /// <param name="newlineStrategy">
     /// The newline strategy to use for loading this Markdown file, or null if no preference.
     /// </param>
     /// <returns>MdStruct</returns>
     /// <exception cref="NotImplementedException">
     /// </exception>
-    public MdStruct Load(string filePath, NewlineStrategy? newlineStrategy)
+    public MdStruct Load(string filePath, string cpath, NewlineStrategy? newlineStrategy)
     {
         // Load the file content to parse.
         string fileContent = File.ReadAllText(filePath);
@@ -261,7 +264,7 @@ internal class MdStructLoader
 
         // Assemble and return the MdStruct
         List<Region> regionsShallowCopy = new(_regions);
-        MdStruct mdStruct = new(filePath, regionsShallowCopy, isModified, _newlineRegion);
+        MdStruct mdStruct = new(filePath, cpath, regionsShallowCopy, isModified, _newlineRegion);
         return mdStruct;
     }
 

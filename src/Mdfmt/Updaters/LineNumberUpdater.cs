@@ -37,11 +37,11 @@ internal static class LineNumberUpdater
         {
             if (removedLineNumbers)
             {
-                Output.Emphasis("Removed line numbers from fenced code block(s)");
+                Output.Emphasis("- Removed line numbers from fenced code block(s)");
             }
             if (addedLineNumbers)
             {
-                Output.Emphasis("Added line numbers to fenced code block(s)");
+                Output.Emphasis("- Added line numbers to fenced code block(s)");
             }
         }
     }

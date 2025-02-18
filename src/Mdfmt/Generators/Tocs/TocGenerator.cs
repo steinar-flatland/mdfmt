@@ -29,7 +29,7 @@ internal class TocGenerator(ILinkDestinationGenerator linkDestinationGenerator)
         sb.Append("- [");
         sb.Append(headingRegion.HeadingText);
         sb.Append("](");
-        sb.Append(_linkDestinationGenerator.GenerateLinkDestination(filename, headingRegion.HeadingText));
+        sb.Append(_linkDestinationGenerator.GenerateInDocumentLinkDestination(filename, headingRegion.HeadingText));
         sb.Append(')');
         sb.Append(newlineSequence);
     }

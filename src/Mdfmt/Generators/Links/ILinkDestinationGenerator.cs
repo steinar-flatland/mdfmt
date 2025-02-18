@@ -7,10 +7,31 @@
 internal interface ILinkDestinationGenerator
 {
     /// <summary>
-    /// Generate a destination for a Markdown link.
+    /// Generate a destination for a Markdown link to a heading within the same Markdown file.
     /// </summary>
-    /// <param name="filename">The simple name of the file being processed without path, e.g. "Readme.md"</param>
-    /// <param name="headingText">The text of the Markdown heading, nice and clean, the way it displays to the user.</param>
-    /// <returns>Link destination for that heading</returns>
-    public string GenerateLinkDestination(string filename, string headingText);
+    /// <param name="filename">
+    /// The simple name of the file being processed without path, e.g. "README.md".
+    /// </param>
+    /// <param name="headingText">
+    /// The text of the Markdown heading the way it displays to the user.
+    /// </param>
+    /// <returns>
+    /// Link destination targeting the heading.
+    /// </returns>
+    public string GenerateInDocumentLinkDestination(string filename, string headingText);
+
+    /// <summary>
+    /// Generate a destination for a Markdown link to a heading within a different Markdown file.
+    /// </summary>
+    /// <param name="relativeFilePath">
+    /// Relative path that starts with either <c>./</c> or <c>../</c>, continues with any other path
+    /// segments delimited by forward slash, and ending with a Markdown (<c>.md</c>) file name.
+    /// </param>
+    /// <param name="headingText">
+    /// The text of the Markdown heading the way it displays to the user.
+    /// </param>
+    /// <returns>
+    /// Link destination targeting the heading.
+    /// </returns>
+    public string GenerateCrossDocumentLinkDestination(string relativeFilePath, string headingText);
 }

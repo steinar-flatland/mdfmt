@@ -6,6 +6,9 @@ internal class LinkRegion(string label, string destination) : MutableStringRegio
 {
     private static string AssembleLink(string label, string destination)
     {
+        // Null destination would be really weird.  Don't allow this.
+        ArgumentNullException.ThrowIfNull(destination);
+
         return $"[{label}]({destination})";
     }
 
@@ -40,4 +43,32 @@ internal class LinkRegion(string label, string destination) : MutableStringRegio
             SetContent(newLinkValue);
         }
     }
+
+    /// <summary>
+    /// If the <c>Destination</c> includes a <c>'#'</c> character, the 0 or more characters from front of 
+    /// <c>Destination</c> up to but not including <c>'#'</c>.  If there is no <c>'#'</c>, then returns
+    /// the entire <c>Destination</c>.
+    /// </summary>
+    public string Path
+    {
+        get
+        {
+            int index = _destination.IndexOf('#');
+            return (index >= 0) ? _destination[..index] : _destination;
+        }
+    }
+
+    /// <summary>
+    /// If the <c>Destination</c> contains a <c>'#'</c> character, everything from and including
+    /// the <c>'#'</c> to end of <c>Destination</c>.  If there is no <c>'#'</c> then empty string.
+    /// </summary>
+    public string Fragment
+    {
+        get
+        {
+            int index = _destination.IndexOf('#');
+            return (index >= 0) ? _destination[index..] : "";
+        }
+    }
+
 }

@@ -23,7 +23,7 @@ internal static class TocDeleter
             md.DeleteToc();
             if (verbose)
             {
-                Output.Emphasis("Removed TOC");
+                Output.Emphasis("- Removed TOC");
             }
         }
     }
