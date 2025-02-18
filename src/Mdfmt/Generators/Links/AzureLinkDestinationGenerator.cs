@@ -6,9 +6,11 @@ internal class AzureLinkDestinationGenerator : ILinkDestinationGenerator
 {
     private static readonly Regex SimpleDestinationRegex = new(@"^[a-z][a-z0-9-]*$", RegexOptions.Compiled);
 
-    public string GenerateLinkDestination(string filename, string headingText)
+    private static string Slugify(string headingText) => headingText.Replace(" ", "-").ToLower();
+
+    public string GenerateInDocumentLinkDestination(string filename, string headingText)
     {
-        string destination = headingText.Replace(" ", "-").ToLower();
+        string destination = Slugify(headingText);
 
         if (SimpleDestinationRegex.IsMatch(destination))
         {
@@ -19,5 +21,10 @@ internal class AzureLinkDestinationGenerator : ILinkDestinationGenerator
             destination = $"./{filename}#{destination}";
         }
         return destination;
+    }
+
+    public string GenerateCrossDocumentLinkDestination(string relativeFilePath, string headingText)
+    {
+        return $"{relativeFilePath}#{Slugify(headingText)}";
     }
 }

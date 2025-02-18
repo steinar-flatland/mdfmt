@@ -12,6 +12,9 @@ namespace Mdfmt.Model;
 /// <param name="filePath">
 /// The Markdown file that was loaded.
 /// </param>
+/// <param name="cpath">
+/// Canonical relative path of Markdown file, relative to processing root.
+/// </param>
 /// <param name="regions">
 /// Regions parsed by MdStructLoader.
 /// </param>
@@ -27,6 +30,7 @@ internal class MdStruct
 {
     public MdStruct(
         string filePath,
+        string cpath,
         List<Region> regions,
         bool isModified,
         NewlineRegion newlineRegion
@@ -34,6 +38,7 @@ internal class MdStruct
     {
         FilePath = filePath;
         FileName = Path.GetFileName(filePath);
+        Cpath = cpath;
         _regions = regions;
         _isModified = isModified;
         _newlineRegion = newlineRegion;
@@ -53,6 +58,11 @@ internal class MdStruct
     /// Simple file name of the Markdown file, without any path information.
     /// </summary>
     public string FileName { get; }
+
+    /// <summary>
+    /// Canonical relative path of Markdown file, relative to processing root.
+    /// </summary>
+    public string Cpath { get; }
 
     /// <summary>
     /// Regions of the Markdown file.
@@ -251,9 +261,7 @@ internal class MdStruct
     /// <para>
     /// Make and return a new dictionary for finding instances of <c>HeadingRegion</c>, keyed on
     /// both heading text and on link destinations that can target each heading, based on the
-    /// state of the headings in this MdStruct.  Heading text is the text a human reads in the
-    /// rendered Markdown document.  Link destinations that are supported include all the in
-    /// document link formats that Mdfmt supports.
+    /// state of the headings in this MdStruct and each way of slugifying.
     /// </para>
     /// <para>
     /// Note: When a document contains multiple headings that all have the same text, none of these
@@ -267,45 +275,48 @@ internal class MdStruct
     /// </returns>
     private Dictionary<string, HeadingRegion> MakeHeadingRegionDictionary()
     {
-        // The goal is to build and return this.
+        // The goal is to build and return this: Map of each heading text, to heading region.
         Dictionary<string, HeadingRegion> headingRegions = [];
 
-        // This heading text has to be excluded, because multiple sections share the same heading text.
+        // This heading text has to be excluded, because of duplication of heading text that would
+        // lead to key collision in headingRegions dictionary.
         HashSet<string> excludedHeadingText = [];
 
         // Make a list of link destination generators, one per supported link format.
         List<ILinkDestinationGenerator> linkDestinationGenerators = LinkDestinationGeneratorFactory.ManufactureOneOfEach();
 
-        foreach (HeadingRegion headingRegion in new RegionEnumerable<HeadingRegion>(_regions))
+        foreach (HeadingRegion headingRegion in HeadingRegions)
         {
             string headingText = headingRegion.HeadingText;
-            if (!headingRegions.ContainsKey(headingText))
+
+            // Skip headingText that's not usable as a dictionary key.
+            if (excludedHeadingText.Contains(headingText))
             {
-                // The proposed key is not already in the dictionary.
-                // Only use it if it has not been excluded already.
-                if (!excludedHeadingText.Contains(headingText))
+                continue;
+            }
+
+            if (headingRegions.Remove(headingText))
+            {
+                // Can't use headingText as a key in headingRegions, as this would result in a key collision.
+                foreach (ILinkDestinationGenerator generator in linkDestinationGenerators)
                 {
-                    headingRegions[headingText] = headingRegion;
-                    foreach (ILinkDestinationGenerator generator in linkDestinationGenerators)
-                    {
-                        string linkDestination = generator.GenerateLinkDestination(FileName, headingText);
-                        headingRegions[linkDestination] = headingRegion;
-                    }
+                    string linkDestination = generator.GenerateInDocumentLinkDestination(FileName, headingText);
+                    headingRegions.Remove(linkDestination);
                 }
+                // Remember that this headingText is not usable.
+                excludedHeadingText.Add(headingText);
             }
             else
             {
-                // Key collision: Don't use this key.
-                headingRegions.Remove(headingText);
+                // headingText works fine as a key, no key collision (yet)
+                headingRegions[headingText] = headingRegion;
                 foreach (ILinkDestinationGenerator generator in linkDestinationGenerators)
                 {
-                    string linkDestination = generator.GenerateLinkDestination(FileName, headingText);
-                    headingRegions.Remove(linkDestination);
+                    string linkDestination = generator.GenerateInDocumentLinkDestination(FileName, headingText);
+                    headingRegions[linkDestination] = headingRegion;
                 }
-                excludedHeadingText.Add(headingText);
             }
         }
-
         return headingRegions;
     }
 

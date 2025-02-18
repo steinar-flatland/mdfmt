@@ -65,7 +65,7 @@ internal class TocUpdater(TocGenerator tocGenerator)
                 tocRegion.Content = newToc.Content;
                 if (verbose)
                 {
-                    Output.Emphasis("Updated TOC");
+                    Output.Emphasis("- Updated TOC");
                 }
             }
         }
@@ -74,7 +74,7 @@ internal class TocUpdater(TocGenerator tocGenerator)
             md.AddToc(newToc.Content);
             if (verbose)
             {
-                Output.Emphasis("Inserted new TOC");
+                Output.Emphasis("- Inserted new TOC");
             }
         }
     }

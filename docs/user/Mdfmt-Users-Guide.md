@@ -39,7 +39,7 @@
 
 ## 1. Introduction
 
-Mdfmt is a command line interface (CLI) for Markdown formatting.  Able to operate on individual Markdown files and on directory structures containing many Markdown files, it automates maintenance of heading numbers, in-document links, table of contents, line numbering of fenced code blocks, consistent newlines, etc.  Mdfmt is designed to help with both simple use cases where only one kind of formatting is required, and with more complex use cases involving multiple target Markdown rendering environments with different formatting needs.
+Mdfmt is a command line interface (CLI) for Markdown formatting.  Able to operate on individual Markdown files and on directory structures containing many Markdown files, it automates maintenance of heading numbers, in-document links, cross-document links, table of contents, line numbering of fenced code blocks, consistent newlines, etc.  Mdfmt is designed to help with both simple use cases where only one kind of formatting is required, and with more complex use cases involving multiple target Markdown rendering environments with different formatting needs.
 
 See also this [Glossary](./Glossary.md), which defines the language used to talk about Mdfmt.
 
