@@ -14,7 +14,7 @@ namespace Mdfmt;
 
 internal class Program
 {
-    public const string Version = "v1.5.1";
+    public const string Version = "1.5.1";
 
     public static void Main(string[] args)
     {
