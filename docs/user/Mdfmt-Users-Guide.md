@@ -27,14 +27,15 @@
   - [6. Output](#6-output)
     - [6.1. Non-Verbose Output](#61-non-verbose-output)
     - [6.2. Verbose Output](#62-verbose-output)
-  - [7. Configuration](#7-configuration)
-    - [7.1. Configuration File Names](#71-configuration-file-names)
-    - [7.2. How Configuration Files Are Located](#72-how-configuration-files-are-located)
-    - [7.3. Configuration File Format](#73-configuration-file-format)
-    - [7.4. Loading Multiple Configuration Files](#74-loading-multiple-configuration-files)
-    - [7.5. Options Inheritance](#75-options-inheritance)
-      - [7.5.1. Example: Deciding How To Format The Glossary](#751-example-deciding-how-to-format-the-glossary)
-  - [8. Return Value](#8-return-value)
+  - [7. Updating Cross-Document Links](#7-updating-cross-document-links)
+  - [8. Configuration](#8-configuration)
+    - [8.1. Configuration File Names](#81-configuration-file-names)
+    - [8.2. How Configuration Files Are Located](#82-how-configuration-files-are-located)
+    - [8.3. Configuration File Format](#83-configuration-file-format)
+    - [8.4. Loading Multiple Configuration Files](#84-loading-multiple-configuration-files)
+    - [8.5. Options Inheritance](#85-options-inheritance)
+      - [8.5.1. Example: Deciding How To Format The Glossary](#851-example-deciding-how-to-format-the-glossary)
+  - [9. Return Value](#9-return-value)
 <!--END_TOC-->
 
 ## 1. Introduction
@@ -47,7 +48,7 @@ See also this [Glossary](./Glossary.md), which defines the language used to talk
 
 ### 2.1. Downloading And Installing
 
-A version of Mdfmt is released as a collection of `.zip` files, each `.zip` file targetting a different combination of _runtime_ and _deployment type_.
+A version of Mdfmt is released as a collection of `.zip` files, each `.zip` file targeting a different combination of _runtime_ and _deployment type_.
 
 - _Runtime_ indicates an operating system and processor architecture.
 - _Deployment type_ is either _self-contained_ or _framework-dependent_, with respect to a specific version of .NET.
@@ -62,10 +63,10 @@ mdfmt_{version}_{runtime}_{deploymentType}.zip
 
 Examples of `.zip` file names in a release:
 
-- mdfmt_1.2.0_linux-x64_framework-dependent-net8.0.zip
-- mdfmt_1.2.0_linux-x64_self-contained-net8.0.zip
-- mdfmt_1.2.0_win-x64_framework-dependent-net8.0.zip
-- mdfmt_1.2.0_win-x64_self-contained-net8.0.zip
+- mdfmt_1.5.2_linux-x64_framework-dependent-net8.0.zip
+- mdfmt_1.5.2_linux-x64_self-contained-net8.0.zip
+- mdfmt_1.5.2_win-x64_framework-dependent-net8.0.zip
+- mdfmt_1.5.2_win-x64_self-contained-net8.0.zip
 
 To download and install Mdfmt:
 
@@ -133,7 +134,7 @@ mdfmt {options} {target-path}
 
 The basic idea is that the specified `{options}` indicate formatting to be done to either a single Markdown file specified as the `{target-path}`, or to all the Markdown files contained in a directory specified as the `{target-path}`.
 
-If an explicit target path is omitted from the commandd line, it defaults to the current working directory.
+If an explicit target path is omitted from the command line, it defaults to the current working directory.
 
 **Example:**
 
@@ -176,8 +177,8 @@ A few words about how each option is described in the subsections below below:
   - string - a string of characters.
 - Description - A description of the effect of the option; what it does; how it works.
 - Values - Describes the valid values of the Type.  For an enumeration, lists the values and explains what each one means.
-- Default - Some options have a default value, which is the value that the option assumes when it is omitted from the command line.  When there is no default, omission of the option from the command line leads to a `null`/missing value.  The Mdfmt program reacts to this either by providing an error message if the omission is unacceptable, or by implementing a default behavior if the omission is acceptable.
-- Configuration file key - When using configuration files (see the section, [Configuration](#7-configuration)), provides the key to use to identify this formatting option in configuration files.  Configuration file key is only provided for [formatting options](#54-formatting-options), not for other command line options.
+- Default - Some options have a default value, which is the value that the option assumes when it is omitted from the command line.  When there is no default, omission of the option from the command line leads to a `null`/missing value, and the Mdfmt program reacts to this either by providing an error message if the omission is unacceptable, or by implementing a default behavior if the omission is acceptable.
+- Configuration file key - When using configuration files (see the section, [Configuration](#8-configuration)), provides the key to use to identify this formatting option in configuration files.  Configuration file key is only provided for [formatting options](#54-formatting-options), not for other command line options.
 
 ### 5.1. Traversal Options
 
@@ -238,9 +239,9 @@ These options allow you to:
 - Type: string
 - Description: Optional environment name affecting configuration.  When specified, Mdfmt requires the presence of a configuration file named `mdfmt.{environment}.json`, where `{environment}` is replaced by the value passed to this option.
 - Values: Use a string with characters that are valid to use as part of file names in your operating system's file system.
-- Defult: `null`.  If this option is omitted, Mdfmt does not look for an environment-specific configuration file.
+- Default: `null`.  If this option is omitted, Mdfmt does not look for an environment-specific configuration file.
 
-For full details on the configuration system, see [Configuration](#7-configuration).
+For full details on the configuration system, see [Configuration](#8-configuration).
 
 ### 5.4. Formatting Options
 
@@ -251,7 +252,9 @@ These options are used to specify formatting that Mdfmt should apply to Markdown
 - Long name: **`--flavor`**
 - Short name: **`-f`**
 - Type: enumeration
-- Description: Sets the [slugification](./Glossary.md#slugification) algorithm used to convert headings to link destinations.  This affects in-document links both in the body and in the table of contents of the document.  Dependency: If the value of the `--toc-threshold, -t` option `> 0`, then this `--flavor, -f` option is required, to inform the flavor of TOC link destinations.
+- Description: Sets the [slugification](./Glossary.md#slugification) algorithm used to convert headings to link destinations.  This affects in-document links both in the body and in the table of contents of the document.
+  - Dependency: If the value of the `--toc-threshold, -t` option `> 0`, then this `--flavor, -f` option is required, to inform the flavor of TOC link destinations.
+  - Dependency: If a value is provided for the `--heading-numbers, -h` option, then this `--flavor, -f` option is required, to inform the flavor of link destinations targeting any renumbered headings.
 - Values:
   - `Common` - Use a common slugification algorithm that works on multiple platforms including GitHub and VS Code Markdown preview.
   - `Azure` - Use a slugification algorithm that works in Azure DevOps Wiki.
@@ -267,9 +270,9 @@ These options are used to specify formatting that Mdfmt should apply to Markdown
 - Type: enumeration
 - Description: Whether to include heading numbers and, if so, the style of heading numbers to use.  When Mdfmt applies heading numbers, it looks for new sections and misnumbered headings, adjusting heading numbers throughout the document as needed.  This makes it easy to insert a new section between others:  Just insert a new heading without a heading number and run `mdfmt -h`.  Mdfmt assigns the a heading number and fixes any heading numbers after the new section.
 
-  Heading numbers are part of the text of the heading.  Changing heading numbers breaks links within the document, since link destinations incorporate the heading numbers.  By itself, the `-h` option does not fix links broken by adjusting heading numbers.  It can't, because with just the `-h` option, there is no input about the slugification algorithm to use.  To automatically patch up the links that are broken by heading number changes, be sure to also provide the `-f` option.
-
   Mdfmt only pays attention to Markdown headings with up to six pound signs (`######`).  Would-be headings with seven or more `#` symbols are ignored by Mdfmt, and it does not manage heading numbers on such lines.
+
+  - Dependency: If a value is provided for this `--heading-numbers, -h` option, then the `--flavor, -f` option is required.  This is because Mdfmt needs to be prepared to patch links that are targeting headings that were renumbered.  Without knowledge of the flavor of slug to produce, updating links would not be possible.
 
 - Values:
   - `none` - Remove heading numbers.
@@ -286,7 +289,7 @@ These options are used to specify formatting that Mdfmt should apply to Markdown
 - Description: The minimum number of headings for which to include a table of contents (TOC).
   - When 0:  Always assures removal of any TOC.
   - When a positive int:  If the number of headings in the document meets or exceeds the threshold, ensures that a TOC is added or updated, and if the number of headings is below the threshold, ensures removal of the TOC.
-    - Dependency:  The `-f` option is required when the value of `-t` > 0, so that TOC generation knows how to make link destinations.
+    - Dependency:  The `--flavor, -f` option is required when the value of `--toc-threshold, -t` > 0, so that TOC generation knows how to make link destinations when generating the table of contents.
 - Default: `null`.  If this option is omitted, threshold-based TOC maintenance does not occur; however, a pre-existing TOC can still be maintained if the `-f` option is specified in this case.
 - Configuration file key: `TocThreshold`
 
@@ -298,8 +301,8 @@ These options are used to specify formatting that Mdfmt should apply to Markdown
 - Description: The minimum number of lines in a fenced code block, for line numbering.
   - When 0: Always assures removal of line numbers from fenced code blocks.
   - When a positive int: If the number of lines in a fenced code block meets or exceeds the threshold, ensures that each line of the code block starts with a 1-based line number, and if the number of lines is below the threshold, ensures removal of the line numbers.
-  - Default: `null`.  If this option is omitted, Mdfmt does not edit line numbers in fenced code blocks.
-  - Configuration file key: `LineNumberingThreshold`
+- Default: `null`.  If this option is omitted, Mdfmt does not edit line numbers in fenced code blocks.
+- Configuration file key: `LineNumberingThreshold`
 
 #### 5.4.5. Newline Strategy
 
@@ -359,8 +362,8 @@ Verbose output includes more information, providing a bit more insight into what
 - A `CommandLineOptions` object, showing the options and [target path](./Glossary.md#target-path) parsed from the command line.  Note that the target path may be relative or absolute, depending upon how it was specified.  Only options with non-null values are shown.
 - The target path as an absolute path, for clarity.
 - The names of options that were explicitly set on the command line.
-- The [processing root](./Glossary.md#processing-root) directory, which both contains any configuration files and defines the scope of the Markdown files visible to Mdfmt.  See the section on [How Configuration Files Are Loaded](#72-how-configuration-files-are-located) for a discussion of how the processing root is determined and configuration files are located.
-- The path name(s) and (combined) content of the loaded configuration files, if any, is shown.  See also the next section [Configuration](#7-configuration).
+- The [processing root](./Glossary.md#processing-root) directory, which both contains any configuration files and defines the scope of the Markdown files visible to Mdfmt.  See the section on [How Configuration Files Are Loaded](#82-how-configuration-files-are-located) for a discussion of how the processing root is determined and configuration files are located.
+- The path name(s) and (combined) content of the loaded configuration files, if any, is shown.  See also the next section [Configuration](#8-configuration).
 - For each file processed during the Mdfmt run:
 
   - In cyan, a line showing `Processing` and the full path of the file being processed.
@@ -368,7 +371,8 @@ Verbose output includes more information, providing a bit more insight into what
   - The number of regions and headings loaded as part of loading the Markdown file.
   - If the file is modified and saved, a summary of actions taken is shown in green.  The possible actions are:
     - Updated heading numbers
-    - Updated link with label {label} to target destination {destination}
+    - Updated in-document link with label {label} to target destination {destination}
+    - Updated cross-document link with label {label} to target destination {destination}
     - Inserted new TOC
     - Updated TOC
     - Removed TOC
@@ -394,11 +398,17 @@ Note that fewer `CommandLineOptions` are shown, since only provided (non-null) o
 
 The end of the output shows that the `FormattingOptions` are empty, since no formatting options were provided.  With no formatting options, Mdfmt is not being asked to do any work, so of course there is no green output and the file is not modified or saved.
 
-## 7. Configuration
+## 7. Updating Cross-Document Links
+
+Whenever Mdfmt renumbers headings within a document, it proactively updates links targeting the renumbered heading to prevent broken links.  Links are updated not only in the current document,but also in any other document that is in the [processing root](./Glossary.md#processing-root) or one of its subdirectories.  This happens independent of the `--recursive, -r` option.  Even if only a single, specific file is being formatted by Mdfmt, if any headings are renumbered in that document, Mdfmt proactively updates links targeting those headings in other files under the processing root.
+
+This is a really helpful feature for preventing broken links, but it is not magic.  Only links that were intact at the time heading renumbering occurred can be maintained by this feature.  
+
+## 8. Configuration
 
 Mdfmt supports configuration files for specifying formatting options that control how the Markdown (`.md`) files within a directory (called the [processing root](./Glossary.md#processing-root)) and its subdirectories will be formatted.  This is useful when developing a directory or repository that includes numerous Markdown files, and there needs to be consistent formatting across these files.
 
-### 7.1. Configuration File Names
+### 8.1. Configuration File Names
 
 Mdfmt configuration files must be correctly named to be recognized by the program.  The supported names are:
 
@@ -406,13 +416,13 @@ Mdfmt configuration files must be correctly named to be recognized by the progra
 - `.mdfmt` _(deprecated)_ - This file name is an older way of naming `mdfmt.json`.  The newer name, `mdfmt.json`, is preferred.
 - `mdfmt.{environment}.json` - Use this file to provide environment-specific formatting options.  The `{environment}` part of the name matches up with the value passed to the [`--environment, -e`](#53-environment) command line option, which allows an environment-specific configuration to be selected from the command line.
 
-### 7.2. How Configuration Files Are Located
+### 8.2. How Configuration Files Are Located
 
 A [target path](./Glossary.md#target-path) is passed to Mdfmt on the command line (see also the [Target Path](#55-target-path) section under [Options and Target Path](#5-options-and-target-path)), and if none is provided explicitly, it defaults to the [current working directory](./Glossary.md#current-working-directory).
 
 From the target path, Mdfmt knows the [target directory](./Glossary.md#target-directory).  If the target path indicates a specific Markdown file, then the target directory is the directory containing this file; otherwise, if the target path indicates a directory, then the target directory and target path are one and the same.
 
-Next a scan for configuration files happens.  Mdfmt looks for its configuration files first in the target directory, then in the parent directory of the target directory, and then in each successive ancestor directory.  The first directory that contains one or more files named one of the [Configuration File Names](#71-configuration-file-names) is designated the [processing root](./Glossary.md#processing-root) directory.  If the scan reaches the root of the file system without finding any Mdfmt configuration files, then the processing root defaults to the target directory.  Mdfmt can only see and format Markdown files that are in the processing root or one of its subdirectories; any other Markdown files are out of scope of the Mdfmt run.
+Next a scan for configuration files happens.  Mdfmt looks for its configuration files first in the target directory, then in the parent directory of the target directory, and then in each successive ancestor directory.  The first directory that contains one or more files named one of the [Configuration File Names](#81-configuration-file-names) is designated the [processing root](./Glossary.md#processing-root) directory.  If the scan reaches the root of the file system without finding any Mdfmt configuration files, then the processing root defaults to the target directory.  Mdfmt can only see and format Markdown files that are in the processing root or one of its subdirectories; any other Markdown files are out of scope of the Mdfmt run.
 
 Configuration files that affect the current run must be in the same directory, together, in the processing root directory.  Common scenarios include the following:
 
@@ -426,9 +436,9 @@ If there are no configuration files available, then the processing root is the t
 
 When formatting is specified both in configuration files and on the command line, formatting options from the command line override formatting options from configuration files.
 
-### 7.3. Configuration File Format
+### 8.3. Configuration File Format
 
-The configuration files mentioned in the section, [Configuration File Names](#71-configuration-file-names), all use the same JSON file format.  This section describes this single format.
+The configuration files mentioned in the section, [Configuration File Names](#81-configuration-file-names), all use the same JSON file format.  This section describes this single format.
 
 The simplest valid configuration file is:
 
@@ -481,11 +491,11 @@ Some observations:
   - `.` means the processing root directory.
   - If the relative path contains slashes, use forward slashes.
 - The values in the `"CpathToOptions"` dictionary are keys of the `"Options"` dictionary, establishing path to options bindings.
-- When a given Markdown file is processed by Mdfmt, multiple `"CpathToOptions"` bindings may apply to it.  Any binding where the `"CpathToOptions"` key is a prefix of the file's cpath, apply.  More specific options, i.e. those that were selected based on a longer `"CpathToOptions"` key override more general options.  For more details, please refer to [Options Inheritance](#75-options-inheritance).
+- When a given Markdown file is processed by Mdfmt, multiple `"CpathToOptions"` bindings may apply to it.  Any binding where the `"CpathToOptions"` key is a prefix of the file's cpath, apply.  More specific options, i.e. those that were selected based on a longer `"CpathToOptions"` key override more general options.  For more details, please refer to [Options Inheritance](#85-options-inheritance).
 
-### 7.4. Loading Multiple Configuration Files
+### 8.4. Loading Multiple Configuration Files
 
-As discussed in in the section on [Configuration File Names](#71-configuration-file-names), it is possible to provide a base set of formatting options in a file, `mdfmt.json`, and then environment-specific overrides in a file, `mdfmt.{environment}.json`.  Here is a motivating example of where this could be useful:
+As discussed in in the section on [Configuration File Names](#81-configuration-file-names), it is possible to provide a base set of formatting options in a file, `mdfmt.json`, and then environment-specific overrides in a file, `mdfmt.{environment}.json`.  Here is a motivating example of where this could be useful:
 
 > Documentation in a documentation repository is published to the [Backstage](https://backstage.io/docs/overview/what-is-backstage/) developer portal.  When Backstage renders Markdown for display, it automatically includes line numbers for fenced code blocks, so it would be silly/redundant to include line numbers in the content itself.  Developers edit the documentation on the local laptop using Visual Studio Code, and in this environment, there are no automatically generated line numbers.  Developers would like to be able to see line numbers locally, so they can know how to refer to lines by line number when they are writing descriptions in the documentation being maintained.  We would like to set things up so that running `mdfmt -r` formats for Backstage, and `mdfmt -r -e local` formats for local development with Mdfmt-generated line numbers in fenced code blocks.
 
@@ -526,7 +536,7 @@ Place `mdfmt.local.json` into the same directory as `mdfmt.json`. When making th
 
 In summary, when both `mdfmt.json` and `mdfmt.{environemnt}.json` are provided, `mdfmt.json` is loaded first, and then the environment-specific file is loaded on top of that, replacing parts of the base configuration and extending the base configuration as per the settings in `mdfmt.{environment}.json`.
 
-### 7.5. Options Inheritance
+### 8.5. Options Inheritance
 
 After configuration files are loaded into Mdfmt, possibly combining multiple configurations as discussed in the previous section, Mdfmt implements an inheritance scheme to decide which options to apply to a given Markdown file being processed.  It works like this:
 
@@ -544,7 +554,7 @@ Finally, any formatting options passed in on the command line are considered the
 
 In a large recursive (`-r`) Mdfmt run, this approach allows different Markdown files to be processed with different options.
 
-#### 7.5.1. Example: Deciding How To Format The Glossary
+#### 8.5.1. Example: Deciding How To Format The Glossary
 
 Consider the following configuration:
 
@@ -611,7 +621,7 @@ These options are written over the candidate set found earlier, resulting in:
 
 These are the formatting options that will be applied to the glossary.  Notice the utility and flexibility of this.  It allows creation of a base configuration that applies to the common case (usually heading numbers are desirable) but in certain exceptional cases, e.g. a long flat document like a glossary where heading numbers don't add much value, a different formatting style can be applied.
 
-## 8. Return Value
+## 9. Return Value
 
 Mdfmt returns values to the shell that indicate how the program exited.  This can be useful when building scripts.
 

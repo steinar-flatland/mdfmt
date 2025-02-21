@@ -239,10 +239,10 @@ public class ProgramTests
 
 
 
-        new TestCaseData(_headingNumbering_none_md, new string[] {"-h", "none"}, _headingNumbering_none_md, ExitCodes.Success).
+        new TestCaseData(_headingNumbering_none_md, new string[] {"-h", "none", "-f", "Common"}, _headingNumbering_none_md, ExitCodes.Success).
         SetName("Heading-Numbering.1a: Given a file without heading numbering, When heading numbering is removed, Then no change."),
 
-        new TestCaseData(_headingNumbering_none_md, new string[] {"--heading-numbers", "NONE"}, _headingNumbering_none_md, ExitCodes.Success).
+        new TestCaseData(_headingNumbering_none_md, new string[] {"--heading-numbers", "NONE", "--flavor", "common"}, _headingNumbering_none_md, ExitCodes.Success).
         SetName("Heading-Numbering.1b: Given a file without heading numbering, When heading numbering is removed, Then no change."),
 
         new TestCaseData(_headingNumbering_none_md, new string[] {"-h", "1", "-t", "1", "-f", "common"}, _headingNumbering_1_md, ExitCodes.Success).
@@ -269,7 +269,7 @@ public class ProgramTests
         new TestCaseData(_headingNumbering_1_md, new string[] {"--heading-numbers", "NONE", "-f", "common"}, _headingNumbering_none_md, ExitCodes.Success).
         SetName("Heading-Numbering.4d: Given a file with heading numbering without a trailing period, When heading numbering is removed, Then there are no heading numbers."),
 
-        new TestCaseData(_headingNumbering_1_md, new string[] {"-h", "1"}, _headingNumbering_1_md, ExitCodes.Success).
+        new TestCaseData(_headingNumbering_1_md, new string[] {"-h", "1", "-f", "common"}, _headingNumbering_1_md, ExitCodes.Success).
         SetName("Heading-Numbering.5: Given a file with heading numbering without a trailing period, When apply heading numbering with no trailing period, Then no change."),
 
         new TestCaseData(_headingNumbering_1_md, new string[] {"-h", "1.", "-t", "1", "-f", "common"}, _headingNumbering_1dot_md, ExitCodes.Success).
@@ -293,7 +293,7 @@ public class ProgramTests
         new TestCaseData(_headingNumbering_1dot_md, new string[] {"-h", "1", "-f", "common"}, _headingNumbering_1_md, ExitCodes.Success).
         SetName("Heading-Numbering.8: Given a file with heading numbering that includes a trailing period, When apply heading numbering with no trailing period, Then heading numbering with no trailing period is applied."),
 
-        new TestCaseData(_headingNumbering_1dot_md, new string[] {"-h", "1."}, _headingNumbering_1dot_md, ExitCodes.Success).
+        new TestCaseData(_headingNumbering_1dot_md, new string[] {"-h", "1.", "-f", "common"}, _headingNumbering_1dot_md, ExitCodes.Success).
         SetName("Heading-Numbering.9: Given a file with heading numbering that includes a trailing period, When apply heading numbering with a trailing period, Then no change."),
 
         new TestCaseData(_headingNumbering_1_md, Array.Empty<string>(), _headingNumbering_1_md, ExitCodes.Success).

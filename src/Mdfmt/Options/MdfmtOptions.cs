@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using FluentValidation;
+using System.Collections.Generic;
 
 namespace Mdfmt.Options;
 
@@ -34,6 +35,12 @@ internal class MdfmtOptions
         IReadOnlyList<string> mdfmtConfigurationFilePaths
     )
 {
+    /// <summary>
+    /// Used to validate <see cref="FormattingOptions"/> instance before returning it from the
+    /// <c>GetFormattingOptions(string cpath)</c> method.
+    /// </summary>
+    private readonly FormattingOptionsValidator2 _formattingOptionsValidator = new();
+
     /// <summary>
     /// Names of arguments that were explicitly set on the command line.  This knowledge is used to
     /// give precedence to explicitly set command line arguments, overriding values from mdfmt
@@ -151,6 +158,19 @@ internal class MdfmtOptions
             if (!formattingOptions.IsComplete())
             {
                 formattingOptions.PopulateFrom(_commandLineFormattingOptions);
+            }
+
+            try
+            {
+                // Make sure that the assembled formatting options are valid.  This could happen if
+                // there are inconsistencies involving more than one option, e.g. HeadingNumbering
+                // option is specified without a Flavor, or TocThreshold >= 1 with no Flavor.
+                _formattingOptionsValidator.ValidateAndThrow(formattingOptions);
+            }
+            catch (ValidationException ex)
+            {
+                Output.Error($"Formatting options for {cpath} are inconsistent: {ex.Message}.  Please check configuration files in {ProcessingRoot}.");
+                throw new ExitException(ExitCodes.GeneralError);
             }
 
             return formattingOptions;

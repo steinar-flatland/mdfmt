@@ -3,6 +3,11 @@ using System;
 
 namespace Mdfmt.Options;
 
+/// <summary>
+/// Basic validator for class <see cref="FormattingOptions"/>.  It only ensures that each individual
+/// property is valid, but it does not worry about cross-property dependencies.  See also
+/// <see cref="FormattingOptionsValidator2"/>, which also handles dependencies.
+/// </summary>
 internal class FormattingOptionsValidator : AbstractValidator<FormattingOptions>
 {
     public FormattingOptionsValidator()
