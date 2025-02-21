@@ -12,6 +12,7 @@ Mdfmt is being developed in C#/.NET 8.0, with plans to upgrade to the next LTS v
 
 - Format one file at a time or format all of the Markdown files recursively within a directory.
 - CLI approach is convenient both for interactive use by authors/developers and for automated calls in publishing pipelines to ensure consistent formatting.
+- Provides a link auditing feature, to scan Markdown files in a directory structure and report on broken in-document and cross-document links.  This can be used in a publishing pipeline, to prevent publishing unless all links are intact.
 - The following formatting features are supported:
   - Generates and maintains section numbers in headings automatically.  In complex documents with nested sections, section numbers are important to help readers understand the hierarchical structure of the document.
   - Section numbers in Markdown documents are difficult for authors to maintain manually, and Mdfmt provides helpful automation, calculating and recalculating section numbers automatically as new sections are added between preexisting ones.

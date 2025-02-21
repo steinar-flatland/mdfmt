@@ -17,13 +17,15 @@
       - [5.2.2. Help](#522-help)
       - [5.2.3. Version](#523-version)
     - [5.3. Environment](#53-environment)
-    - [5.4. Formatting Options](#54-formatting-options)
-      - [5.4.1. Flavor](#541-flavor)
-      - [5.4.2. Heading Numbers](#542-heading-numbers)
-      - [5.4.3. TOC Threshold](#543-toc-threshold)
-      - [5.4.4. Line Numbering Threshold](#544-line-numbering-threshold)
-      - [5.4.5. Newline Strategy](#545-newline-strategy)
-    - [5.5. Target Path](#55-target-path)
+    - [5.4. Auditing Options](#54-auditing-options)
+      - [5.4.1. Audit Links](#541-audit-links)
+    - [5.5. Formatting Options](#55-formatting-options)
+      - [5.5.1. Flavor](#551-flavor)
+      - [5.5.2. Heading Numbers](#552-heading-numbers)
+      - [5.5.3. TOC Threshold](#553-toc-threshold)
+      - [5.5.4. Line Numbering Threshold](#554-line-numbering-threshold)
+      - [5.5.5. Newline Strategy](#555-newline-strategy)
+    - [5.6. Target Path](#56-target-path)
   - [6. Output](#6-output)
     - [6.1. Non-Verbose Output](#61-non-verbose-output)
     - [6.2. Verbose Output](#62-verbose-output)
@@ -178,7 +180,7 @@ A few words about how each option is described in the subsections below below:
 - Description - A description of the effect of the option; what it does; how it works.
 - Values - Describes the valid values of the Type.  For an enumeration, lists the values and explains what each one means.
 - Default - Some options have a default value, which is the value that the option assumes when it is omitted from the command line.  When there is no default, omission of the option from the command line leads to a `null`/missing value, and the Mdfmt program reacts to this either by providing an error message if the omission is unacceptable, or by implementing a default behavior if the omission is acceptable.
-- Configuration file key - When using configuration files (see the section, [Configuration](#8-configuration)), provides the key to use to identify this formatting option in configuration files.  Configuration file key is only provided for [formatting options](#54-formatting-options), not for other command line options.
+- Configuration file key - When using configuration files (see the section, [Configuration](#8-configuration)), provides the key to use to identify this formatting option in configuration files.  Configuration file key is only provided for [formatting options](#55-formatting-options), not for other command line options.
 
 ### 5.1. Traversal Options
 
@@ -243,11 +245,36 @@ These options allow you to:
 
 For full details on the configuration system, see [Configuration](#8-configuration).
 
-### 5.4. Formatting Options
+### 5.4. Auditing Options
 
-These options are used to specify formatting that Mdfmt should apply to Markdown files targeted by the [target path](#55-target-path) that can be specified on the command line.
+#### 5.4.1. Audit Links
 
-#### 5.4.1. Flavor
+- Long name: **`--audit-links`**
+- Short name: _none_
+- Type: flag
+- Description: Whether to perform a link audit, which visits all Markdown files in the processing root recursively, checks all in-document and cross-document links, and prints a report to the console about intact and broken links.  This feature is useful for finding and fixing broken links.  When this option is true, Mdfmt generates the report and ignores other options.
+- Values: true, false
+- Default: false
+
+Here's an example of a link auditing report:
+
+![image](.assets/link-auditing-report.png)
+
+The report shows:
+
+- The name of each file that has broken links, with the offending links indented under each file name.
+- A summary showing counts for the following across all files:
+  - Number of Markdown files scanned.
+  - Number of internal links found, with subtotals for the number of intact and broken links.
+  - Number of external links found.  (The auditor does not do web crawling; these are not verified.)
+
+If all internal links were intact, the program returns 0 (success) to the shell.  If, on the other hand, there were some broken internal links, then 1 (error) is returned to the shell.  This could be useful for a link auditing stage in a deployment pipleline, to prevent pushing documentation to a developer portal, unless all links are intact.
+
+### 5.5. Formatting Options
+
+These options are used to specify formatting that Mdfmt should apply to Markdown files targeted by the [target path](#56-target-path) that can be specified on the command line.
+
+#### 5.5.1. Flavor
 
 - Long name: **`--flavor`**
 - Short name: **`-f`**
@@ -263,7 +290,7 @@ These options are used to specify formatting that Mdfmt should apply to Markdown
 
   > If you have a need for another slugification algorithm, it is likely an easy addition to make.  The code has been architected with an interface that can be implemented for more algorithms.  Feel free to [reach out](../../README.md#contact).
 
-#### 5.4.2. Heading Numbers
+#### 5.5.2. Heading Numbers
 
 - Long name: **`--heading-numbers`**
 - Short name: **`-h`**
@@ -281,7 +308,7 @@ These options are used to specify formatting that Mdfmt should apply to Markdown
 - Default: `null`.  If this option is omitted, no changes are made to heading numbers.
 - Configuration file key: `HeadingNumbering`
 
-#### 5.4.3. TOC Threshold
+#### 5.5.3. TOC Threshold
 
 - Long name: **`--toc-threshold`**
 - Short name: **`-t`**
@@ -293,7 +320,7 @@ These options are used to specify formatting that Mdfmt should apply to Markdown
 - Default: `null`.  If this option is omitted, threshold-based TOC maintenance does not occur; however, a pre-existing TOC can still be maintained if the `-f` option is specified in this case.
 - Configuration file key: `TocThreshold`
 
-#### 5.4.4. Line Numbering Threshold
+#### 5.5.4. Line Numbering Threshold
 
 - Long name: **`--line-numbering-threshold`**
 - Short name: **`-l`**
@@ -304,7 +331,7 @@ These options are used to specify formatting that Mdfmt should apply to Markdown
 - Default: `null`.  If this option is omitted, Mdfmt does not edit line numbers in fenced code blocks.
 - Configuration file key: `LineNumberingThreshold`
 
-#### 5.4.5. Newline Strategy
+#### 5.5.5. Newline Strategy
 
 - Long name: **`--newline-strategy`**
 - Short name: _none_
@@ -323,7 +350,7 @@ These options are used to specify formatting that Mdfmt should apply to Markdown
 - Default: `null`.  If this option is omitted, no changes are made to existing newlines, and any new newlines introduced by Mdfmt follow the predominant style of the current file.  (In the event of a tie, Mdfmt uses `\n` for newly added newlines.)
 - Configuration file key: `NewlineStrategy`
 
-### 5.5. Target Path
+### 5.6. Target Path
 
 The target path is a so called "positional argument" passed on the command line, which means it does not need to be preceded by an option name, i.e. no long name or short name.
 
@@ -418,7 +445,7 @@ Mdfmt configuration files must be correctly named to be recognized by the progra
 
 ### 8.2. How Configuration Files Are Located
 
-A [target path](./Glossary.md#target-path) is passed to Mdfmt on the command line (see also the [Target Path](#55-target-path) section under [Options and Target Path](#5-options-and-target-path)), and if none is provided explicitly, it defaults to the [current working directory](./Glossary.md#current-working-directory).
+A [target path](./Glossary.md#target-path) is passed to Mdfmt on the command line (see also the [Target Path](#56-target-path) section under [Options and Target Path](#5-options-and-target-path)), and if none is provided explicitly, it defaults to the [current working directory](./Glossary.md#current-working-directory).
 
 From the target path, Mdfmt knows the [target directory](./Glossary.md#target-directory).  If the target path indicates a specific Markdown file, then the target directory is the directory containing this file; otherwise, if the target path indicates a directory, then the target directory and target path are one and the same.
 
@@ -485,7 +512,7 @@ Here is an example of the `mdfmt.json` file used to format Mdfmt's own documenta
 Some observations:
 
 - Each key of the `"Options"` dictionary (such as `"default"`, `"noHeadings"`) is a descriptive name mapping to a value that is a JSON object containing name/value pairs for formatting options.
-- Within the JSON object comprising a value in `"Options"`, the keys such as `Flavor`, `TocThreshold`, `HeadingNumbering`, and `LineNumbereingThreshold` are documented as the "Configuration file key:" associated with each formatting option described in the [Formatting Options](#54-formatting-options) section of this document.
+- Within the JSON object comprising a value in `"Options"`, the keys such as `Flavor`, `TocThreshold`, `HeadingNumbering`, and `LineNumbereingThreshold` are documented as the "Configuration file key:" associated with each formatting option described in the [Formatting Options](#55-formatting-options) section of this document.
 - The keys of the `"CpathToOptions"` dictionary are relative paths, relative to the [processing root](./Glossary.md#processing-root).  Some rules for these keys:
   - Each key is a path, relative to the processing root, starting with `.`
   - `.` means the processing root directory.

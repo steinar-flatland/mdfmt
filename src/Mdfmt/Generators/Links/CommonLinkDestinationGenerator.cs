@@ -6,15 +6,18 @@ internal class CommonLinkDestinationGenerator : ILinkDestinationGenerator
 {
     private static readonly Regex RemoveCharactersRegex = new(@"[.\'(),:+?]", RegexOptions.Compiled);
 
+    public string SlugifyHeadingText(string headingText)
+    {
+        return RemoveCharactersRegex.Replace(headingText, "").Replace(" ", "-").ToLower();
+    }
+
     public string GenerateInDocumentLinkDestination(string filename, string headingText)
     {
-        string destination = '#' + headingText;
-        destination = RemoveCharactersRegex.Replace(destination, "").Replace(" ", "-").ToLower();
-        return destination;
+        return $"#{SlugifyHeadingText(headingText)}";
     }
 
     public string GenerateCrossDocumentLinkDestination(string relativeFilePath, string headingText)
     {
-        return $"{relativeFilePath}{GenerateInDocumentLinkDestination(null, headingText)}";
+        return $"{relativeFilePath}#{SlugifyHeadingText(headingText)}";
     }
 }

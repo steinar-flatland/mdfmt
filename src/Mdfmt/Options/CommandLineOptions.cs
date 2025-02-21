@@ -31,6 +31,9 @@ internal class CommandLineOptions
     [Option('v', "verbose", Default = false, HelpText = "Whether to use verbose output.")]
     public bool Verbose { get; set; }
 
+    [Option("audit-links", Default = false, HelpText = "Whether to perform a link audit, which checks all in-document and cross-document links and prints a report to the console.  Useful for finding and fixing broken links.")]
+    public bool AuditLinks { get; set; }
+
     [Value(0, Default = ".", HelpText = "The target path that Mdfmt is being asked to process, either a single .md file or a directory that contains the .md files to process.  This path may be either absolute or relative to the current working directory where the program was started.")]
     public string TargetPath { get; set; }
 

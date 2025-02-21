@@ -7,6 +7,18 @@
 internal interface ILinkDestinationGenerator
 {
     /// <summary>
+    /// Compute the slugified version of the heading text.  This is how heading text is transformed
+    /// for including in link destinations.
+    /// </summary>
+    /// <param name="headingText">
+    /// Heading text the way it appears to the user.
+    /// </param>
+    /// <returns>
+    /// Slugified heading text.
+    /// </returns>
+    public string SlugifyHeadingText(string headingText);
+
+    /// <summary>
     /// Generate a destination for a Markdown link to a heading within the same Markdown file.
     /// </summary>
     /// <param name="filename">

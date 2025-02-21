@@ -132,6 +132,12 @@ internal class MdfmtOptions
     /// </summary>
     public bool Recursive => CommandLineOptions.Recursive;
 
+
+    /// <summary>
+    /// Whether to perform a link audit.
+    /// </summary>
+    public bool AuditLinks => CommandLineOptions.AuditLinks;    
+
     /// <summary>
     /// Get the options that determine how a specific Markdown file should be formatted.
     /// </summary>
