@@ -130,6 +130,164 @@ internal class Processor
             }
         }
 
+        if (_options.AuditLinks)
+        {
+            AuditLinks();
+        }
+        else
+        {
+            ApplyFormatting();
+        }
+    }
+
+    private void AuditLinks()
+    {
+        // Dictionary mapping each cpath to a set of fragment strings.
+        Dictionary<string, HashSet<string>> cpathFragments = [];
+
+        // All Markdown files in the processing root.
+        List<string> filePaths = [.. Directory.GetFiles(_options.ProcessingRoot, MdWildcard, SearchOption.AllDirectories)];
+
+        // Populate cpathFragments.
+        foreach (string filePath in filePaths)
+        {
+            string cpath = PathUtils.MakeRelative(_options.ProcessingRoot, filePath);
+            string absolutePath = Path.GetFullPath(filePath);
+            MdStruct md = _mdStructLoader.Load(absolutePath, cpath, null);
+
+            cpathFragments[cpath] = [];
+
+            foreach (HeadingRegion headingRegion in md.HeadingRegions)
+            {
+                foreach (ILinkDestinationGenerator linkDestinationGenerator in _linkDestinationGenerators)
+                {
+                    string slug = linkDestinationGenerator.SlugifyHeadingText(headingRegion.HeadingText);
+                    cpathFragments[cpath].Add(slug);
+                }
+            }
+        }
+
+        // Counters to aggregate info across all files.
+        int fileCount = 0;
+        int brokenLinkCount = 0;
+        int intactLinkCount = 0;
+        int externalLinkCount = 0;
+        
+        // Broken links (if any) in each file.
+        List<LinkRegion> brokenLinks = [];
+
+        // Audit
+        foreach (string filePath in filePaths)
+        {
+            brokenLinks.Clear();
+
+            fileCount++;
+
+            string cpath = PathUtils.MakeRelative(_options.ProcessingRoot, filePath);
+            string absolutePath = Path.GetFullPath(filePath);
+            MdStruct md = _mdStructLoader.Load(absolutePath, cpath, null);
+            string filename = md.FileName;
+
+            foreach (LinkRegion linkRegion in md.LinkRegions)
+            {
+                string path = linkRegion.Path;
+                string fragment = linkRegion.Fragment;
+
+                // Determine path that is key for lookup in cpathFragments to fine fragments set.
+                string lookupPath;
+                if ((path.Length == 0) || (path == filename) || (path == $"./{filename}") )
+                {
+                    lookupPath = cpath;
+                }
+                else if (path.StartsWith('.') && path.EndsWith(".md"))
+                {
+                    lookupPath = PathUtils.Canonicalize(cpath, path);
+                }
+                else if (! path.Contains('/') && path.EndsWith(".md"))
+                {
+                    lookupPath = PathUtils.Canonicalize(cpath, $"./{path}");
+                }
+                else
+                {
+                    lookupPath = null;
+                }
+
+                // Determine fragment (if any) that is key for lookup in fragments set.
+                string lookupFragment = (linkRegion.Fragment).TrimStart('#');
+
+                // If lookuppath is null, then the link is external.
+                if (lookupPath == null)
+                {
+                    externalLinkCount++;
+                    continue;
+                }
+
+                // Based on lookupPath and lookupFragment (if any), determine if the link is intact or broken.
+                if (cpathFragments.TryGetValue(lookupPath, out HashSet<string> fragments))
+                {
+                    if (lookupFragment.Length > 0)
+                    {
+                        if (fragments.Contains(lookupFragment))
+                        {
+                            // Link is intact
+                            intactLinkCount++;
+                        }
+                        else
+                        {
+                            // Broken link!
+                            brokenLinkCount++;
+                            brokenLinks.Add(linkRegion);
+                            //Output.Warn($"Broken link: {linkRegion.Content}");
+                        }
+                    }
+                    else
+                    {
+                        // Link is intact
+                        intactLinkCount++;
+                    }
+                }
+                else
+                {
+                    // Broken link!
+                    brokenLinkCount++;
+                    brokenLinks.Add(linkRegion);
+                    //Output.Warn($"Broken link: {linkRegion.Content}");
+                }
+            }
+
+            // If this file had broken links, show them.
+            if (brokenLinks.Count > 0)
+            {
+                Output.Info($"{Environment.NewLine}Broken links in ", false, ConsoleColor.Yellow);
+                Output.Info(absolutePath, true, ConsoleColor.Cyan);
+                foreach (LinkRegion linkRegion in brokenLinks)
+                {
+                    Output.Warn($"  {linkRegion.Content}");
+                }
+            }
+        }
+
+        // Final report wtih summary info.
+        Output.Info($"{Environment.NewLine}Scanned {fileCount} files.");
+        Output.Info($"{intactLinkCount + brokenLinkCount} internal links found.");
+        Output.Info($"  Intact:{intactLinkCount,6}");
+        Output.Info($"  Broken:{brokenLinkCount,6}");
+        Output.Info($"{externalLinkCount} external links found.{Environment.NewLine}");
+
+        // Return either GeneralError or Success exit code.  This could be useful, for example, for a publishing pipeline.
+        // This could block publishing, unless links are intact.
+        if (brokenLinkCount > 0)
+        {
+            throw new ExitException(ExitCodes.GeneralError);
+        }
+        else
+        {
+            throw new ExitException(ExitCodes.Success);
+        }
+    }
+
+    private void ApplyFormatting()
+    {
         // Apply formatting to files in the target path.
         List<string> filePaths = FindFilePathsToProcess();
         foreach (string filePath in filePaths)
