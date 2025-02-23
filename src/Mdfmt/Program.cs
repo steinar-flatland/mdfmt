@@ -14,7 +14,7 @@ namespace Mdfmt;
 
 internal class Program
 {
-    public const string Version = "1.6.0";
+    public const string Version = "1.6.1";
 
     public static void Main(string[] args)
     {
@@ -148,7 +148,7 @@ internal class Program
         }
         else if (File.Exists(targetPath))
         {
-            if (targetPath.EndsWith(".md"))
+            if (targetPath.EndsWith(Constants.MdExtension))
             {
                 targetPathIsDirectory = false;
                 return;

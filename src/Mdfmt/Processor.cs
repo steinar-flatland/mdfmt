@@ -4,7 +4,6 @@ using Mdfmt.Loaders;
 using Mdfmt.Model;
 using Mdfmt.Options;
 using Mdfmt.Updaters;
-using Mdfmt.Utilities;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -19,6 +18,8 @@ internal class Processor
     private readonly Dictionary<Flavor, CrossDocumentLinkUpdater> _crossDocumentLinkUpdaters = [];
     private readonly Dictionary<Flavor, TocUpdater> _tocUpdaters = [];
     private readonly HeadingNumberUpdater _headingNumberUpdater;
+    private readonly IReadOnlyList<ILinkDestinationGenerator> _linkDestinationGenerators;
+    private readonly LinkAuditor _linkAuditor;
 
     /// <summary>
     /// Dictionary keyed on a string of the form <c>$"{cpath}{fragment}"</c>.  <c>{cpath}</c> is the
@@ -43,96 +44,37 @@ internal class Processor
     /// </summary>
     private readonly HashSet<string> _ambiguousStaleCpathFragments = new([], StringComparer.OrdinalIgnoreCase);
 
-    /// <summary>
-    /// One of each different kind of link destination generator.
-    /// </summary>
-    private readonly List<ILinkDestinationGenerator> _linkDestinationGenerators = LinkDestinationGeneratorFactory.ManufactureOneOfEach();
-
-    private readonly string MdWildcard = "*.md";
-
     public Processor(MdfmtOptions options)
     {
         _options = options;
-        _mdStructLoader = new();
-
+        _mdStructLoader = new(_options.ProcessingRoot);
         foreach (Flavor flavor in Enum.GetValues(typeof(Flavor)))
         {
             CreateUpdaters(flavor);
         }
-
         _headingNumberUpdater = new();
+        _linkDestinationGenerators = LinkDestinationGeneratorFactory.ManufactureOneOfEach();
+        _linkAuditor = new(options, _mdStructLoader, _linkDestinationGenerators);
     }
 
     private void CreateUpdaters(Flavor flavor)
     {
-        ILinkDestinationGenerator linkDestinationGenerator =
-            LinkDestinationGeneratorFactory.Manufacture(flavor);
+        ILinkDestinationGenerator linkDestinationGenerator = LinkDestinationGeneratorFactory.Manufacture(flavor);
         _inDocumentLinkUpdaters.Add(flavor, new InDocumentLinkUpdater(linkDestinationGenerator));
         _crossDocumentLinkUpdaters.Add(flavor, new CrossDocumentLinkUpdater(linkDestinationGenerator, _staleCpathFragmentToUpdatedHeadingText, _ambiguousStaleCpathFragments));
         TocGenerator tocGenerator = new(linkDestinationGenerator);
         _tocUpdaters.Add(flavor, new TocUpdater(tocGenerator));
     }
 
-    private List<string> FindFilePathsToProcess()
-    {
-        if (!Directory.Exists(_options.TargetPath))
-        {
-            return [_options.TargetPath];
-        }
-        else if (_options.Recursive)
-        {
-            return new List<string>(Directory.GetFiles(_options.TargetPath, MdWildcard, SearchOption.AllDirectories));
-        }
-        else
-        {
-            return new List<string>(Directory.GetFiles(_options.TargetPath, MdWildcard, SearchOption.TopDirectoryOnly));
-        }
-    }
-
     public void Run()
     {
         if (_options.Verbose)
         {
-            Output.Info($"Mdfmt v{Program.Version}{Environment.NewLine}");
-            Output.Info($"Current Working Directory: {Directory.GetCurrentDirectory()}{Environment.NewLine}");
-            Output.Info($"{nameof(_options.CommandLineOptions)} {_options.CommandLineOptions}{Environment.NewLine}");
-            Output.Info($"Absolute TargetPath: {Path.GetFullPath(_options.CommandLineOptions.TargetPath)}{Environment.NewLine}");
-            Output.Info($"Explicitly Set Option Names:{Environment.NewLine}{(_options.ArgNames.Count == 0 ? "none" : string.Join(", ", _options.ArgNames))}{Environment.NewLine}");
-            Output.Info($"Processing Root: {_options.ProcessingRoot}{Environment.NewLine}");
-
-            string loadedFromInfo;
-            if (_options.MdfmtConfigurationFilePaths == null || _options.MdfmtConfigurationFilePaths.Count == 0)
-            {
-                loadedFromInfo = ": none";
-            }
-            else if (_options.MdfmtConfigurationFilePaths.Count == 1)
-            {
-                loadedFromInfo = $": {_options.MdfmtConfigurationFilePaths[0]}";
-            }
-            else
-            {
-                loadedFromInfo = $" loaded from the following files:";
-            }
-            Output.Info($"Mdfmt configuration file{loadedFromInfo}");
-
-            if (_options.MdfmtConfigurationFilePaths.Count > 1)
-            {
-                foreach (string filePath in _options.MdfmtConfigurationFilePaths)
-                {
-                    Output.Info($"  - {filePath}");
-                }
-            }
-
-            if (_options.MdfmtProfile != null)
-            {
-                Output.Info(_options.MdfmtProfile);
-                Output.Info($"Note: CpathToOptions keys are relative to Procesing Root.");
-            }
+            ShowVerboseOutput();
         }
-
         if (_options.AuditLinks)
         {
-            AuditLinks();
+            _linkAuditor.AuditLinks();
         }
         else
         {
@@ -140,157 +82,49 @@ internal class Processor
         }
     }
 
-    private void AuditLinks()
+    private void ShowVerboseOutput()
     {
-        // Dictionary mapping each cpath to a set of fragment strings.
-        Dictionary<string, HashSet<string>> cpathFragments = [];
+        Output.Info($"Mdfmt v{Program.Version}{Environment.NewLine}");
+        Output.Info($"Current Working Directory: {Directory.GetCurrentDirectory()}{Environment.NewLine}");
+        Output.Info($"{nameof(_options.CommandLineOptions)} {_options.CommandLineOptions}{Environment.NewLine}");
+        Output.Info($"Absolute TargetPath: {Path.GetFullPath(_options.TargetPath)}{Environment.NewLine}");
+        Output.Info($"Explicitly Set Option Names:{Environment.NewLine}{(_options.ArgNames.Count == 0 ? "none" : string.Join(", ", _options.ArgNames))}{Environment.NewLine}");
+        Output.Info($"Processing Root: {_options.ProcessingRoot}{Environment.NewLine}");
 
-        // All Markdown files in the processing root.
-        List<string> filePaths = [.. Directory.GetFiles(_options.ProcessingRoot, MdWildcard, SearchOption.AllDirectories)];
-
-        // Populate cpathFragments.
-        foreach (string filePath in filePaths)
+        string loadedFromInfo;
+        if (_options.MdfmtConfigurationFilePaths == null || _options.MdfmtConfigurationFilePaths.Count == 0)
         {
-            string cpath = PathUtils.MakeRelative(_options.ProcessingRoot, filePath);
-            string absolutePath = Path.GetFullPath(filePath);
-            MdStruct md = _mdStructLoader.Load(absolutePath, cpath, null);
-
-            cpathFragments[cpath] = [];
-
-            foreach (HeadingRegion headingRegion in md.HeadingRegions)
-            {
-                foreach (ILinkDestinationGenerator linkDestinationGenerator in _linkDestinationGenerators)
-                {
-                    string slug = linkDestinationGenerator.SlugifyHeadingText(headingRegion.HeadingText);
-                    cpathFragments[cpath].Add(slug);
-                }
-            }
+            loadedFromInfo = ": none";
         }
-
-        // Counters to aggregate info across all files.
-        int fileCount = 0;
-        int brokenLinkCount = 0;
-        int intactLinkCount = 0;
-        int externalLinkCount = 0;
-        
-        // Broken links (if any) in each file.
-        List<LinkRegion> brokenLinks = [];
-
-        // Audit
-        foreach (string filePath in filePaths)
+        else if (_options.MdfmtConfigurationFilePaths.Count == 1)
         {
-            brokenLinks.Clear();
-
-            fileCount++;
-
-            string cpath = PathUtils.MakeRelative(_options.ProcessingRoot, filePath);
-            string absolutePath = Path.GetFullPath(filePath);
-            MdStruct md = _mdStructLoader.Load(absolutePath, cpath, null);
-            string filename = md.FileName;
-
-            foreach (LinkRegion linkRegion in md.LinkRegions)
-            {
-                string path = linkRegion.Path;
-                string fragment = linkRegion.Fragment;
-
-                // Determine path that is key for lookup in cpathFragments to fine fragments set.
-                string lookupPath;
-                if ((path.Length == 0) || (path == filename) || (path == $"./{filename}") )
-                {
-                    lookupPath = cpath;
-                }
-                else if (path.StartsWith('.') && path.EndsWith(".md"))
-                {
-                    lookupPath = PathUtils.Canonicalize(cpath, path);
-                }
-                else if (! path.Contains('/') && path.EndsWith(".md"))
-                {
-                    lookupPath = PathUtils.Canonicalize(cpath, $"./{path}");
-                }
-                else
-                {
-                    lookupPath = null;
-                }
-
-                // Determine fragment (if any) that is key for lookup in fragments set.
-                string lookupFragment = (linkRegion.Fragment).TrimStart('#');
-
-                // If lookuppath is null, then the link is external.
-                if (lookupPath == null)
-                {
-                    externalLinkCount++;
-                    continue;
-                }
-
-                // Based on lookupPath and lookupFragment (if any), determine if the link is intact or broken.
-                if (cpathFragments.TryGetValue(lookupPath, out HashSet<string> fragments))
-                {
-                    if (lookupFragment.Length > 0)
-                    {
-                        if (fragments.Contains(lookupFragment))
-                        {
-                            // Link is intact
-                            intactLinkCount++;
-                        }
-                        else
-                        {
-                            // Broken link!
-                            brokenLinkCount++;
-                            brokenLinks.Add(linkRegion);
-                            //Output.Warn($"Broken link: {linkRegion.Content}");
-                        }
-                    }
-                    else
-                    {
-                        // Link is intact
-                        intactLinkCount++;
-                    }
-                }
-                else
-                {
-                    // Broken link!
-                    brokenLinkCount++;
-                    brokenLinks.Add(linkRegion);
-                    //Output.Warn($"Broken link: {linkRegion.Content}");
-                }
-            }
-
-            // If this file had broken links, show them.
-            if (brokenLinks.Count > 0)
-            {
-                Output.Info($"{Environment.NewLine}Broken links in ", false, ConsoleColor.Yellow);
-                Output.Info(absolutePath, true, ConsoleColor.Cyan);
-                foreach (LinkRegion linkRegion in brokenLinks)
-                {
-                    Output.Warn($"  {linkRegion.Content}");
-                }
-            }
-        }
-
-        // Final report wtih summary info.
-        Output.Info($"{Environment.NewLine}Scanned {fileCount} files.");
-        Output.Info($"{intactLinkCount + brokenLinkCount} internal links found.");
-        Output.Info($"  Intact:{intactLinkCount,6}");
-        Output.Info($"  Broken:{brokenLinkCount,6}");
-        Output.Info($"{externalLinkCount} external links found.{Environment.NewLine}");
-
-        // Return either GeneralError or Success exit code.  This could be useful, for example, for a publishing pipeline.
-        // This could block publishing, unless links are intact.
-        if (brokenLinkCount > 0)
-        {
-            throw new ExitException(ExitCodes.GeneralError);
+            loadedFromInfo = $": {_options.MdfmtConfigurationFilePaths[0]}";
         }
         else
         {
-            throw new ExitException(ExitCodes.Success);
+            loadedFromInfo = $" loaded from the following files:";
+        }
+        Output.Info($"Mdfmt configuration file{loadedFromInfo}");
+
+        if (_options.MdfmtConfigurationFilePaths.Count > 1)
+        {
+            foreach (string filePath in _options.MdfmtConfigurationFilePaths)
+            {
+                Output.Info($"  - {filePath}");
+            }
+        }
+
+        if (_options.MdfmtProfile != null)
+        {
+            Output.Info(_options.MdfmtProfile);
+            Output.Info($"Note: CpathToOptions keys are relative to Procesing Root.");
         }
     }
 
     private void ApplyFormatting()
     {
         // Apply formatting to files in the target path.
-        List<string> filePaths = FindFilePathsToProcess();
-        foreach (string filePath in filePaths)
+        foreach (string filePath in _options.MarkdownFilePaths)
         {
             ApplyFormatting(filePath);
         }
@@ -300,17 +134,16 @@ internal class Processor
 
     private void ApplyFormatting(string filePath)
     {
-        string cpath = PathUtils.MakeRelative(_options.ProcessingRoot, filePath);
-        FormattingOptions fpo = _options.GetFormattingOptions(cpath);
-        string absolutePath = Path.GetFullPath(filePath);
+        FormattingOptions fpo = _options.GetFormattingOptions(filePath);
+
         if (_options.Verbose)
         {
-            Output.Info($"{Environment.NewLine}Processing {absolutePath}", true, ConsoleColor.Cyan);
+            Output.Info($"{Environment.NewLine}Processing {Path.GetFullPath(filePath)}", true, ConsoleColor.Cyan);
             Output.Info($"{fpo.GetType().Name}:{Environment.NewLine}{fpo}");
         }
 
         // Load Markdown file into MdStruct data structure.
-        MdStruct md = _mdStructLoader.Load(absolutePath, cpath, fpo.NewlineStrategy);
+        MdStruct md = _mdStructLoader.Load(filePath, fpo.NewlineStrategy);
 
         if (_options.Verbose)
         {
@@ -321,7 +154,7 @@ internal class Processor
         if (fpo.HeadingNumbering != null)
         {
             _headingNumberUpdater.Update(md, fpo.HeadingNumbering, _options.Verbose);
-            PrepareForCrossDocumentLinkUpdating(cpath);
+            PrepareForCrossDocumentLinkUpdating(md.Cpath);
         }
 
         if (fpo.TocThreshold is int tocThreshold)
@@ -360,14 +193,14 @@ internal class Processor
         // If the MdStruct was modified, save the Markdown file.
         if (md.IsModified)
         {
-            File.WriteAllText(absolutePath, md.Content);
+            File.WriteAllText(md.FilePath, md.Content);
             if (_options.Verbose)
             {
-                Output.Emphasis($"- Wrote file {absolutePath}");
+                Output.Emphasis($"- Wrote file {md.FilePath}");
             }
             else
             {
-                Output.Emphasis(absolutePath);
+                Output.Emphasis(md.FilePath);
             }
         }
     }
@@ -414,8 +247,7 @@ internal class Processor
         {
             Output.Info($"{Environment.NewLine}Headings changed.  Scanning *.md files under {_options.ProcessingRoot} for cross-document link updates:{Environment.NewLine}");
         }
-        List<string> filePaths = new(Directory.GetFiles(_options.ProcessingRoot, MdWildcard, SearchOption.AllDirectories));
-        foreach (string filePath in filePaths)
+        foreach (string filePath in _options.AllMarkdownFilePaths)
         {
             UpdateCrossDocumentLinks(filePath);
         }
@@ -423,12 +255,10 @@ internal class Processor
 
     private void UpdateCrossDocumentLinks(string filePath)
     {
-        string cpath = PathUtils.MakeRelative(_options.ProcessingRoot, filePath);
-        FormattingOptions fpo = _options.GetFormattingOptions(cpath);
-        string absolutePath = Path.GetFullPath(filePath);
+        FormattingOptions fpo = _options.GetFormattingOptions(filePath);
 
         // Load Markdown file into MdStruct data structure.
-        MdStruct md = _mdStructLoader.Load(absolutePath, cpath, fpo.NewlineStrategy);
+        MdStruct md = _mdStructLoader.Load(filePath, fpo.NewlineStrategy);
 
         if (fpo.Flavor is Flavor flavor)
         {
@@ -438,14 +268,14 @@ internal class Processor
         // If the MdStruct was modified, save the Markdown file.
         if (md.IsModified)
         {
-            File.WriteAllText(absolutePath, md.Content);
+            File.WriteAllText(md.FilePath, md.Content);
             if (_options.Verbose)
             {
-                Output.Emphasis($"- Wrote file {absolutePath}");
+                Output.Emphasis($"- Wrote file {md.FilePath}");
             }
             else
             {
-                Output.Emphasis(absolutePath);
+                Output.Emphasis(md.FilePath);
             }
         }
     }

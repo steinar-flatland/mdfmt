@@ -13,8 +13,16 @@ namespace Mdfmt.Loaders;
 /// reusable way, i.e., it is safe to call the <c>Load()</c> method, to load a Markdown file,
 /// multiple times on one instance of this class.
 /// </summary>
-internal class MdStructLoader
+/// <param name="processingRoot">
+/// Full path defining the root of files that Mdfmt can see and process.
+/// </param>
+internal class MdStructLoader(string processingRoot)
 {
+    /// <summary>
+    /// Full path defining the root of files that Mdfmt can see and process.
+    /// </summary>
+    public string ProcessingRoot => processingRoot;
+
     #region Parser_States
 
     /// <summary>
@@ -43,6 +51,17 @@ internal class MdStructLoader
     #region Resettable_State
 
     // This state is reset on each call to the Load() method.
+
+    /// <summary>
+    /// Absolute path of the Markdown file processed by the most recent call to <c>Load()</c>.
+    /// </summary>
+    private string _absoluteMarkdownFilePath;
+
+    /// <summary>
+    /// Canonical relative path of the Markdown file processed by the most recent call to <c>Load()</c>.
+    /// This path is relative to the processing root.
+    /// </summary>
+    private string _cpath;
 
     /// <summary>
     /// Breaks down file content into tokens comprising (1) each non-empty line without a trailing 
@@ -93,20 +112,25 @@ internal class MdStructLoader
     /// Reset the loader at start of load of a Markdown file.  This makes it safe to call the
     /// Load() method repeatedly on the same instance of this class.
     /// </summary>
-    /// <param name="fileContent"">
-    /// Content of the file being parsed.
+    /// <param name="mdFilePath">
+    /// Relative or absolute path indicating a Markdown file to load.  If it is relative, then it
+    /// is relative to the current working directory where the program was started.
     /// </param>
     /// <param name="newlineStrategy">
     /// The newline strategy to use for loading this Markdown file, or null if no preference.
     /// </param>
-    /// <param name="newlineRegion">
-    /// See discussion of <c>_newlineRegion</c> above.
+    /// <param name="isModified">
+    /// Output parameter indicating whether loaded file content needs to be saved, because it will be
+    /// modified during loading.
     /// </param>
-    private void Reset(string fileContent, NewlineStrategy? newlineStrategy, NewlineRegion newlineRegion)
+    private void Reset(string mdFilePath, NewlineStrategy? newlineStrategy, out bool isModified)
     {
+        _absoluteMarkdownFilePath = Path.GetFullPath(mdFilePath);
+        _cpath = PathUtils.MakeRelative(ProcessingRoot, mdFilePath);
+        string fileContent = File.ReadAllText(_absoluteMarkdownFilePath);
         _fileContentParser = new FileContentParser(fileContent);
         _newlineStrategy = newlineStrategy;
-        _newlineRegion = newlineRegion;
+        _newlineRegion = NewlineRegion.Containing(Newline.DetermineNewline(newlineStrategy, fileContent, out isModified));
         _lineParser = new();
         _regions.Clear();
         _state = NormalState;
@@ -118,19 +142,18 @@ internal class MdStructLoader
 
     /// <summary>
     /// <para>
-    /// Load a single Markdown file into an MdStruct data structure.  It is safe to call
-    /// <c>Load()</c> multiple times.
+    /// Load a single Markdown file into a new instance of an MdStruct data structure and return it.
+    /// This loader is designed for reuse:  It is safe to call this method multiple times on one
+    /// instance of this class.
     /// </para>
     /// <para>
     /// Throws <c>NotImplementedException</c> if parser enters an unhandled state.  This is not
     /// expected to happen, and if it does, it indicates a code maintenance error.
     /// </para>
     /// </summary>
-    /// <param name="filePath">
-    /// File path of the Markdown file to load.
-    /// </param>
-    /// <param name="cpath">
-    /// Canonical relative path of Markdown file, relative to processing root.
+    /// <param name="mdFilePath">
+    /// Relative or absolute path indicating a Markdown file to load.  If it is relative, then it
+    /// is relative to the current working directory where the program was started.
     /// </param>
     /// <param name="newlineStrategy">
     /// The newline strategy to use for loading this Markdown file, or null if no preference.
@@ -138,17 +161,10 @@ internal class MdStructLoader
     /// <returns>MdStruct</returns>
     /// <exception cref="NotImplementedException">
     /// </exception>
-    public MdStruct Load(string filePath, string cpath, NewlineStrategy? newlineStrategy)
+    public MdStruct Load(string mdFilePath, NewlineStrategy? newlineStrategy = null)
     {
-        // Load the file content to parse.
-        string fileContent = File.ReadAllText(filePath);
-
-        // Based on file content and the user's preferred newline strategy, calculate the newline to use.
-        // isModified is set to whether the file needs to be rewritten to reflect a change of newline sytle.
-        string newline = Newline.DetermineNewline(newlineStrategy, fileContent, out bool isModified);
-
         // Reset the parser, making it ready for a run.
-        Reset(fileContent, newlineStrategy, NewlineRegion.Containing(newline));
+        Reset(mdFilePath, newlineStrategy, out bool isModified);
 
         // The token most recently parsed by the _fileContentParser.  This is either the text of a
         // non-empty line (without trailing newline), or it is a newline character or sequence.
@@ -263,8 +279,8 @@ internal class MdStructLoader
         MopUp();
 
         // Assemble and return the MdStruct
-        List<Region> regionsShallowCopy = new(_regions);
-        MdStruct mdStruct = new(filePath, cpath, regionsShallowCopy, isModified, _newlineRegion);
+        List<Region> regionsShallowCopy = [.. _regions];
+        MdStruct mdStruct = new(_absoluteMarkdownFilePath, _cpath, regionsShallowCopy, isModified, _newlineRegion);
         return mdStruct;
     }
 
