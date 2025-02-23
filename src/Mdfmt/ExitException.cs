@@ -2,7 +2,6 @@
 
 namespace Mdfmt;
 
-
 /// <summary>
 /// When you want to exit the program, throw this exception.  There is a top-level handler in
 /// <c>Program.cs</c> that does the right thing with this Exception.  It is important to throw

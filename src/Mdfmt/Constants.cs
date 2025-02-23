@@ -22,6 +22,16 @@ internal static class Constants
     public static readonly IReadOnlySet<string> AllNewlines = new HashSet<string>() { UnixNewline, WindowsNewline };
 
     /// <summary>
+    /// Wildcard expression for matching all Markdown files in the file system.
+    /// </summary>
+    public const string MdWildcard = "*.md";
+
+    /// <summary>
+    /// File extension indicating a Markdown file.
+    /// </summary>
+    public const string MdExtension = ".md";
+
+    /// <summary>
     /// The maximum number of '#' symbols that can occur at the front of a Markdown heading.  If
     /// there are more than this many, then the content is regarded as just plain content region
     /// and not as a heading.
@@ -40,4 +50,5 @@ internal static class Constants
         },
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
+
 }

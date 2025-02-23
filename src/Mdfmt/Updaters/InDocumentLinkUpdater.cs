@@ -13,7 +13,7 @@ internal class InDocumentLinkUpdater(ILinkDestinationGenerator linkDestinationGe
 
     /// <summary>
     /// Ensure all the in-document links are up to date according to the <see cref="ILinkDestinationGenerator"/>
-    /// owned by this <c>LinkUpdater</c>.
+    /// owned by this <c>InDocumentLinkUpdater</c>.
     /// </summary>
     /// <param name="md">
     /// A Markdown file loaded into <see cref="MdStruct"/>.

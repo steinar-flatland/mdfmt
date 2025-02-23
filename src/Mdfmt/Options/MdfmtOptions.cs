@@ -1,5 +1,7 @@
 ﻿using FluentValidation;
+using Mdfmt.Utilities;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Mdfmt.Options;
 
@@ -118,7 +120,8 @@ internal class MdfmtOptions
     }
 
     /// <summary>
-    /// Directory in which to process .md files, or a specific .md file.
+    /// Directory in which to process .md files, or a specific .md file.  This could be expressed
+    /// either as a relative path (relative to the current working directory) or as an absolute path.
     /// </summary>
     public string TargetPath => CommandLineOptions.TargetPath;
 
@@ -136,19 +139,45 @@ internal class MdfmtOptions
     /// <summary>
     /// Whether to perform a link audit.
     /// </summary>
-    public bool AuditLinks => CommandLineOptions.AuditLinks;    
+    public bool AuditLinks => CommandLineOptions.AuditLinks;
+
+    /// <summary>
+    /// An <see cref="IEnumerable"/> exposing an enumerator for zero or more file paths of Markdown
+    /// files to process, based on the target path and recursion option passed in on the command line.
+    /// These file paths could be either relative to the current working directory or absolute.
+    /// </summary>
+    public IEnumerable<string> MarkdownFilePaths => CommandLineOptions.MarkdownFilePaths;
+
+    /// <summary>
+    /// An <see cref="IEnumerable"/> exposing an enumerator for zero or more file paths of Markdown
+    /// files, based on a recursive traversal of the processing root.
+    /// </summary>
+    public IEnumerable<string> AllMarkdownFilePaths
+    {
+        get
+        {
+            foreach (var filePaths in Directory.EnumerateFiles(ProcessingRoot, Constants.MdWildcard, SearchOption.AllDirectories))
+            {
+                yield return filePaths;
+            }
+        }
+    }
 
     /// <summary>
     /// Get the options that determine how a specific Markdown file should be formatted.
     /// </summary>
-    /// <param name="cpath">
-    /// The canonical relative path of a Markdown file, from the root of the Mdfmt context.
+    /// <param name="filePath">
+    /// Either a relative or absolute path of a Markdown file to format.  If relative, it is
+    /// relative to the current working directory.
     /// </param>
     /// <returns>
     /// The formatting options to use for the specified file.
     /// </returns>
-    public FormattingOptions GetFormattingOptions(string cpath)
+    public FormattingOptions GetFormattingOptions(string filePath)
     {
+        // Canonicalize the filePath, so it can be used as a dictionary key.
+        string cpath = PathUtils.MakeRelative(ProcessingRoot, filePath);
+
         // If there is an MdfmtProfile, and it maps the cpath to an instance of FormattingOptions, then return based on that.
         if (MdfmtProfile != null && MdfmtProfile.TryGetFormattingOptions(cpath, out var formattingOptions))
         {

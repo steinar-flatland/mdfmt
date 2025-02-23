@@ -1,5 +1,8 @@
 ﻿using CommandLine;
+using System.Collections.Generic;
+using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Mdfmt.Options;
 
@@ -40,5 +43,44 @@ internal class CommandLineOptions
     public override string ToString()
     {
         return JsonSerializer.Serialize(this, Constants.JsonSerializerOptions);
+    }
+
+    /// <summary>
+    /// Based on the target path positional argument passed to the command line and the --recursive (-r) option, 
+    /// determine file paths of Markdown files to process.
+    /// </summary>
+    /// <returns>
+    /// An <see cref="IEnumerable"/> exposing an enumerator for 0 or more file paths to Markdown files.
+    /// Note that these could be expressed as either relative to the current working directory or as absolute.
+    /// (It depends on whether the target path was expressed as relative or absolute.)
+    /// </returns>
+    [JsonIgnore]
+    public IEnumerable<string> MarkdownFilePaths
+    {
+        get
+        {
+            // _options.TargetPath has already been verified to be either a specific Markdown file or a directory.
+            if (!Directory.Exists(TargetPath))
+            {
+                // It's a specific file.  Return just the path of that specific file.
+                yield return TargetPath;
+            }
+            else if (Recursive)
+            {
+                // All Markdown files in target directory, recursively.
+                foreach (var file in Directory.EnumerateFiles(TargetPath, Constants.MdWildcard, SearchOption.AllDirectories))
+                {
+                    yield return file;
+                }
+            }
+            else
+            {
+                // Markdown files in target directory, non-recursively.
+                foreach (var file in Directory.EnumerateFiles(TargetPath, Constants.MdWildcard, SearchOption.TopDirectoryOnly))
+                {
+                    yield return file;
+                }
+            }
+        }
     }
 }

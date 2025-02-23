@@ -11,9 +11,7 @@ internal class CrossDocumentLinkUpdater(
     IReadOnlySet<string> ambiguousStaleCpathFragments)
 {
     private readonly ILinkDestinationGenerator _linkDestinationGenerator = linkDestinationGenerator;
-
     private readonly IReadOnlyDictionary<string, string> _staleCpathFragmentToUpdatedHeadingText = staleCpathFragmentToUpdatedHeadingText;
-
     private readonly IReadOnlySet<string> _ambiguousStaleCpathFragments = ambiguousStaleCpathFragments;
 
     public void Update(MdStruct md, bool verbose)
