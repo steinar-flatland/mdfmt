@@ -124,7 +124,7 @@ Attempting to apply Mdfmt to a file that does not end with the `.md` extension l
 File cannot be processed because it is not a .md file
 ```
 
-This behavior is a design choice to keep the application of the tool focused and to prevent erroneous editing.  Hopefully this is not inconvenient for users of the tool.  If you have a use case that requires more flexibility regarding the file extension, please [reach out](../../README.md#4.-contact).
+This behavior is a design choice to keep the application of the tool focused and to prevent erroneous editing.  Hopefully this is not inconvenient for users of the tool.  If you have a use case that requires more flexibility regarding the file extension, please [reach out](../../README.md#4-contact).
 
 ## 4. Basic Usage Overview
 
@@ -215,7 +215,7 @@ These options are used to specify formatting that Mdfmt should apply to Markdown
 - Default: `null`.  If this option is omitted, in-document links are not updated.
 - Configuration file key: `Flavor`
 
-  > If you have a need for another slugification algorithm, it is likely an easy addition to make.  The code has been architected with an interface that can be implemented for more algorithms.  Feel free to [reach out](../../README.md#4.-contact).
+  > If you have a need for another slugification algorithm, it is likely an easy addition to make.  The code has been architected with an interface that can be implemented for more algorithms.  Feel free to [reach out](../../README.md#4-contact).
 
 #### 5.2.2. Heading Numbers
 
