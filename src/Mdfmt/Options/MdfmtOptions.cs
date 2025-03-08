@@ -142,6 +142,11 @@ internal class MdfmtOptions
     public bool AuditLinks => CommandLineOptions.AuditLinks;
 
     /// <summary>
+    /// Whether to handle cross-document links as part of applying flavor.
+    /// </summary>
+    public bool FlavorXdoc => CommandLineOptions.FlavorXdoc;
+
+    /// <summary>
     /// An <see cref="IEnumerable"/> exposing an enumerator for zero or more file paths of Markdown
     /// files to process, based on the target path and recursion option passed in on the command line.
     /// These file paths could be either relative to the current working directory or absolute.

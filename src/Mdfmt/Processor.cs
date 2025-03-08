@@ -27,9 +27,9 @@ internal class Processor
     /// is a <c>'#'</c> character followed by slugified heading text.  The key is stale, i.e. it is
     /// for a heading that has changed because its heading number (which is part of the heading) 
     /// changed, e.g. the heading number could have been removed when it was present, added when it
-    /// was missing, or modified if it already existed and then the number changed during heading renumbering.
-    /// Each key, with stale information, maps to the new updated heading text.  The purpose of this
-    /// data structure is to drive cross-document link updating.
+    /// was missing, or modified if it already existed.  Each key, with stale information, maps to 
+    /// the new updated heading text.  The purpose of this data structure is to drive cross-document
+    /// link updating.
     /// </summary>
     private readonly Dictionary<string, string> _staleCpathFragmentToUpdatedHeadingText = new([], StringComparer.OrdinalIgnoreCase);
 
@@ -48,20 +48,49 @@ internal class Processor
     {
         _options = options;
         _mdStructLoader = new(_options.ProcessingRoot);
+        _linkDestinationGenerators = LinkDestinationGeneratorFactory.ManufactureOneOfEach();
+
+        Dictionary<string, string> fragmentToHeadingText = options.FlavorXdoc ? LoadFragmentToHeadingText() : null;
         foreach (Flavor flavor in Enum.GetValues(typeof(Flavor)))
         {
-            CreateUpdaters(flavor);
+            CreateUpdaters(flavor, fragmentToHeadingText);
         }
+
         _headingNumberUpdater = new();
-        _linkDestinationGenerators = LinkDestinationGeneratorFactory.ManufactureOneOfEach();
         _linkAuditor = new(options, _mdStructLoader, _linkDestinationGenerators);
     }
 
-    private void CreateUpdaters(Flavor flavor)
+    /// <summary>
+    /// Load a dictionary of heading slug to the heading text from which the slug was generated,
+    /// for all headings in all Markdown files within the processing root, for all ways of 
+    /// slugifying.
+    /// </summary>
+    /// <returns>
+    /// Dictionary of heading slug to heading.
+    /// </returns>
+    private Dictionary<string, string> LoadFragmentToHeadingText()
+    {
+        Dictionary<string, string> fragmentToHeadingText = [];
+        foreach (string filePath in _options.AllMarkdownFilePaths)
+        {
+            MdStruct md = _mdStructLoader.Load(filePath);
+            foreach (HeadingRegion headingRegion in md.HeadingRegions)
+            {
+                string headingText = headingRegion.HeadingText;
+                foreach (ILinkDestinationGenerator linkDestinationGenerator in _linkDestinationGenerators)
+                {
+                    fragmentToHeadingText[$"#{linkDestinationGenerator.SlugifyHeadingText(headingText)}"] = headingText;
+                }
+            }
+        }
+        return fragmentToHeadingText;
+    }
+
+    private void CreateUpdaters(Flavor flavor, Dictionary<string, string> fragmentToHeadingText)
     {
         ILinkDestinationGenerator linkDestinationGenerator = LinkDestinationGeneratorFactory.Manufacture(flavor);
         _inDocumentLinkUpdaters.Add(flavor, new InDocumentLinkUpdater(linkDestinationGenerator));
-        _crossDocumentLinkUpdaters.Add(flavor, new CrossDocumentLinkUpdater(linkDestinationGenerator, _staleCpathFragmentToUpdatedHeadingText, _ambiguousStaleCpathFragments));
+        _crossDocumentLinkUpdaters.Add(flavor, new CrossDocumentLinkUpdater(linkDestinationGenerator, _staleCpathFragmentToUpdatedHeadingText, _ambiguousStaleCpathFragments, fragmentToHeadingText));
         TocGenerator tocGenerator = new(linkDestinationGenerator);
         _tocUpdaters.Add(flavor, new TocUpdater(tocGenerator));
     }
@@ -233,51 +262,62 @@ internal class Processor
         }
     }
 
+    /// <summary>
+    /// Post-processing phase that always gets called at the end of <c>ApplyFormatting()</c>, to 
+    /// ensure that cross-document links are up to date after other formatting changes have been made.
+    /// </summary>
     private void UpdateCrossDocumentLinks()
     {
-        if (_staleCpathFragmentToUpdatedHeadingText.Count == 0 && _ambiguousStaleCpathFragments.Count == 0)
+        // Cross-document link updating is required if --flavor-xdoc is set (user requested to verify flavor of cross-document links) or if some heading numbers changed.
+        bool crossDocumentLinkUpdatingRequired = (_options.FlavorXdoc || _staleCpathFragmentToUpdatedHeadingText.Count > 0 || _ambiguousStaleCpathFragments.Count > 0);
+        if (!crossDocumentLinkUpdatingRequired)
         {
-            if (_options.Verbose)
-            {
-                Output.Info($"{Environment.NewLine}Cross-document link updates not required.");
-                return;
-            }
+            return;
         }
+
         if (_options.Verbose)
         {
-            Output.Info($"{Environment.NewLine}Headings changed.  Scanning *.md files under {_options.ProcessingRoot} for cross-document link updates:{Environment.NewLine}");
+            Output.Info($"{Environment.NewLine}Updating cross-document links");
         }
+
         foreach (string filePath in _options.AllMarkdownFilePaths)
         {
-            UpdateCrossDocumentLinks(filePath);
+            // Determine formatting options to apply to the current filePath.
+            FormattingOptions fpo = _options.GetFormattingOptions(filePath);
+
+            // Warn on inconsistent options affecting the current filePath that create a risk of not
+            // maintaining cross-document links.
+            if (_options.FlavorXdoc && fpo.Flavor == null)
+            {
+                Output.Warn($"{Path.GetFullPath(filePath)}: Unknown flavor.  Unable to check and adjust flavor of cross-document links.");
+            }
+
+            // Continue unless there is something for the cross-document link updater to do.  It 
+            // can't do anything if it does not know what flavor to target.
+            if (fpo.Flavor == null)
+            {
+                continue;
+            }
+
+            // Load Markdown file into MdStruct data structure.
+            MdStruct md = _mdStructLoader.Load(filePath, fpo.NewlineStrategy);
+
+            // Invoke the right cross-document link updator for the flavor.
+            _crossDocumentLinkUpdaters[fpo.Flavor.Value].Update(md, _options.Verbose);
+
+            // If the MdStruct was modified, save the Markdown file.
+            if (md.IsModified)
+            {
+                File.WriteAllText(md.FilePath, md.Content);
+                if (_options.Verbose)
+                {
+                    Output.Emphasis($"- Wrote file {md.FilePath}");
+                }
+                else
+                {
+                    Output.Emphasis(md.FilePath);
+                }
+            }
         }
     }
-
-    private void UpdateCrossDocumentLinks(string filePath)
-    {
-        FormattingOptions fpo = _options.GetFormattingOptions(filePath);
-
-        // Load Markdown file into MdStruct data structure.
-        MdStruct md = _mdStructLoader.Load(filePath, fpo.NewlineStrategy);
-
-        if (fpo.Flavor is Flavor flavor)
-        {
-            _crossDocumentLinkUpdaters[flavor].Update(md, _options.Verbose);
-        }
-
-        // If the MdStruct was modified, save the Markdown file.
-        if (md.IsModified)
-        {
-            File.WriteAllText(md.FilePath, md.Content);
-            if (_options.Verbose)
-            {
-                Output.Emphasis($"- Wrote file {md.FilePath}");
-            }
-            else
-            {
-                Output.Emphasis(md.FilePath);
-            }
-        }
-    }
-
 }

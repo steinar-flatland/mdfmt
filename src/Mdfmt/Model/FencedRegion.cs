@@ -92,7 +92,7 @@ internal class FencedRegion(IReadOnlyList<AtomicRegion> atomicRegions) : Composi
         if (!HasLineNumbers) return false;
         foreach (ContentRegion region in ContentRegions)
         {
-            region.Content = _lineNumberRegex.Replace(region.Content, "");
+            region.Content = _lineNumberRegex.Replace(region.Content, string.Empty);
         }
         return true;
     }

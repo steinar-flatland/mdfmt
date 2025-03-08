@@ -46,14 +46,32 @@ internal class LinkRegion(string label, string destination) : MutableStringRegio
     }
 
     /// <summary>
-    /// If the <c>Destination</c> includes a <c>'#'</c> character, the 0 or more characters from front of 
-    /// <c>Destination</c> up to but not including <c>'#'</c>.  If there is no <c>'#'</c>, then returns
-    /// the entire <c>Destination</c>.
+    /// Whether the destination starts with http (case-insensitive).
+    /// </summary>
+    private bool DestinationIsUrl => _destination.StartsWith("http", StringComparison.InvariantCultureIgnoreCase);
+
+    /// <summary>
+    /// <para>
+    /// Returns local file system path of link destination.
+    /// </para>
+    /// <para>
+    /// If the <c>Destination</c> looks like a URL, returns empty string.
+    /// </para>
+    /// <para>
+    /// Otherwise, it is assumed that the <c>Destination</c> is trying to target a file in the local
+    /// file system.  Then, if the <c>Destination</c> includes a <c>'#'</c> character, return the 0
+    /// or more characters from front of <c>Destination</c> up to but not including <c>'#'</c>, and
+    /// if there is no <c>'#'</c>, then returns the entire <c>Destination</c>.
+    /// </para>
     /// </summary>
     public string Path
     {
         get
         {
+            if (DestinationIsUrl)
+            {
+                return string.Empty;
+            }
             int index = _destination.IndexOf('#');
             return (index >= 0) ? _destination[..index] : _destination;
         }
@@ -68,7 +86,7 @@ internal class LinkRegion(string label, string destination) : MutableStringRegio
         get
         {
             int index = _destination.IndexOf('#');
-            return (index >= 0) ? _destination[index..] : "";
+            return (index >= 0) ? _destination[index..] : string.Empty;
         }
     }
 
@@ -84,72 +102,90 @@ internal class LinkRegion(string label, string destination) : MutableStringRegio
     /// </returns>
     public LinkType GetLinkType(string fileName)
     {
+        if (string.IsNullOrWhiteSpace(_destination))
+        {
+            return LinkType.InDocument;
+        }
+
+        if (_destination.StartsWith('/'))
+        {
+            // Mdfmt chooses not to deal with absolute paths, since many Markdown rendering
+            // environments don't really deal with them.
+            return LinkType.External;
+        }
+
+        if (DestinationIsUrl)
+        {
+            return LinkType.External;
+        }
+
+        // The path seems to be referencing something in the local file system.
+
         string path = Path;
+
         if ((path.Length == 0) || (path == $"./{fileName}") || (path == fileName))
         {
             return LinkType.InDocument;
         }
-        else if (path.EndsWith(Constants.MdExtension))
+
+        if (path.EndsWith(Constants.MdExtension))
         {
             return LinkType.CrossDocument;
         }
-        else
-        {
-            return LinkType.External;
-        }
+
+        // Things that remain seem to be links within the file system, but not to Markdown files.
+        // Lump these in with External, i.e. they (like http) are external to the local web of 
+        // Markdown files that occur under the processing root.
+        return LinkType.External;
     }
 
     /// <summary>
     /// <para>
     /// Given the <see cref="MdStruct"/> in which this <see cref="LinkRegion"/> occurs, determine
-    /// the cpath of the link destination.
+    /// the cpath of the link destination.  A cpath is a canonical relative path, relative to the
+    /// processing root that defines the files in the file system that are visible to the program.
     /// </para>
     /// <para>
-    /// (An <see cref="InvalidOperationException"/> occurs if there is an unhandled <see cref="LinkType"/>.
-    /// This should not happen and would indicate a code maintenance error.)
+    /// An <see cref="InvalidOperationException"/> occurs if there is an unhandled <see cref="LinkType"/>.
+    /// This should not happen and would indicate a code maintenance error.
     /// </para>
     /// </summary>
     /// <param name="md">
     /// The <see cref="MdStruct"/> in which this link region occurs.
     /// </param>
     /// <returns>
-    /// Canonical relative path of the link target file, or null if the link is external.
+    /// <list type="bullet">
+    /// <item>
+    /// If in-document link: cpath of the document that contains the link.
+    /// </item>
+    /// <item>
+    /// If cross-document link:  cpath of the document that that the link is targeting.
+    /// </item>
+    /// <item>
+    /// If would-be cross-document link, but we are unable to canonicalize it: A string containing
+    /// an exclamation point <c>"!"</c>.
+    /// </item>
+    /// <item>
+    /// If external link: <c>null</c>
+    /// </item>
+    /// </list>
     /// </returns>
     /// <exception cref="InvalidOperationException"/>
     public string DestinationCpath(MdStruct md)
     {
-        // Path portion of the link destination.
-        string path = Path;
-
-        // Goal is to determine this and return it.
-        string targetCpath;
-
-        // Classify link as Indocument, CrossDocument, or External.
+        // Classify link as InDocument, CrossDocument, or External.
         LinkType linkType = GetLinkType(md.FileName);
 
-        switch (linkType)
+        // Goal is to determine this and return it.
+        string destinationCpath = linkType switch
         {
-            case LinkType.InDocument:
-                targetCpath = md.Cpath;
-                break;
-            case LinkType.CrossDocument:
-                if (path.StartsWith('.'))
-                {
-                    targetCpath = PathUtils.Canonicalize(md.Cpath, path);
-                }
-                else
-                {
-                    targetCpath = PathUtils.Canonicalize(md.Cpath, $"./{path}");
-                }
-                break;
-            case LinkType.External:
-                targetCpath = null;
-                break;
-            default:
-                throw new InvalidOperationException($"Unknown LinkType: {linkType}");
-        }
+            LinkType.InDocument => md.Cpath,
+            LinkType.CrossDocument => PathUtils.Canonicalize(md.Cpath, Path) ?? "!",
+            LinkType.External => null,
+            _ => throw new InvalidOperationException($"Unknown LinkType: {linkType}"),
+        };
 
-        return targetCpath;
+        return destinationCpath;
     }
 
 }

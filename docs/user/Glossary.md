@@ -3,10 +3,14 @@
 <!--BEGIN_TOC-->
 - [Glossary](#glossary)
   - [cpath](#cpath)
+  - [cross-document link](#cross-document-link)
   - [current working directory](#current-working-directory)
   - [destination](#destination)
   - [environment](#environment)
+  - [external link](#external-link)
   - [fenced code block](#fenced-code-block)
+  - [in-document link](#in-document-link)
+  - [internal link](#internal-link)
   - [label](#label)
   - [line numbering threshold](#line-numbering-threshold)
   - [link](#link)
@@ -29,6 +33,10 @@ This file defines terms that form the ubiquitous language of Mdfmt.
 
 the canonical relative path of a file being processed by [Mdfmt](#mdfmt).  Such a path is relative to the [processing root](#processing-root), where any [mdfmt configuration files](#mdfmt-configuration-files) are.  _Cpaths_ are used as keys in the [mdfmt configuration files](#mdfmt-configuration-files) to bind sets of formatting options to directories or to individual files.
 
+## cross-document link
+
+a [link](#link) targeting another [Markdown](#markdown) document, optionally with an indication of the specific heading to navigate to.
+
 ## current working directory
 
 the directory in which [Mdfmt](#mdfmt) was launched and that is dynamically associated with the running program.  The _current working directory_ is important for resolving omitted and relative [target path](#target-path).
@@ -41,9 +49,21 @@ a URL or relative path indicating the navigation target of a [link](#link) in a 
 
 when developting [Markdown](#markdown) files, _environment_ refers to where the files will be rendered.  Examples include a website such as [Github](https://github.com), a developer laptop, or a developer portal such as [Backstage](https://backstage.io).  [Mdfmt](#mdfmt) supports configuring different formatting options per _environment_, and designating the target _environment_ for formatting on the command line.
 
+## external link
+
+a [link](#link) targeting `http` or `https`.
+
 ## fenced code block
 
 a region of [Markdown](#markdown) that both starts with and ends with a line where the first non-whitespace characters are three backquotes.  Markdown rendering shows such a region as a block of code. [Mdfmt](#mdfmt) supports adding line numbers to such code blocks.  See [line numbering threshold](#line-numbering-threshold).
+
+## in-document link
+
+a [link](#link) targeting a specific heading within the same [Markdown](#markdown) document.
+
+## internal link
+
+a collective term for a [link](#link) that is either an [in-document link](#in-document-link) or a [cross-document link](#cross-document-link).
 
 ## label
 

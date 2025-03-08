@@ -12,7 +12,7 @@
   },
   "CpathToOptions": {
     ".": "default",
-    "./user/Glossary.md": "noHeadings",
-    "./developer/Releasing.md": "noHeadings"
+    "./docs/user/Glossary.md": "noHeadings",
+    "./docs/developer/Releasing.md": "noHeadings"
   }
 }

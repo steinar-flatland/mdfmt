@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace Mdfmt.Utilities;
@@ -28,46 +29,102 @@ internal static class PathUtils
     }
 
     /// <summary>
-    /// Converts the rpath to a canonical path, based on the cpath argument for context.
+    /// <para>
+    /// Given two relative paths to files that are in scope of the Mdfmt run where: (1) <c>cpath</c>
+    /// is relative to the processing root directory, and (2) <c>rpath</c> is relative to the
+    /// directory that contains the file represented by <c>cpath</c>, return a new path to the 
+    /// file of <c>rpath</c> expressed relative to the processing root.  (Note that the processing
+    /// root is the directory that defines the root of the files that are in scope for the Mdfmt run.)
+    /// This method is called <c>Canonicalize</c> because it converts the <c>rpath</c> argument such
+    /// that it is expressed as being relative to the processing root.  Mdfmt considers this to be
+    /// the standard, or canonical, way of expressing a relative path.
+    /// </para>
+    /// <para>
+    /// Throws an <see cref="ArgumentException"/> if <c>cpath</c> does not start with <c>"./"</c>.
+    /// </para>
     /// </summary>
-    /// <param name="cpath">Canonical relative file path, or cpath</param>
+    /// <param name="cpath">
+    /// The relative path of a file that is in scope of the Mdfmt run, expressed as a path relative
+    /// to the processing root directory.  (The processing root is the root directory that defines
+    /// the scope of the files Mdfmt can see.)  The <c>cpath</c> MUST start with <c>"./"</c>, where
+    /// the dot represents the processing root directory, and if this is not the case, an
+    /// <see cref="ArgumentException"/> results.
+    /// </param>
     /// <param name="rpath">
-    /// Relative path, rooted at cpath's containing directory, to another file in scope of the mdfmt run
+    /// The relative path of a file that is in scope of the Mdfmt run, expressed as a path relative
+    /// to the directory that contains the file represented by <c>cpath</c>.  <c>rpath</c> should
+    /// start with either <c>"./"</c> or <c>"../"</c>, and if it does not then it is adjusted by
+    /// prepending <c>"./"</c>.
     /// </param>
     /// <returns>
-    /// rpath expressed as a canonical path, or null if it is not possible to do this because it
-    /// "busts out" of the directory where we are working.
+    /// <c>rpath</c> expressed as a canonical path, or null if it is not possible to do this because
+    /// <c>rpath</c> has too many <c>../</c> segments and "busts out" of the processing root, or
+    /// otherwise the <c>rpath</c> passed in is invalid.
     /// </returns>
-    //NOTE: This method is well tested and it works great.  It becomes important if you are trying to work
-    // with relative paths between files, and each file is making relative paths from its own point of
-    // view.  Then this method helps you create a canonical path, based on the Path option passed to
-    // mdfmt.   See README.md file for concepts and test cases, if we ever want to
-    // pic this up again.  -SF 11/5/2024.
+    /// <exception cref="ArgumentException"/>
     public static string Canonicalize(string cpath, string rpath)
     {
-        // Step 1: Get the directory of cpath as the base for relative path resolution
-        string baseDirectory = Path.GetDirectoryName(cpath);
+        // A canonical relative path MUST alwasy start "./". 
+        // . represents the processing root directory.
+        if (!cpath.StartsWith("./"))
+        {
+            throw new ArgumentException("Value must start with \"./\".", nameof(cpath));
+        }
 
-        // Step 2: Combine the base directory with rpath
-        string combinedPath = Path.Combine(baseDirectory, rpath);
+        // Rpaths come in "from the wild".  We'll forgive if they don't start with a dot and
+        // make an adjustment.
+        if (!rpath.StartsWith('.'))
+        {
+            rpath = $"./{rpath}";
+        }
 
-        // Step 3: Normalize the combined path to get the canonical path
-        string canonicalPath = Path.GetFullPath(combinedPath);
-
-        // Step 4: Get the full path of the root directory to check boundaries
-        string rootPath = Path.GetFullPath("./");
-
-        // Step 5: Check if the canonical path is within the root directory
-        if (!canonicalPath.StartsWith(rootPath))
+        if (rpath.StartsWith("./"))
+        {
+            return $"{cpath[..(cpath.LastIndexOf('/') + 1)]}{rpath[2..]}";
+        }
+        else if (rpath.StartsWith("../"))
+        {
+            int parentCount = ParentCount(rpath);
+            for (int i = cpath.Length - 1, n = parentCount + 1; i >= 0; i--)
+            {
+                char c = cpath[i];
+                if (c == '/')
+                {
+                    n--;
+                    if (n == 0)
+                    {
+                        return $"{cpath[..i]}/{rpath[(3*parentCount)..]}";
+                    }
+                }
+            }
+            // rpath goes up too many directories and "busts out" of the processing root.
             return null;
+        }
+        else
+        {
+            // Signal that Canonicalization was unsuccessful.
+            return null;
+        }
+    }
 
-        // Step 6: Trim the root path prefix to format it as a canonical path
-        canonicalPath = "./" + canonicalPath[rootPath.Length..].TrimStart(Path.DirectorySeparatorChar);
-
-        // Step 7: Replace backslashes with forward slashes
-        canonicalPath = canonicalPath.Replace('\\', '/');
-
-        return canonicalPath;
+    /// <summary>
+    /// Given a path string, count the number of "../" at the beginning of the string.
+    /// </summary>
+    /// <param name="path">Path string</param>
+    /// <returns>Count of number of "../" at beginning of path</returns>
+    private static int ParentCount(string path)
+    {
+        int count = 0;
+        int pos = 0;
+        while (pos + 3 <= path.Length &&
+               path[pos] == '.' &&
+               path[pos + 1] == '.' &&
+               path[pos + 2] == '/')
+        {
+            count++;
+            pos += 3;
+        }
+        return count;
     }
 
     /// <summary>
