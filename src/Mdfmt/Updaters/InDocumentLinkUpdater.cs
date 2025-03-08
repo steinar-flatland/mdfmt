@@ -34,7 +34,7 @@ internal class InDocumentLinkUpdater(ILinkDestinationGenerator linkDestinationGe
                 string fragment = linkRegion.Fragment;
                 if (md.TryGetHeadingRegion(linkRegion.Label, out HeadingRegion headingRegion) ||
                     md.TryGetHeadingRegion(linkRegion.Destination, out headingRegion) ||
-                    fragment != string.Empty && md.TryGetHeadingRegion(fragment, out headingRegion)
+                    (fragment != string.Empty && md.TryGetHeadingRegion(fragment, out headingRegion))
                    )
                 {
                     string destination = _linkDestinationGenerator.GenerateInDocumentLinkDestination(md.FileName, headingRegion.HeadingText);
