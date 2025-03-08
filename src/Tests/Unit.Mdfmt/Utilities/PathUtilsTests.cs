@@ -31,7 +31,7 @@ public class PathUtilsTests
         new object[] { "/a/b/c/d", new string[] { "/a/b/c/d", "/a/b/c", "/a/b", "/a", "/", "." } },
         new object[] { "hello", new string[] { "hello" } },
         new object[] { ".", new string[] { "." } },
-        new object[] { "", System.Array.Empty<string>() },
+        new object[] { string.Empty, System.Array.Empty<string>() },
     ];
 
     [TestCaseSource(nameof(_leftPathsTestCases))]
@@ -42,16 +42,18 @@ public class PathUtilsTests
     }
 
     private readonly static object[] _canonicalizeTestCases =
-    {
+    [
         new object[] { "./B/D/d", "../E/H/h", "./B/E/H/h" },
         new object[] { "./a", "./C/c", "./C/c" },
         new object[] { "./a", "./C/G/g", "./C/G/g" },
         new object[] { "./B/E/H/h", "../../../C/F/I/J/j", "./C/F/I/J/j" },
         new object[] { "./C/F/f", "./I/J/j", "./C/F/I/J/j" },
         new object[] { "./C/F/I/i", "../../G/g", "./C/G/g" },
+        new object[] { "./A/a", "b", "./A/b" },
         new object[] { "./a", "../b", null },
-        new object[] { ".A/B/b", "../../../C/c", null }
-    };
+        new object[] { "./docs/user/README.md", "../../../../mdfmt/docs/developer/Windows-Laptop-Setup-Instructions.md", null },
+        new object[] { "./file1.md", "file2.md", "./file2.md"}
+    ];
 
     [TestCaseSource(nameof(_canonicalizeTestCases))]
     public void CanonicalizeTest(string cpath, string rpath, string expectedResult)

@@ -8,7 +8,7 @@ public class FileContentParserTests
 {
     private static readonly IEnumerable<TestCaseData> _testCases =
     [
-        new TestCaseData("", System.Array.Empty<string>()),
+        new TestCaseData(string.Empty, System.Array.Empty<string>()),
         new TestCaseData("\n", new string[] { "\n" }),
         new TestCaseData("\r", new string[] { "\r" }),
         new TestCaseData("\r\n", new string[] { "\r\n" }),

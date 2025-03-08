@@ -56,7 +56,7 @@ internal class FencedRegionBuilder
             {
                 // Add an empty region between newlines.  This makes it much easier to turn on line
                 // numbering in a fenced region, if that is needed.
-                _regions.Add(new ContentRegion(""));
+                _regions.Add(new ContentRegion(string.Empty));
             }
             _previousRegionWasNewline = true;
         }

@@ -44,14 +44,25 @@ internal class LinkAuditor(MdfmtOptions mdfmtOptions, MdStructLoader mdStructLoa
             {
                 string destinationCpath = linkRegion.DestinationCpath(md);
 
-                // If destination cpath cannot be determined, the link is external.
+                // null indicates an external link.
                 if (destinationCpath == null)
                 {
                     externalLinkCount++;
                     continue;
                 }
 
-                // Determine if link is intact or broken.
+                // "!" indicates a link that seems cross document, but it is not canonicalizable.
+                // This is bad/broken.
+                if (destinationCpath == "!")
+                {
+                    brokenLinkCount++;
+                    brokenLinkRegions.Add(linkRegion);
+                    continue;
+                }
+
+                // The only other possibilities are in-document link and canonicalizable cross-document link.
+                // These are both pretty good; we need to determine if link is intact or broken.
+
                 if (slugsOfCpaths.TryGetValue(destinationCpath, out HashSet<string> slugs))
                 {
                     // Target file validated.
@@ -77,7 +88,7 @@ internal class LinkAuditor(MdfmtOptions mdfmtOptions, MdStructLoader mdStructLoa
                     {
                         // Link goes to a file, but not to a heading in that file.
                         string destination = linkRegion.Destination.Trim();
-                        if (destination == "" || destination == "#")
+                        if (destination == string.Empty || destination == "#")
                         {
                             // Assume that the user wants to fix empty link destinations, so treat these as broken.
                             brokenLinkCount++;
@@ -95,13 +106,12 @@ internal class LinkAuditor(MdfmtOptions mdfmtOptions, MdStructLoader mdStructLoa
                     brokenLinkCount++;
                     brokenLinkRegions.Add(linkRegion);
                 }
-            }
+            } // end loop over link regions
 
             // If this file had broken links, show them.
             if (brokenLinkRegions.Count > 0)
             {
-                Output.Info($"{Environment.NewLine}Broken links in ", false, ConsoleColor.Yellow);
-                Output.Info(md.FilePath, true, ConsoleColor.Cyan);
+                Output.Warn($"{Environment.NewLine}Broken links in {md.FilePath}:");
                 foreach (LinkRegion linkRegion in brokenLinkRegions)
                 {
                     Output.Warn($"  {linkRegion.Content}");

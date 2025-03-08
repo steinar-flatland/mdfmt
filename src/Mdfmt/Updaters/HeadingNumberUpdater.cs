@@ -69,7 +69,7 @@ internal class HeadingNumberUpdater()
         {
             foreach (HeadingRegion headingRegion in md.HeadingRegions)
             {
-                headingsModified = SetHeadingNumber(headingRegion, "") || headingsModified;
+                headingsModified = SetHeadingNumber(headingRegion, string.Empty) || headingsModified;
             }
         }
         else if (
