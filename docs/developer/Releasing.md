@@ -56,17 +56,17 @@ Create-Release
 This script removes the directory `mdfmt/release` if present and recreates it with `.zip` files to be released.  The .zip files are named like this:
 
 ```console
-mdfmt_x-y-z_linux-x64_framework-net8.0.zip
-mdfmt_x-y-z_linux-x64_self-contained.zip
-mdfmt_x-y-z_win-x64_framework-net8.0.zip
-mdfmt_x-y-z_win-x64_self-contained.zip
+mdfmt_x-y-z_linux-x64_framework-dependent-net10.0.zip
+mdfmt_x-y-z_linux-x64_self-contained-net10.0.zip
+mdfmt_x-y-z_win-x64_framework-dependent-net10.0.zip
+mdfmt_x-y-z_win-x64_self-contained-net10.0.zip
 ```
 
 `x-y-z` will be replaced with the semantic version number.
 
-The `framework-net8.0` releases assume that the machine where the release will be installed has .NET Framework 8.0 installed already.
+The `framework-dependent-net10.0` releases assume that the machine where the release will be installed has .NET Framework 10.0 installed already.
 
-The `self-contained` releases include the .NET runtime and do not require it to be installed on the target machine already.
+The `self-contained-net10.0` releases include the .NET runtime and do not require it to be installed on the target machine already.
 
 ## Create Release In GitHub
 
