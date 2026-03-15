@@ -14,7 +14,7 @@ Mdfmt is a command line interface (CLI) for Markdown formatting.  Able to operat
 
 Mdfmt is a work in progress, and new features continue to be added.
 
-Mdfmt is being developed in C#/.NET 8.0, with plans to upgrade to the next LTS version of .NET when it comes out.
+Mdfmt is being developed in C#/.NET 10.0, with plans to upgrade to the next LTS version of .NET when it comes out.
 
 ## 2. Features and Benefits
 

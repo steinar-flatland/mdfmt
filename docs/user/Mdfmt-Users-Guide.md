@@ -66,10 +66,10 @@ mdfmt_{version}_{runtime}_{deploymentType}.zip
 
 Examples of `.zip` file names in a release:
 
-- mdfmt_1.7.0_linux-x64_framework-dependent-net8.0.zip
-- mdfmt_1.7.0_linux-x64_self-contained-net8.0.zip
-- mdfmt_1.7.0_win-x64_framework-dependent-net8.0.zip
-- mdfmt_1.7.0_win-x64_self-contained-net8.0.zip
+- mdfmt_1.8.0_linux-x64_framework-dependent-net10.0.zip
+- mdfmt_1.8.0_linux-x64_self-contained-net10.0.zip
+- mdfmt_1.8.0_win-x64_framework-dependent-net10.0.zip
+- mdfmt_1.8.0_win-x64_self-contained-net10.0.zip
 
 To download and install Mdfmt:
 

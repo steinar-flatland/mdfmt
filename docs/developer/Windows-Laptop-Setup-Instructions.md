@@ -24,7 +24,7 @@ Use a recent version of Windows 11.
 
 ## 2. .NET Version and Language
 
-Mdfmt is developed using .NET 8.0, using the C# language.  The steps below will get you set up for this.
+Mdfmt is developed using .NET 10.0, using the C# language.  The steps below will get you set up for this.
 
 ## 3. Dev Drive
 
