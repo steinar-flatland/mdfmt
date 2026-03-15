@@ -206,7 +206,7 @@ These options are used to specify formatting that Mdfmt should apply to Markdown
 - Long name: **`--flavor`**
 - Short name: **`-f`**
 - Type: enumeration
-- Description: Sets the [slugification](./Glossary.md#slugification) algorithm used to convert headings to link destinations.  This affects in-document links both in the body and in the table of contents of the document.  See also the related [`--flavor-xdoc`](#532-flavor-xdoc) flag, which can be specified together with `--flavor, -f` to ensure that cross-document links have the indicated flavor.
+- Description: Sets the [slugification](./Glossary.md#slugification) algorithm used to convert headings to link destinations.  This affects in-document links both in the body and in the table of contents of the document.  See also the related [`--flavor-xdoc, -x`](#532-flavor-xdoc) flag, which can be specified together with `--flavor, -f` to ensure that cross-document links have the indicated flavor.
   - Dependency: If the value of the [`--toc-threshold, -t`](#525-toc-threshold) option `> 0`, then this `--flavor, -f` option is required, to inform the flavor of TOC link destinations.
   - Dependency: If a value is provided for the [`--heading-numbers, -h`](#522-heading-numbers) option, then this `--flavor, -f` option is required, to inform the flavor of link destinations targeting any renumbered headings.
 - Values:
@@ -305,13 +305,13 @@ If all internal links were intact, the program returns 0 (success) to the shell.
 #### 5.3.2. Flavor Xdoc
 
 - Long name: **`--flavor-xdoc`**
-- Short name: _none_
+- Short name: **`-x`**
 - Type: flag
 - Description: By default, applying a flavor with [`--flavor, -f`](#521-flavor) updates only in-document links, not cross document links.  This flag, when specified in combination with applying a flavor, augments this default behavior to (1) format cross-document links according to the flavor applied to each file and (2) warn about any unresolvable cross-document links.  The augmented functionality involves only the subset of cross-document links that target specific headings, because these are the only cross-document links that have slugs, and slugs need to be reformatted for the flavor.  When this flag is provided/true, an extra scan of the Markdown files under the processing root is required.  This flag is not useful unless [`--flavor, -f`](#521-flavor) has been specified, either on the command line or through a [configuration file](#8-configuration).
 - Values: true, false
 - Default: false
 
-Here's an example of a warning when --flavor-xdoc is passed on the command line, and there is a cross-document link that cannot be maintained because it is unresolvable:
+Here's an example of a warning when `--flavor-xdoc, -x` is passed on the command line, and there is a cross-document link that cannot be maintained because it is unresolvable:
 
 ![image](.assets/unresolvable-cross-document-link.png)
 
@@ -381,7 +381,7 @@ Warnings are written to the console in yellow.  Warning messages, with a brief e
 
 - `Ignoring .mdfmt and using mdfmt.json.` - `.mdfmt` is a deprecated configuration file.  The preferred name is `mdfmt.json`.  If both files are present in the processing root together, Mdfmt pays attention to `mdfmt.json` and ignores `.mdfmt`.
 - `Broken links in {filePath}:` - When `--audit-links` finds broken links in a Markdown file, it displays this message, with a list of broken links underneath.
-- `{filePath}: Unknown flavor.  Unable to check and adjust flavor of cross-document links.` - The `--flavor-xdoc` flag was specified, but no flavor was specified, neither on the command line nor in configuration affecting the current file.  Therefore, cross-document links cannot be maintained.
+- `{filePath}: Unknown flavor.  Unable to check and adjust flavor of cross-document links.` - The `--flavor-xdoc, -x` flag was specified, but no flavor was specified, neither on the command line nor in configuration affecting the current file.  Therefore, cross-document links cannot be maintained.
 - `{filePath}: Invalid link: {link}` - During cross-document link updating, a link has too many `../`.  It goes up too many levels and "busts out" of the processing root.
 - `{filePath}: Ambiguous link: {link}` - During cross-document link updating, Mdfmt does not know how to maintain this link, which targets a file where headings have been renumbered, and there are multiple possible corrected targets for this link.  Please inspect and repair it manually.
 - `{filePath}: Broken link: {link}` - During cross-document link updating, this broken link cannot be maintained.
@@ -439,7 +439,7 @@ Whenever Mdfmt renumbers headings within a document, it proactively updates link
 
 This is a really helpful feature for preventing broken links, but it is not magic.  Only links that were intact at the time heading renumbering occurred can be maintained by this feature.
 
-If changing the flavor of your markdown files with the `--flavor, -f` option, also use the `--flavor-xdoc` flag to ensure that any cross-document links are updated to respect the new flavor.  (`--flavor, -f` does not handle cross-document links by default on the assumption that flavor changes are relatively rare.  Avoiding unnecessary flavor checks of cross-document links saves time in the common case.)
+If changing the flavor of your markdown files with the `--flavor, -f` option, also use the `--flavor-xdoc, -x` flag to ensure that any cross-document links are updated to respect the new flavor.  (`--flavor, -f` does not handle cross-document links by default on the assumption that flavor changes are relatively rare.  Avoiding unnecessary flavor checks of cross-document links saves time in the common case.)
 
 ## 8. Configuration
 

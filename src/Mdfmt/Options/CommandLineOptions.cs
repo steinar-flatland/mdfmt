@@ -13,7 +13,7 @@ internal class CommandLineOptions
     [Option('e', "environment", HelpText = "Environment name.  When specified, Mdfmt insists on a file, mdfmt.{environment}.json, in the processing root, and settings provided there override and/or extend the optional base configuration from either file mdfmt.json or .mdfmt (.mdfmt is deprecated).  When omitted, the mdfmt.{environment}.json file is not used.")]
     public string Environment { get; set; }
 
-    [Option('f', "flavor", HelpText = "Formatting option: Flavor of link slugification.  When specified, one of: [Common, Azure], ensuring in-document links, including in the TOC, are up to date for the flavor.  When omitted, in-document links are not updated.  See also the related flag --flavor-xdoc, which can be specified with -f, ensuring that cross-document links are updated for flavor as well.")]
+    [Option('f', "flavor", HelpText = "Formatting option: Flavor of link slugification.  When specified, one of: [Common, Azure], ensuring in-document links, including in the TOC, are up to date for the flavor.  When omitted, in-document links are not updated.  See also the related flag -x, which can be specified with -f, ensuring that cross-document links are updated for flavor as well.")]
     public Flavor? Flavor { get; set; }
 
     [Option('h', "heading-numbers", HelpText = "Formatting option: Type of heading numbers, or none.  When specified, one of: [1., 1, none].  Use 1. or 1 to include heading numbers either with or without a trailing period.  Use none to remove heading numbers.  When omitted, no changes are made to heading numbers.  If -h is provided, then -f is required, so any incoming links to renumbered headings can be updated.")]
@@ -31,7 +31,7 @@ internal class CommandLineOptions
     [Option("audit-links", Default = false, HelpText = "Flag.  Whether to perform a link audit, a different mode of Mdfmt operation that checks all in-document and cross-document links and prints a report to the console.  Useful for finding and fixing broken links.  This is a read-only operation.")]
     public bool AuditLinks { get; set; }
 
-    [Option("flavor-xdoc", Default = false, HelpText = "Flag.  When specified in combination with -f, additional processing occurs on flavor application:  Ensure that resolvable cross-document links are formatted according to the flavor, and report unresolvable cross-document links for investigation.  Note that this requires an extra scan of all Markdown files under the processing root.  This flag is not useful unless combined with -f.")]
+    [Option('x', "flavor-xdoc", Default = false, HelpText = "Flag.  When specified in combination with -f, additional processing occurs on flavor application:  Ensure that resolvable cross-document links are formatted according to the flavor, and report unresolvable cross-document links for investigation.  Note that this requires an extra scan of all Markdown files under the processing root.  This flag is not useful unless combined with -f.")]
     public bool FlavorXdoc { get; set; }
 
     [Option('r', "recursive", Default = false, HelpText = "Flag.  Process .md files recursively in all subfolders of the target path.  This option is ignored if the target path indicates a specific file, not a directory.")]
